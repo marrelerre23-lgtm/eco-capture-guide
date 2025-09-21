@@ -3,8 +3,14 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sun, Moon, User, Leaf } from "lucide-react";
 import { useTheme } from "next-themes";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
-export const TopNavigation = () => {
+interface TopNavigationProps {
+  user: SupabaseUser | null;
+  onLogout: () => void;
+}
+
+export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -56,11 +62,20 @@ export const TopNavigation = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-popover border border-border">
+              <DropdownMenuItem>
+                <div className="flex flex-col">
+                  <span className="font-medium">Inloggad som</span>
+                  <span className="text-xs text-muted-foreground">{user?.email}</span>
+                </div>
+              </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
                 <span>Profil & inställningar</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+              <DropdownMenuItem 
+                className="cursor-pointer text-destructive focus:text-destructive"
+                onClick={onLogout}
+              >
                 <span>Logga ut</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
