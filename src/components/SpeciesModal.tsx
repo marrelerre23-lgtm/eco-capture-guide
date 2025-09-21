@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 
 interface Species {
   id: string;
@@ -20,9 +20,23 @@ interface SpeciesModalProps {
   species: Species;
   isOpen: boolean;
   onClose: () => void;
+  onAnalyze?: () => void;
+  onSave?: () => void;
+  onDelete?: () => void;
+  isAnalyzing?: boolean;
+  showActions?: boolean;
 }
 
-export const SpeciesModal = ({ species, isOpen, onClose }: SpeciesModalProps) => {
+export const SpeciesModal = ({ 
+  species, 
+  isOpen, 
+  onClose, 
+  onAnalyze, 
+  onSave, 
+  onDelete, 
+  isAnalyzing = false,
+  showActions = false 
+}: SpeciesModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 bg-background">
@@ -77,6 +91,32 @@ export const SpeciesModal = ({ species, isOpen, onClose }: SpeciesModalProps) =>
               </div>
             ))}
           </div>
+
+          {/* Action Buttons */}
+          {showActions && (
+            <div className="px-4 pb-4 space-y-2">
+              {onAnalyze && (
+                <Button 
+                  onClick={onAnalyze} 
+                  className="w-full"
+                  disabled={isAnalyzing}
+                >
+                  {isAnalyzing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isAnalyzing ? "Analyserar..." : "Analysera med AI"}
+                </Button>
+              )}
+              {onSave && (
+                <Button onClick={onSave} variant="outline" className="w-full">
+                  Spara fångst
+                </Button>
+              )}
+              {onDelete && (
+                <Button onClick={onDelete} variant="destructive" className="w-full">
+                  Ta bort
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

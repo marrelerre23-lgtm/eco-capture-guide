@@ -1,164 +1,98 @@
-import { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Sparkles, Trash2, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle, RotateCcw, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 interface PhotoPreviewProps {
   imageUrl: string;
   onRetake: () => void;
+  onSave?: (imageUrl: string, analysisData: any) => void;
+  uploading?: boolean;
 }
 
-interface AnalysisResult {
-  name: string;
-  scientificName: string;
-  description: string;
-  confidence: number;
-  facts: string[];
-}
-
-export const PhotoPreview = ({ imageUrl, onRetake }: PhotoPreviewProps) => {
+export const PhotoPreview = ({ imageUrl, onRetake, onSave, uploading = false }: PhotoPreviewProps) => {
   const navigate = useNavigate();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
-  const analyzeImage = async () => {
-    setIsAnalyzing(true);
-    
-    // Simulate AI analysis
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const mockResult: AnalysisResult = {
-      name: "Blåbärsris",
-      scientificName: "Vaccinium myrtillus",
-      description: "Blåbärsris är en låg buske som tillhör familjen ljungväxter. Den växer naturligt i barrskogar och på hedar i norra Europa.",
-      confidence: 92,
-      facts: [
-        "Växer naturligt i skandinaviska skogar",
-        "Blommar med vita till rosa blommor på våren",
-        "Bären mognar under sensommaren",
-        "Kan bli upp till 60 cm hög"
-      ]
-    };
-    
-    setAnalysisResult(mockResult);
-    setIsAnalyzing(false);
-  };
+  // Mock AI analysis - will be replaced with real AI integration later
+  const handleAnalyze = () => {
+    if (onSave) {
+      const mockAnalysisData = {
+        species: "Flugsvamp",
+        scientificName: "Amanita muscaria",
+        category: "mushroom",
+        confidence: 0.85,
+        description: "En ikonisk röd svamp med vita prickar. Mycket giftig men också en av världens mest kända svampar.",
+        habitat: "Barrskog, särskilt under björk och gran",
+        facts: [
+          {
+            icon: "🍄",
+            title: "Giftighet",
+            description: "Mycket giftig - ej ätbar! Innehåller muscimol och ibotensyra som kan orsaka allvarliga förgiftningssymptom."
+          },
+          {
+            icon: "🌲",
+            title: "Habitat",
+            description: "Växer symbiotiskt med barrträd, främst gran och björk. Vanlig i svenska skogar under sommaren och hösten."
+          },
+          {
+            icon: "🔍",
+            title: "Igenkänning",
+            description: "Röd hatt med karakteristiska vita prickar, vit fot med ring. Kan bli upp till 20cm i diameter."
+          }
+        ]
+      };
 
-  const saveCapture = () => {
-    toast.success("Fångst sparad i loggboken!");
-    navigate("/logbook");
-  };
-
-  const deleteCapture = () => {
-    toast.error("Fångst raderad");
-    navigate("/");
+      onSave(imageUrl, mockAnalysisData);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onRetake}>
-          <ArrowLeft className="h-6 w-6" />
-        </Button>
-        <h1 className="text-lg font-semibold">Förhandsvisning</h1>
-        <div className="w-10" />
+    <div className="fixed inset-0 bg-black">
+      {/* Photo Preview */}
+      <div className="w-full h-full flex items-center justify-center">
+        <img 
+          src={imageUrl} 
+          alt="Captured" 
+          className="max-w-full max-h-full object-contain"
+        />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
-        {/* Image */}
-        <Card className="overflow-hidden shadow-card">
-          <div className="aspect-square">
-            <img 
-              src={imageUrl} 
-              alt="Captured photo"
-              className="w-full h-full object-cover"
-            />
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-4 left-4 bg-black/50 text-white hover:bg-black/70"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
+
+      {/* Action Buttons */}
+      <div className="absolute bottom-8 left-0 right-0 px-8">
+        <div className="space-y-4">
+          {/* Analyze Button */}
+          <Button 
+            className="w-full bg-primary hover:bg-primary/90 text-white py-3"
+            onClick={handleAnalyze}
+            disabled={uploading}
+          >
+            {uploading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+            {uploading ? "Sparar..." : "Analysera med AI"}
+          </Button>
+          
+          {/* Secondary Actions */}
+          <div className="flex gap-4">
+            <Button 
+              variant="outline" 
+              className="flex-1 bg-black/50 border-white/20 text-white hover:bg-black/70"
+              onClick={onRetake}
+              disabled={uploading}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Ta om
+            </Button>
           </div>
-        </Card>
-
-        {/* Analysis Section */}
-        {!analysisResult && !isAnalyzing && (
-          <Card className="shadow-card">
-            <CardContent className="p-6 text-center">
-              <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Analysera din fångst</h3>
-              <p className="text-muted-foreground mb-4">
-                Använd AI för att identifiera arten och få detaljerad information
-              </p>
-              <Button onClick={analyzeImage} className="w-full">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Analysera bild
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {isAnalyzing && (
-          <Card className="shadow-card">
-            <CardContent className="p-6 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <h3 className="text-lg font-semibold mb-2">Analyserar...</h3>
-              <p className="text-muted-foreground">
-                AI:n undersöker din bild för att identifiera arten
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {analysisResult && (
-          <>
-            {/* Analysis Results */}
-            <Card className="shadow-card">
-              <CardContent className="p-6">
-                <div className="text-center mb-4">
-                  <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium mb-2">
-                    <Sparkles className="h-4 w-4" />
-                    {analysisResult.confidence}% säkerhet
-                  </div>
-                </div>
-                
-                <h3 className="text-xl font-bold text-center mb-1">{analysisResult.name}</h3>
-                <p className="text-muted-foreground italic text-center mb-4">{analysisResult.scientificName}</p>
-                
-                <p className="text-sm text-muted-foreground mb-4">{analysisResult.description}</p>
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Intressanta fakta:</h4>
-                  <ul className="space-y-1">
-                    {analysisResult.facts.map((fact, index) => (
-                      <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>{fact}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1" 
-                onClick={deleteCapture}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Radera
-              </Button>
-              <Button 
-                className="flex-1 bg-gradient-eco hover:bg-primary-dark" 
-                onClick={saveCapture}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Spara fångst
-              </Button>
-            </div>
-          </>
-        )}
+        </div>
       </div>
     </div>
   );

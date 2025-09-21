@@ -3,14 +3,18 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Upload, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
+import { uploadCaptureFromDataUrl } from "@/utils/storage";
+import { useToast } from "@/hooks/use-toast";
 
 const Camera = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const startCamera = async () => {
     try {
@@ -23,6 +27,11 @@ const Camera = () => {
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
+      toast({
+        variant: "destructive",
+        title: "Kamerafel",
+        description: "Kunde inte komma åt kameran. Kontrollera behörigheter.",
+      });
     }
   };
 
@@ -72,6 +81,33 @@ const Camera = () => {
     startCamera(); // Restart camera
   };
 
+  const handleSaveCapture = async (imageUrl: string, analysisData: any) => {
+    setUploading(true);
+    try {
+      // Upload image to Supabase Storage first
+      const uploadedImageUrl = await uploadCaptureFromDataUrl(imageUrl);
+      
+      // Navigate to next step with the data
+      navigate("/logbook", { 
+        state: { 
+          newCapture: {
+            imageUrl: uploadedImageUrl,
+            aiAnalysis: analysisData
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error saving capture:", error);
+      toast({
+        variant: "destructive",
+        title: "Kunde inte spara",
+        description: "Det gick inte att spara fångsten. Försök igen.",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Start camera when component mounts
   React.useEffect(() => {
     startCamera();
@@ -85,7 +121,14 @@ const Camera = () => {
   }, []);
 
   if (capturedImage) {
-    return <PhotoPreview imageUrl={capturedImage} onRetake={retakePhoto} />;
+    return (
+      <PhotoPreview 
+        imageUrl={capturedImage} 
+        onRetake={retakePhoto}
+        onSave={handleSaveCapture}
+        uploading={uploading}
+      />
+    );
   }
 
   return (
