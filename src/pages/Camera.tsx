@@ -6,6 +6,16 @@ import { PhotoPreview } from "@/components/PhotoPreview";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 
+interface Species {
+  id: string;
+  name: string;
+  scientificName: string;
+  image: string;
+  dateFound: Date;
+  description: string;
+  facts: string[];
+}
+
 const Camera = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -81,18 +91,15 @@ const Camera = () => {
     startCamera(); // Restart camera
   };
 
-  const handleSaveCapture = async (imageUrl: string, analysisData: any) => {
+  const handleSaveCapture = async (species: Species) => {
     setUploading(true);
     try {
-      // Upload image to Supabase Storage first
-      const uploadedImageUrl = await uploadCaptureFromDataUrl(imageUrl);
-      
-      // Navigate to next step with the data
+      // Image is already uploaded to Supabase Storage (imageUrl in species object)
+      // Navigate to logbook with the species data
       navigate("/logbook", { 
         state: { 
           newCapture: {
-            imageUrl: uploadedImageUrl,
-            aiAnalysis: analysisData
+            species: species
           }
         }
       });
