@@ -41,6 +41,104 @@ export type Database = {
         }
         Relationships: []
       }
+      species_captures: {
+        Row: {
+          ai_analysis: Json | null
+          captured_at: string
+          created_at: string
+          id: string
+          image_url: string
+          is_verified: boolean | null
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          species_info_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          captured_at?: string
+          created_at?: string
+          id?: string
+          image_url: string
+          is_verified?: boolean | null
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          species_info_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          captured_at?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_verified?: boolean | null
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          species_info_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "species_captures_species_info_id_fkey"
+            columns: ["species_info_id"]
+            isOneToOne: false
+            referencedRelation: "species_info"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      species_info: {
+        Row: {
+          category: string
+          common_name: string
+          created_at: string
+          description: string | null
+          habitat: string | null
+          id: string
+          identification_features: string | null
+          rarity_level: string | null
+          scientific_name: string
+          size_info: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          common_name: string
+          created_at?: string
+          description?: string | null
+          habitat?: string | null
+          id?: string
+          identification_features?: string | null
+          rarity_level?: string | null
+          scientific_name: string
+          size_info?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          common_name?: string
+          created_at?: string
+          description?: string | null
+          habitat?: string | null
+          id?: string
+          identification_features?: string | null
+          rarity_level?: string | null
+          scientific_name?: string
+          size_info?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
