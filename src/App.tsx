@@ -9,6 +9,7 @@ import Overview from "./pages/Overview";
 import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
 import Auth from "./pages/Auth";
+import AnalysisResult from "./pages/AnalysisResult";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Overview />} />
               <Route path="/camera" element={<Camera />} />
+              <Route path="/analysis-result" element={<AnalysisResult />} />
               <Route path="/logbook" element={<Logbook />} />
               <Route path="/auth" element={<Auth />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

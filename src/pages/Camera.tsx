@@ -91,29 +91,6 @@ const Camera = () => {
     startCamera(); // Restart camera
   };
 
-  const handleSaveCapture = async (species: Species) => {
-    setUploading(true);
-    try {
-      // Image is already uploaded to Supabase Storage (imageUrl in species object)
-      // Navigate to logbook with the species data
-      navigate("/logbook", { 
-        state: { 
-          newCapture: {
-            species: species
-          }
-        }
-      });
-    } catch (error) {
-      console.error("Error saving capture:", error);
-      toast({
-        variant: "destructive",
-        title: "Kunde inte spara",
-        description: "Det gick inte att spara fångsten. Försök igen.",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   // Start camera when component mounts
   React.useEffect(() => {
@@ -132,7 +109,6 @@ const Camera = () => {
       <PhotoPreview 
         imageUrl={capturedImage} 
         onRetake={retakePhoto}
-        onSave={handleSaveCapture}
         uploading={uploading}
       />
     );

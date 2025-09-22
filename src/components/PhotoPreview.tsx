@@ -19,17 +19,14 @@ interface Species {
 interface PhotoPreviewProps {
   imageUrl: string;
   onRetake: () => void;
-  onSave?: (species: Species) => void;
   uploading?: boolean;
 }
 
-export const PhotoPreview = ({ imageUrl, onRetake, onSave, uploading = false }: PhotoPreviewProps) => {
+export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPreviewProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleAnalyze = async () => {
-    if (!onSave) return;
-    
     try {
       console.log('Laddar upp bild till Supabase...');
       
@@ -73,7 +70,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, onSave, uploading = false }: 
           ].filter(Boolean) // Remove empty strings
         };
         
-        onSave(species);
+        // Navigate to analysis result page instead of calling onSave
+        navigate('/analysis-result', { state: { species } });
       } else {
         throw new Error('Ingen artidentifiering kunde göras');
       }
