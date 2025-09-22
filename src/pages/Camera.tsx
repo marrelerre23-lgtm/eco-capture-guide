@@ -143,7 +143,7 @@ const Camera = () => {
         variant="ghost"
         size="icon"
         className="absolute top-4 left-4 bg-black/50 text-white hover:bg-black/70"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/')}
       >
         <ArrowLeft className="h-6 w-6" />
       </Button>

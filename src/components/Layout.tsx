@@ -17,7 +17,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [loading, setLoading] = useState(true);
   
   // Pages where navigation should be hidden
-  const hideNavigation = location.pathname === "/camera" || location.pathname === "/photo-preview" || location.pathname === "/auth";
+  const hideNavigation = location.pathname === "/camera" || location.pathname === "/photo-preview" || location.pathname === "/auth" || location.pathname === "/analysis-result";
 
   useEffect(() => {
     // Set up auth state listener FIRST
