@@ -127,42 +127,19 @@ const getCategoryIcon = (category: string): string => {
 const Logbook = () => {
   const [expandedCategory, setExpandedCategory] = useState<string>("");
   const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
-  const [sortBy, setSortBy] = useState<string>("date");
-  const [filterBy, setFilterBy] = useState<string>("all");
+  const [categorySortBy, setCategorySortBy] = useState<Record<string, string>>({});
   
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
 
-  // Convert captures to species and apply filtering/sorting
-  const processedSpecies = useMemo(() => {
+  // Convert captures to species (no global filtering/sorting)
+  const allSpecies = useMemo(() => {
     if (!captures) return [];
-    
-    let species = captures.map(convertCaptureToSpecies);
-    
-    // Apply filtering
-    if (filterBy !== "all") {
-      species = species.filter(s => s.category === filterBy);
-    }
-    
-    // Apply sorting
-    switch (sortBy) {
-      case "name":
-        species.sort((a, b) => a.name.localeCompare(b.name, 'sv-SE'));
-        break;
-      case "category":
-        species.sort((a, b) => a.category.localeCompare(b.category, 'sv-SE'));
-        break;
-      case "date":
-      default:
-        species.sort((a, b) => b.capturedAt.getTime() - a.capturedAt.getTime());
-        break;
-    }
-    
-    return species;
-  }, [captures, sortBy, filterBy]);
+    return captures.map(convertCaptureToSpecies);
+  }, [captures]);
 
   // Group species by category, always show all categories
   const categorizedSpecies = useMemo(() => {
-    const speciesByCategory = processedSpecies.reduce((acc, species) => {
+    const speciesByCategory = allSpecies.reduce((acc, species) => {
       const categoryKey = species.category;
       if (!acc[categoryKey]) {
         acc[categoryKey] = [];
@@ -171,14 +148,30 @@ const Logbook = () => {
       return acc;
     }, {} as Record<string, Species[]>);
 
-    return PREDEFINED_CATEGORIES.map(category => ({
-      name: category.name,
-      key: category.key,
-      count: speciesByCategory[category.key]?.length || 0,
-      icon: category.icon,
-      species: speciesByCategory[category.key] || []
-    }));
-  }, [processedSpecies]);
+    return PREDEFINED_CATEGORIES.map(category => {
+      let categorySpecies = speciesByCategory[category.key] || [];
+      
+      // Apply sorting per category
+      const sortBy = categorySortBy[category.key] || "date";
+      switch (sortBy) {
+        case "name":
+          categorySpecies.sort((a, b) => a.name.localeCompare(b.name, 'sv-SE'));
+          break;
+        case "date":
+        default:
+          categorySpecies.sort((a, b) => b.capturedAt.getTime() - a.capturedAt.getTime());
+          break;
+      }
+
+      return {
+        name: category.name,
+        key: category.key,
+        count: categorySpecies.length,
+        icon: category.icon,
+        species: categorySpecies
+      };
+    });
+  }, [allSpecies, categorySortBy]);
 
   const toggleCategory = (categoryKey: string) => {
     setExpandedCategory(expandedCategory === categoryKey ? "" : categoryKey);
@@ -223,37 +216,7 @@ const Logbook = () => {
           </p>
         </div>
 
-        {/* Filters and Sorting */}
-        {processedSpecies.length > 0 && (
-          <div className="flex gap-2 items-center">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SortAsc className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Sortera" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">Senaste först</SelectItem>
-                <SelectItem value="name">Artnamn A-Ö</SelectItem>
-                <SelectItem value="category">Kategori</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filterBy} onValueChange={setFilterBy}>
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filtrera" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alla typer</SelectItem>
-                {PREDEFINED_CATEGORIES.map(category => (
-                  <SelectItem key={category.key} value={category.key}>
-                    {category.icon} {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        {/* Filters and Sorting - removed, now per-category */}
 
         {/* Categories */}
         <div className="space-y-3">
@@ -286,6 +249,25 @@ const Logbook = () => {
                       )}
                     </div>
                   </div>
+                  
+                  {/* Category sorting controls - shown when expanded and has species */}
+                  {expandedCategory === category.key && category.species.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                      <Select 
+                        value={categorySortBy[category.key] || "date"} 
+                        onValueChange={(value) => setCategorySortBy(prev => ({...prev, [category.key]: value}))}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SortAsc className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Sortera" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="date">Senaste först</SelectItem>
+                          <SelectItem value="name">Artnamn A-Ö</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -356,7 +338,7 @@ const Logbook = () => {
         </div>
 
         {/* Empty state when no captures at all */}
-        {processedSpecies.length === 0 && (
+        {allSpecies.length === 0 && (
           <div className="text-center py-12 space-y-4">
             <div className="text-4xl">📸</div>
             <div className="space-y-2">
