@@ -39,14 +39,14 @@ export const SpeciesModal = ({
 }: SpeciesModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 bg-accent/30">
+      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 bg-background border-0">
         {/* Close Button */}
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-3 right-3 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="rounded-full bg-accent/80 hover:bg-accent shadow-md"
+            className="rounded-full bg-primary/90 hover:bg-primary text-primary-foreground shadow-lg"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -55,9 +55,9 @@ export const SpeciesModal = ({
         {/* Content */}
         <div className="space-y-0">
           {/* Header with title and date */}
-          <div className="px-6 pt-6 pb-4 space-y-1">
-            <h2 className="text-2xl font-bold text-foreground">{species.name}</h2>
-            <p className="text-sm text-muted-foreground italic">{species.scientificName} | {species.dateFound}</p>
+          <div className="px-6 pt-8 pb-4 space-y-1">
+            <h2 className="text-2xl font-bold text-foreground pr-8">{species.name}</h2>
+            <p className="text-sm text-muted-foreground italic pr-8">{species.scientificName} | {species.dateFound}</p>
           </div>
 
           {/* Image */}
