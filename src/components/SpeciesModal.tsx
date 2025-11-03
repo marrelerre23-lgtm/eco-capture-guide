@@ -39,55 +39,59 @@ export const SpeciesModal = ({
 }: SpeciesModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 bg-background">
-        {/* Header */}
-        <DialogHeader className="p-4 pb-0">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold">{species.name}</h2>
-              <p className="text-sm text-muted-foreground italic">{species.scientificName}</p>
-              <p className="text-xs text-muted-foreground">{species.dateFound}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full bg-secondary/50 hover:bg-secondary"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </DialogHeader>
+      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 bg-accent/30">
+        {/* Close Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="rounded-full bg-accent/80 hover:bg-accent shadow-md"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
 
         {/* Content */}
-        <div className="space-y-4">
+        <div className="space-y-0">
+          {/* Header with title and date */}
+          <div className="px-6 pt-6 pb-4 space-y-1">
+            <h2 className="text-2xl font-bold text-foreground">{species.name}</h2>
+            <p className="text-sm text-muted-foreground italic">{species.scientificName} | {species.dateFound}</p>
+          </div>
+
           {/* Image */}
-          <div className="aspect-square mx-4 rounded-lg overflow-hidden">
-            <img 
-              src={species.image}
-              alt={species.name}
-              className="w-full h-full object-cover"
-            />
+          <div className="px-6">
+            <div className="aspect-video rounded-lg overflow-hidden">
+              <img 
+                src={species.image}
+                alt={species.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
 
           {/* Description */}
-          <div className="px-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
+          <div className="px-6 py-4">
+            <p className="text-sm text-foreground leading-relaxed">
               {species.description}
             </p>
           </div>
 
-          {/* Facts */}
-          <div className="px-4 pb-4 space-y-4">
+          {/* Facts - structured with dividers */}
+          <div className="px-6 pb-6 space-y-0">
             {species.facts.map((fact, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{fact.icon}</span>
-                  <h4 className="font-medium text-primary">{fact.title}</h4>
+              <div key={index}>
+                {index > 0 && <div className="border-t border-border my-4" />}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">{fact.icon}</span>
+                    <h4 className="font-semibold text-primary text-sm">{fact.title}</h4>
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed">
+                    {fact.description}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed pl-7">
-                  {fact.description}
-                </p>
               </div>
             ))}
           </div>

@@ -281,49 +281,31 @@ const Logbook = () => {
                       <p className="text-sm">Börja utforska och fånga {category.name.toLowerCase()}!</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       {category.species.map((species) => (
                         <Card 
                           key={species.id}
-                          className="cursor-pointer shadow-card hover:shadow-eco transition-all overflow-hidden"
+                          className="cursor-pointer shadow-card hover:shadow-eco transition-all overflow-hidden group"
                           onClick={() => setSelectedSpecies(species)}
                         >
                           <CardContent className="p-0">
-                            <div className="flex gap-3">
-                              {/* Image */}
-                              <div className="w-24 h-24 flex-shrink-0">
-                                <img 
-                                  src={species.image}
-                                  alt={species.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
+                            <div className="relative aspect-square">
+                              <img 
+                                src={species.image}
+                                alt={species.name}
+                                className="w-full h-full object-cover"
+                              />
+                              {/* Gradient overlay */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               
-                              {/* Content */}
-                              <div className="flex-1 p-3 min-w-0">
-                                <div className="space-y-1">
-                                  <h4 className="font-medium text-foreground truncate">{species.name}</h4>
-                                  <p className="text-xs text-muted-foreground italic truncate">{species.scientificName}</p>
-                                  
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span>📅</span>
-                                    <span>{species.capturedAt.toLocaleDateString('sv-SE')}</span>
-                                  </div>
-                                  
-                                  {species.location && (
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                      <span>📍</span>
-                                      <span className="truncate">{species.location}</span>
-                                    </div>
-                                  )}
-                                  
-                                  {species.confidence && (
-                                    <div className="flex items-center gap-2 text-xs">
-                                      <span>🤖</span>
-                                      <span className="text-primary">{Math.round(species.confidence * 100)}% säker</span>
-                                    </div>
-                                  )}
-                                </div>
+                              {/* Text overlay */}
+                              <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                                <h4 className="font-semibold text-sm leading-tight mb-0.5">
+                                  {species.name}
+                                </h4>
+                                <p className="text-xs italic opacity-90">
+                                  {species.scientificName}
+                                </p>
                               </div>
                             </div>
                           </CardContent>
