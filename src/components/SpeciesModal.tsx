@@ -39,7 +39,13 @@ export const SpeciesModal = ({
 }: SpeciesModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 bg-background border-0">
+      <DialogContent 
+        className="max-w-sm mx-auto max-h-[90vh] overflow-y-auto p-0 border-0" 
+        style={{ 
+          backgroundColor: '#fefdfb',
+          backgroundImage: 'none'
+        }}
+      >
         {/* Close Button */}
         <div className="absolute top-3 right-3 z-10">
           <Button
@@ -53,11 +59,11 @@ export const SpeciesModal = ({
         </div>
 
         {/* Content */}
-        <div className="space-y-0">
+        <div className="space-y-0" style={{ color: '#2d3e2d' }}>
           {/* Header with title and date */}
           <div className="px-6 pt-8 pb-4 space-y-1">
-            <h2 className="text-2xl font-bold text-foreground pr-8">{species.name}</h2>
-            <p className="text-sm text-muted-foreground italic pr-8">{species.scientificName} | {species.dateFound}</p>
+            <h2 className="text-2xl font-bold pr-8" style={{ color: '#1a2a1a' }}>{species.name}</h2>
+            <p className="text-sm italic pr-8" style={{ color: '#5a6a5a' }}>{species.scientificName} | {species.dateFound}</p>
           </div>
 
           {/* Image */}
@@ -73,7 +79,7 @@ export const SpeciesModal = ({
 
           {/* Description */}
           <div className="px-6 py-4">
-            <p className="text-sm text-foreground leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: '#2d3e2d' }}>
               {species.description}
             </p>
           </div>
@@ -82,13 +88,13 @@ export const SpeciesModal = ({
           <div className="px-6 pb-6 space-y-0">
             {species.facts.map((fact, index) => (
               <div key={index}>
-                {index > 0 && <div className="border-t border-border my-4" />}
+                {index > 0 && <div className="border-t my-4" style={{ borderColor: '#d4dcd4' }} />}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2.5">
                     <span className="text-xl">{fact.icon}</span>
-                    <h4 className="font-semibold text-primary text-sm">{fact.title}</h4>
+                    <h4 className="font-semibold text-sm" style={{ color: '#2e7d5e' }}>{fact.title}</h4>
                   </div>
-                  <p className="text-sm text-foreground/80 leading-relaxed">
+                  <p className="text-sm leading-relaxed" style={{ color: '#3d4d3d' }}>
                     {fact.description}
                   </p>
                 </div>
