@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, RotateCcw } from "lucide-react";
+import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
@@ -25,6 +25,8 @@ const Camera = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
 
   const startCamera = async () => {
     try {
@@ -34,6 +36,13 @@ const Camera = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
+        
+        // Check if torch is supported
+        const videoTrack = mediaStream.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities?.() as any;
+        if (capabilities?.torch) {
+          setTorchSupported(true);
+        }
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
@@ -41,6 +50,38 @@ const Camera = () => {
         variant: "destructive",
         title: "Kamerafel",
         description: "Kunde inte komma åt kameran. Kontrollera behörigheter.",
+      });
+    }
+  };
+
+  const toggleTorch = async () => {
+    if (!stream || !torchSupported) {
+      toast({
+        title: "Ljus ej tillgängligt",
+        description: "Din enhet stöder inte kamerans ljus i webbläsaren. Använd den nativa appen för full funktionalitet.",
+      });
+      return;
+    }
+
+    try {
+      const videoTrack = stream.getVideoTracks()[0];
+      const newTorchState = !torchOn;
+      
+      await videoTrack.applyConstraints({
+        // @ts-ignore - torch is not in standard types yet
+        advanced: [{ torch: newTorchState }]
+      });
+      
+      setTorchOn(newTorchState);
+      toast({
+        title: newTorchState ? "Ljus påslaget" : "Ljus avslaget",
+      });
+    } catch (error) {
+      console.error("Error toggling torch:", error);
+      toast({
+        variant: "destructive",
+        title: "Kunde inte styra ljuset",
+        description: "Ett fel uppstod när ljuset skulle ändras.",
       });
     }
   };
@@ -146,6 +187,22 @@ const Camera = () => {
         onClick={() => navigate('/')}
       >
         <ArrowLeft className="h-6 w-6" />
+      </Button>
+
+      {/* Flashlight Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className={`absolute top-4 right-4 text-white hover:bg-black/70 ${
+          torchOn ? 'bg-primary' : 'bg-black/50'
+        }`}
+        onClick={toggleTorch}
+      >
+        {torchOn ? (
+          <Flashlight className="h-6 w-6" />
+        ) : (
+          <FlashlightOff className="h-6 w-6" />
+        )}
       </Button>
 
       {/* Camera Controls */}
