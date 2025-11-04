@@ -86,7 +86,9 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du inte kan i
     console.log('Gemini svar:', JSON.stringify(geminiData, null, 2));
 
     if (!geminiResponse.ok) {
-      throw new Error(`Gemini API fel: ${geminiData.error?.message || 'Okänt fel'}`);
+      const errorMessage = geminiData.error?.message || JSON.stringify(geminiData);
+      console.error('Gemini API fel:', errorMessage);
+      throw new Error(`Gemini API fel: ${errorMessage}`);
     }
 
     const content = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;

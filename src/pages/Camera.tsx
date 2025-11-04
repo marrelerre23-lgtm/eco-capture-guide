@@ -100,6 +100,20 @@ const Camera = () => {
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setCapturedImage(imageDataUrl);
         
+        // Turn off torch before stopping camera
+        if (stream && torchOn) {
+          const videoTrack = stream.getVideoTracks()[0];
+          try {
+            videoTrack.applyConstraints({
+              // @ts-ignore
+              advanced: [{ torch: false }]
+            });
+            setTorchOn(false);
+          } catch (error) {
+            console.error('Error turning off torch:', error);
+          }
+        }
+        
         // Stop camera when photo is captured
         if (stream) {
           stream.getTracks().forEach(track => track.stop());

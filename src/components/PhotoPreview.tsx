@@ -43,11 +43,16 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
 
       if (error) {
         console.error('Edge Function error:', error);
-        throw new Error(`Analys misslyckades: ${error.message}`);
+        const errorMsg = error.message || 'Edge Function returnerade ett fel';
+        throw new Error(`Analys misslyckades: ${errorMsg}`);
+      }
+
+      if (!data) {
+        throw new Error('Inget svar från AI-analysen');
       }
 
       if (data.error) {
-        throw new Error(data.error);
+        throw new Error(`AI-fel: ${data.error}`);
       }
 
       const analysisResult = data;
