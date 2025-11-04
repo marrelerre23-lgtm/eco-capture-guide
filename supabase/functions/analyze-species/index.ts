@@ -36,8 +36,8 @@ serve(async (req) => {
 
     console.log('Analyserar bild med Gemini Vision...');
     
-    // Call Gemini Vision API
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+    // Call Gemini Vision API with the correct model name
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
