@@ -19,34 +19,29 @@ serve(async (req) => {
       throw new Error('Bild URL saknas');
     }
 
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!geminiApiKey) {
-      throw new Error('Gemini API-nyckel är inte konfigurerad');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('Lovable API-nyckel är inte konfigurerad');
     }
 
-    // Fetch image and convert to base64
-    console.log('Hämtar bild från URL:', imageUrl);
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Kunde inte hämta bild: ${imageResponse.status}`);
-    }
+    console.log('Analyserar bild med Lovable AI...');
     
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
-
-    console.log('Analyserar bild med Gemini Vision...');
-    
-    // Call Gemini Vision API with the correct model name
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
+    // Call Lovable AI Gateway with vision capabilities
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera arten. Ge svar på svenska i följande JSON-format:
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera arten. Ge svar på svenska i följande JSON-format:
 
 {
   "species": {
@@ -64,39 +59,40 @@ serve(async (req) => {
 }
 
 Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du inte kan identifiera arten med hög säkerhet (>70%), säg det tydligt.`
-            },
-            {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: base64Image
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl
+                }
               }
-            }
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          topK: 32,
-          topP: 1,
-          maxOutputTokens: 1000,
-        },
+            ]
+          }
+        ]
       }),
     });
 
-    const geminiData = await geminiResponse.json();
-    console.log('Gemini svar:', JSON.stringify(geminiData, null, 2));
+    const aiData = await aiResponse.json();
+    console.log('Lovable AI svar:', JSON.stringify(aiData, null, 2));
 
-    if (!geminiResponse.ok) {
-      const errorMessage = geminiData.error?.message || JSON.stringify(geminiData);
-      console.error('Gemini API fel:', errorMessage);
-      throw new Error(`Gemini API fel: ${errorMessage}`);
+    if (!aiResponse.ok) {
+      if (aiResponse.status === 429) {
+        throw new Error('För många förfrågningar. Försök igen om en stund.');
+      }
+      if (aiResponse.status === 402) {
+        throw new Error('AI-krediter har tagit slut. Kontakta support.');
+      }
+      const errorMessage = aiData.error?.message || JSON.stringify(aiData);
+      console.error('Lovable AI fel:', errorMessage);
+      throw new Error(`AI API fel: ${errorMessage}`);
     }
 
-    const content = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    const content = aiData.choices?.[0]?.message?.content;
     if (!content) {
-      throw new Error('Inget svar från Gemini API');
+      throw new Error('Inget svar från AI API');
     }
 
-    // Parse JSON response from Gemini
+    // Parse JSON response from AI
     let analysisResult;
     try {
       // Extract JSON from the response (might be wrapped in markdown)
