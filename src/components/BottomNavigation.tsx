@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { BarChart3, Camera, BookOpen } from "lucide-react";
+import { BarChart3, Camera, BookOpen, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,11 @@ const BottomNavigation = () => {
       to: "/logbook",
       icon: BookOpen,
       label: "Loggbok",
+    },
+    {
+      to: "/profile",
+      icon: User,
+      label: "Profil",
     },
   ];
 

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, Filter, SortAsc } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, Filter, SortAsc, Star } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ interface Species {
   location?: string;
   notes?: string;
   capturedAt: Date;
+  isFavorite?: boolean;
   facts: {
     icon: string;
     title: string;
@@ -72,6 +73,7 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
     location: capture.location_name,
     notes: capture.notes,
     capturedAt: capturedDate,
+    isFavorite: capture.is_favorite || false,
     facts: [
       ...(species?.habitat ? [{
         icon: "🏞️",
@@ -162,6 +164,33 @@ const Logbook = () => {
       });
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const toggleFavorite = async (speciesId: string, currentFavorite: boolean, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    try {
+      const { error } = await supabase
+        .from('species_captures')
+        .update({ is_favorite: !currentFavorite })
+        .eq('id', speciesId);
+
+      if (error) throw error;
+
+      toast({
+        title: !currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter",
+        description: !currentFavorite ? "Fångsten har markerats som favorit." : "Fångsten har tagits bort från favoriter.",
+      });
+
+      refetch();
+    } catch (err) {
+      console.error('Error toggling favorite:', err);
+      toast({
+        title: "Kunde inte uppdatera favorit",
+        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+        variant: "destructive",
+      });
     }
   };
 
@@ -331,6 +360,16 @@ const Logbook = () => {
                               />
                               {/* Gradient overlay */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                              
+                              {/* Favorite button */}
+                              <button
+                                onClick={(e) => toggleFavorite(species.id, species.isFavorite || false, e)}
+                                className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                              >
+                                <Star 
+                                  className={`h-4 w-4 ${species.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-white'}`}
+                                />
+                              </button>
                               
                               {/* Text overlay */}
                               <div className="absolute bottom-0 left-0 right-0 p-3 text-white">

@@ -11,6 +11,7 @@ export interface SpeciesCapture {
   location_name?: string;
   latitude?: number;
   longitude?: number;
+  is_favorite?: boolean;
 }
 
 // Helper type for parsed AI analysis

@@ -48,6 +48,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string
+          is_favorite: boolean | null
           is_verified: boolean | null
           latitude: number | null
           location_name: string | null
@@ -63,6 +64,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url: string
+          is_favorite?: boolean | null
           is_verified?: boolean | null
           latitude?: number | null
           location_name?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string
+          is_favorite?: boolean | null
           is_verified?: boolean | null
           latitude?: number | null
           location_name?: string | null

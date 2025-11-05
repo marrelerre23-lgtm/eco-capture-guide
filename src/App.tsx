@@ -10,6 +10,7 @@ import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
 import Auth from "./pages/Auth";
 import AnalysisResult from "./pages/AnalysisResult";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/camera" element={<Camera />} />
               <Route path="/analysis-result" element={<AnalysisResult />} />
               <Route path="/logbook" element={<Logbook />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/auth" element={<Auth />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
