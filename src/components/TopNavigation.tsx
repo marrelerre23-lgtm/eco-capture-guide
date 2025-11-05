@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sun, Moon, User, Leaf } from "lucide-react";
 import { useTheme } from "next-themes";
 import { User as SupabaseUser } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
 
 interface TopNavigationProps {
   user: SupabaseUser | null;
@@ -13,6 +14,7 @@ interface TopNavigationProps {
 export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const navigate = useNavigate();
 
   // useEffect only runs on the client, so now we can safely show the UI
   React.useEffect(() => {
@@ -68,7 +70,10 @@ export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
                   <span className="text-xs text-muted-foreground">{user?.email}</span>
                 </div>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => navigate('/profile')}
+              >
                 <User className="mr-2 h-4 w-4" />
                 <span>Profil & inställningar</span>
               </DropdownMenuItem>
