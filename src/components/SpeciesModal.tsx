@@ -24,6 +24,7 @@ interface SpeciesModalProps {
   onSave?: () => void;
   onDelete?: () => void;
   isAnalyzing?: boolean;
+  isDeleting?: boolean;
   showActions?: boolean;
 }
 
@@ -35,6 +36,7 @@ export const SpeciesModal = ({
   onSave, 
   onDelete, 
   isAnalyzing = false,
+  isDeleting = false,
   showActions = false 
 }: SpeciesModalProps) => {
   return (
@@ -121,8 +123,14 @@ export const SpeciesModal = ({
                 </Button>
               )}
               {onDelete && (
-                <Button onClick={onDelete} variant="destructive" className="w-full">
-                  Ta bort
+                <Button 
+                  onClick={onDelete} 
+                  variant="destructive" 
+                  className="w-full"
+                  disabled={isDeleting}
+                >
+                  {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isDeleting ? "Tar bort..." : "Ta bort fångst"}
                 </Button>
               )}
             </div>

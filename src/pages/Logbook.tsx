@@ -6,6 +6,8 @@ import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // Predefined categories that always show
 const PREDEFINED_CATEGORIES = [
@@ -128,8 +130,40 @@ const Logbook = () => {
   const [expandedCategory, setExpandedCategory] = useState<string>("");
   const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
   const [categorySortBy, setCategorySortBy] = useState<Record<string, string>>({});
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
+
+  const handleDelete = async () => {
+    if (!selectedSpecies) return;
+
+    setIsDeleting(true);
+    try {
+      const { error: deleteError } = await supabase
+        .from('species_captures')
+        .delete()
+        .eq('id', selectedSpecies.id);
+
+      if (deleteError) throw deleteError;
+
+      toast({
+        title: "Fångst borttagen",
+        description: `${selectedSpecies.name} har tagits bort från din loggbok.`,
+      });
+
+      setSelectedSpecies(null);
+      refetch();
+    } catch (err) {
+      console.error('Error deleting capture:', err);
+      toast({
+        title: "Kunde inte ta bort fångst",
+        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Convert captures to species (no global filtering/sorting)
   const allSpecies = useMemo(() => {
@@ -339,6 +373,9 @@ const Logbook = () => {
           species={selectedSpecies}
           isOpen={!!selectedSpecies}
           onClose={() => setSelectedSpecies(null)}
+          onDelete={handleDelete}
+          isDeleting={isDeleting}
+          showActions={true}
         />
       )}
     </div>
