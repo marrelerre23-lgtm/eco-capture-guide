@@ -61,3 +61,36 @@ export const deleteImage = async (imageUrl: string): Promise<void> => {
     throw new Error(`Kunde inte ta bort bilden: ${error.message}`);
   }
 };
+
+export const uploadAvatarImage = async (imageFile: File): Promise<string> => {
+  const user = await supabase.auth.getUser();
+  if (!user.data.user) {
+    throw new Error("Användaren måste vara inloggad för att ladda upp bilder");
+  }
+
+  // Create a unique filename
+  const fileExt = imageFile.name.split('.').pop();
+  const fileName = `avatar.${fileExt}`;
+  const userId = user.data.user.id;
+  const filePath = `${userId}/${fileName}`;
+
+  // Upload to Supabase Storage (overwrites existing avatar)
+  const { data, error } = await supabase.storage
+    .from('avatars')
+    .upload(filePath, imageFile, {
+      cacheControl: '3600',
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Error uploading avatar:', error);
+    throw new Error(`Kunde inte ladda upp profilbilden: ${error.message}`);
+  }
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(data.path);
+
+  return urlData.publicUrl;
+};
