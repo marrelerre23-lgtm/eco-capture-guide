@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 
 // Predefined categories that always show
 const PREDEFINED_CATEGORIES = [
+  { name: "Favoriter", icon: "⭐", key: "favoriter" },
   { name: "Växter och blommor", icon: "🌸", key: "växt" },
   { name: "Träd och buskar", icon: "🌳", key: "träd" },
   { name: "Svampar", icon: "🍄", key: "svamp" },
@@ -212,7 +213,14 @@ const Logbook = () => {
     }, {} as Record<string, Species[]>);
 
     return PREDEFINED_CATEGORIES.map(category => {
-      let categorySpecies = speciesByCategory[category.key] || [];
+      let categorySpecies: Species[];
+      
+      // Special handling for favorites category
+      if (category.key === "favoriter") {
+        categorySpecies = allSpecies.filter(s => s.isFavorite);
+      } else {
+        categorySpecies = speciesByCategory[category.key] || [];
+      }
       
       // Apply sorting per category
       const sortBy = categorySortBy[category.key] || "date";
