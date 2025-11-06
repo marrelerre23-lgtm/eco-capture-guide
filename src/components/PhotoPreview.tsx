@@ -71,7 +71,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
             analysisResult.species.identificationFeatures ? `Kännetecken: ${analysisResult.species.identificationFeatures}` : "",
             analysisResult.species.rarity ? `Sällsynthet: ${analysisResult.species.rarity}` : "",
             analysisResult.species.sizeInfo ? `Storlek: ${analysisResult.species.sizeInfo}` : "",
-            analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : ""
+            analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : "",
+            analysisResult.species.category ? `Kategori: ${analysisResult.species.category}` : ""
           ].filter(Boolean) // Remove empty strings
         };
         

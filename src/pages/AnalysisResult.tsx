@@ -47,7 +47,36 @@ const AnalysisResult = () => {
         return;
       }
 
-      // Save to species_captures table
+      // Extract data from species.facts array to rebuild proper structure
+      const factsMap: Record<string, string> = {};
+      species.facts.forEach(fact => {
+        const [key, ...valueParts] = fact.split(': ');
+        if (valueParts.length > 0) {
+          factsMap[key] = valueParts.join(': ');
+        }
+      });
+
+      // Extract category from facts first, then fallback to description
+      let category = factsMap['Kategori']?.toLowerCase() || "växt";
+      if (!factsMap['Kategori']) {
+        const description = species.description.toLowerCase();
+        if (description.includes('svamp')) category = "svamp";
+        else if (description.includes('träd') || description.includes('buske')) category = "träd";
+        else if (description.includes('mossa') || description.includes('lav')) category = "mossa";
+        else if (description.includes('sten') || description.includes('mineral')) category = "sten";
+      }
+
+      // Parse confidence from facts if available
+      let confidence = 0.85; // default
+      const confidenceFact = species.facts.find(f => f.startsWith('AI-säkerhet:'));
+      if (confidenceFact) {
+        const match = confidenceFact.match(/(\d+)%/);
+        if (match) {
+          confidence = parseInt(match[1]) / 100;
+        }
+      }
+
+      // Save to species_captures table with complete structure
       const { error } = await supabase
         .from('species_captures')
         .insert({
@@ -58,8 +87,13 @@ const AnalysisResult = () => {
             species: {
               commonName: species.name,
               scientificName: species.scientificName,
+              category: category,
+              confidence: confidence,
               description: species.description,
-              facts: species.facts
+              habitat: factsMap['Habitat'] || undefined,
+              identificationFeatures: factsMap['Kännetecken'] || undefined,
+              rarity: factsMap['Sällsynthet'] || undefined,
+              sizeInfo: factsMap['Storlek'] || undefined,
             }
           },
           notes: `AI-identifierad som ${species.name} (${species.scientificName})`

@@ -157,7 +157,7 @@ const Camera = () => {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [stream]);
 
   if (capturedImage) {
     return (
