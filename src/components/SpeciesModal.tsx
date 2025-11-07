@@ -42,7 +42,7 @@ export const SpeciesModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-sm mx-auto h-[90vh] flex flex-col p-0 border-0" 
+        className="max-w-md mx-4 max-h-[85vh] flex flex-col p-0 border-0 rounded-2xl" 
         style={{ 
           backgroundColor: '#fefdfb',
           backgroundImage: 'none'
@@ -69,12 +69,12 @@ export const SpeciesModal = ({
               <p className="text-sm italic pr-8" style={{ color: '#5a6a5a' }}>{species.scientificName} | {species.dateFound}</p>
             </div>
 
-            {/* Image - full width without cropping */}
-            <div className="w-full">
+            {/* Image - with padding and rounded corners */}
+            <div className="px-6">
               <img 
                 src={species.image}
                 alt={species.name}
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-cover rounded-xl"
               />
             </div>
 
