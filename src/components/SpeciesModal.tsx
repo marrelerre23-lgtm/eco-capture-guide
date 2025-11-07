@@ -120,7 +120,7 @@ export const SpeciesModal = ({
             )}
             {onSave && (
               <Button onClick={onSave} variant="outline" className="w-full">
-                Spara fångst
+                Spara plats
               </Button>
             )}
             {onDelete && (

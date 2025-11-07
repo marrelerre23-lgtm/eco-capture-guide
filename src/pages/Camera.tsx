@@ -157,7 +157,7 @@ const Camera = () => {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [stream]);
+  }, []); // Empty dependency array - only run on mount/unmount
 
   if (capturedImage) {
     return (
