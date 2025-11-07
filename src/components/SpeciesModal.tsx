@@ -42,7 +42,7 @@ export const SpeciesModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-md mx-4 max-h-[85vh] flex flex-col p-0 border-0 rounded-2xl" 
+        className="max-w-[90vw] sm:max-w-md max-h-[85vh] flex flex-col p-0 border-0 rounded-2xl shadow-2xl" 
         style={{ 
           backgroundColor: '#fefdfb',
           backgroundImage: 'none'
