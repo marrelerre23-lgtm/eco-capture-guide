@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Predefined categories that always show
 const PREDEFINED_CATEGORIES = [
@@ -136,6 +137,7 @@ const Logbook = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
+  const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
 
   const handleDelete = async () => {
@@ -150,13 +152,15 @@ const Logbook = () => {
 
       if (deleteError) throw deleteError;
 
+      // Invalidate the query cache so all components get updated data
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
       toast({
         title: "Fångst borttagen",
         description: `${selectedSpecies.name} har tagits bort från din loggbok.`,
       });
 
       setSelectedSpecies(null);
-      refetch();
     } catch (err) {
       console.error('Error deleting capture:', err);
       toast({
@@ -184,12 +188,14 @@ const Logbook = () => {
 
       if (error) throw error;
 
+      // Invalidate the query cache so all components get updated data
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
       toast({
         title: "Plats sparad",
         description: `Plats "${location}" har sparats för ${selectedSpecies.name}.`,
       });
 
-      refetch();
       setSelectedSpecies(null);
     } catch (err) {
       console.error('Error saving location:', err);
@@ -214,12 +220,13 @@ const Logbook = () => {
 
       if (error) throw error;
 
+      // Invalidate the query cache so all components get updated data
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
       toast({
         title: !currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter",
         description: !currentFavorite ? "Fångsten har markerats som favorit." : "Fångsten har tagits bort från favoriter.",
       });
-
-      refetch();
     } catch (err) {
       console.error('Error toggling favorite:', err);
       toast({
