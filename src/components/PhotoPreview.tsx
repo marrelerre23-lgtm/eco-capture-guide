@@ -106,40 +106,53 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
   };
 
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      {/* Decorative Nature Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-10 w-60 h-60 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Photo Preview */}
-      <div className="w-full h-full flex items-center justify-center">
-        <img 
-          src={imageUrl} 
-          alt="Captured" 
-          className="max-w-full max-h-full object-contain"
-        />
+      <div className="relative w-full h-full flex items-center justify-center p-4">
+        <div className="relative max-w-2xl w-full">
+          <div className="rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/20">
+            <img 
+              src={imageUrl} 
+              alt="Captured" 
+              className="w-full h-auto object-contain max-h-[60vh]"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Back Button */}
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-4 left-4 bg-black/50 text-white hover:bg-black/70"
+        className="absolute top-4 left-4 bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-lg"
         onClick={() => navigate('/')}
       >
         <ArrowLeft className="h-6 w-6" />
       </Button>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-8 left-0 right-0 px-8">
-        <div className="space-y-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/90 to-transparent backdrop-blur-sm px-6 pb-8 pt-16">
+        <div className="max-w-2xl mx-auto space-y-4">
           {!selectedCategory ? (
             <>
               {/* Category Selection */}
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
-                <p className="text-white text-sm font-medium text-center">Vad försöker du fånga?</p>
-                <div className="grid grid-cols-2 gap-2">
+              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-border space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-lg font-semibold text-foreground">Vad försöker du fånga?</h3>
+                  <p className="text-sm text-muted-foreground">Välj kategori för bättre AI-analys</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   {CATEGORIES.map((cat) => (
                     <Button
                       key={cat.value}
                       variant="outline"
-                      className="bg-black/50 border-white/20 text-white hover:bg-white/20"
+                      className="h-12 bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-border hover:border-primary hover:bg-primary/10 hover:scale-105 transition-all font-medium"
                       onClick={() => setSelectedCategory(cat.value)}
                     >
                       {cat.label}
@@ -151,31 +164,51 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
               {/* Retake Button */}
               <Button 
                 variant="outline" 
-                className="w-full bg-black/50 border-white/20 text-white hover:bg-black/70"
+                size="lg"
+                className="w-full h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
                 onClick={onRetake}
                 disabled={uploading}
               >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Ta om
+                <RotateCcw className="mr-2 h-5 w-5" />
+                Ta om bild
               </Button>
             </>
           ) : (
             <>
+              {/* Selected Category Display */}
+              <div className="bg-primary/10 border-2 border-primary/20 rounded-xl p-4 text-center">
+                <p className="text-sm text-muted-foreground mb-1">Vald kategori:</p>
+                <p className="text-lg font-semibold text-primary">
+                  {CATEGORIES.find(c => c.value === selectedCategory)?.label}
+                </p>
+              </div>
+
               {/* Analyze Button */}
               <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-white py-3"
+                size="lg"
+                className="w-full h-14 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
                 onClick={handleAnalyze}
                 disabled={uploading}
               >
-                {uploading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                {uploading ? "Sparar..." : "Analysera med AI"}
+                {uploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Analyserar...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="mr-2 h-5 w-5" />
+                    Analysera med AI
+                  </>
+                )}
               </Button>
               
               {/* Secondary Actions */}
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 <Button 
                   variant="outline" 
-                  className="flex-1 bg-black/50 border-white/20 text-white hover:bg-black/70"
+                  size="lg"
+                  className="flex-1 h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
                   onClick={() => setSelectedCategory(null)}
                   disabled={uploading}
                 >
@@ -183,11 +216,12 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="flex-1 bg-black/50 border-white/20 text-white hover:bg-black/70"
+                  size="lg"
+                  className="flex-1 h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
                   onClick={onRetake}
                   disabled={uploading}
                 >
-                  <RotateCcw className="mr-2 h-4 w-4" />
+                  <RotateCcw className="mr-2 h-5 w-5" />
                   Ta om
                 </Button>
               </div>
