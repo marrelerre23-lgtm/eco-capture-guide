@@ -106,7 +106,8 @@ const AnalysisResult = () => {
         description: `${species.name} har lagts till i din loggbok`
       });
 
-      navigate('/logbook');
+      // Navigate to logbook and replace history to prevent going back to analysis
+      navigate('/logbook', { replace: true });
     } catch (error) {
       console.error('Fel vid sparande av fångst:', error);
       toast({
@@ -120,7 +121,8 @@ const AnalysisResult = () => {
   };
 
   const handleDiscard = () => {
-    navigate('/camera');
+    // Replace history to prevent going back to analysis result
+    navigate('/camera', { replace: true });
   };
 
   return (
