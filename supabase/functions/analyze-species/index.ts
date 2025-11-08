@@ -13,11 +13,15 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl } = await req.json();
+    const { imageUrl, category } = await req.json();
     
     if (!imageUrl) {
       throw new Error('Bild URL saknas');
     }
+    
+    const categoryHint = category && category !== 'okänt' 
+      ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${category === 'svamp' ? 'svampar' : category === 'växt' ? 'växter' : category === 'fågel' ? 'fåglar' : category === 'insekt' ? 'insekter' : category === 'däggdjur' ? 'däggdjur' : 'denna kategori'}.`
+      : 'Användaren är osäker på vad detta är. Analysera noggrant och försök identifiera vilken typ av organism det är.';
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!lovableApiKey) {
@@ -41,7 +45,11 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera arten. Ge svar på svenska i följande JSON-format:
+                text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera arten. 
+
+${categoryHint}
+
+Ge svar på svenska i följande JSON-format:
 
 {
   "species": {

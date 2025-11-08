@@ -22,9 +22,20 @@ interface PhotoPreviewProps {
   uploading?: boolean;
 }
 
+const CATEGORIES = [
+  { value: "svamp", label: "Svamp" },
+  { value: "växt", label: "Växt" },
+  { value: "fågel", label: "Fågel" },
+  { value: "insekt", label: "Insekt" },
+  { value: "däggdjur", label: "Däggdjur" },
+  { value: "annat", label: "Annat" },
+  { value: "okänt", label: "Okänt" },
+];
+
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPreviewProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
 
   const handleAnalyze = async () => {
     try {
@@ -38,7 +49,10 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
       
       // Call the Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('analyze-species', {
-        body: { imageUrl: uploadedImageUrl }
+        body: { 
+          imageUrl: uploadedImageUrl,
+          category: selectedCategory || "okänt"
+        }
       });
 
       if (error) {
@@ -115,28 +129,70 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
       {/* Action Buttons */}
       <div className="absolute bottom-8 left-0 right-0 px-8">
         <div className="space-y-4">
-          {/* Analyze Button */}
-          <Button 
-            className="w-full bg-primary hover:bg-primary/90 text-white py-3"
-            onClick={handleAnalyze}
-            disabled={uploading}
-          >
-            {uploading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-            {uploading ? "Sparar..." : "Analysera med AI"}
-          </Button>
-          
-          {/* Secondary Actions */}
-          <div className="flex gap-4">
-            <Button 
-              variant="outline" 
-              className="flex-1 bg-black/50 border-white/20 text-white hover:bg-black/70"
-              onClick={onRetake}
-              disabled={uploading}
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Ta om
-            </Button>
-          </div>
+          {!selectedCategory ? (
+            <>
+              {/* Category Selection */}
+              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
+                <p className="text-white text-sm font-medium text-center">Vad försöker du fånga?</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {CATEGORIES.map((cat) => (
+                    <Button
+                      key={cat.value}
+                      variant="outline"
+                      className="bg-black/50 border-white/20 text-white hover:bg-white/20"
+                      onClick={() => setSelectedCategory(cat.value)}
+                    >
+                      {cat.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Retake Button */}
+              <Button 
+                variant="outline" 
+                className="w-full bg-black/50 border-white/20 text-white hover:bg-black/70"
+                onClick={onRetake}
+                disabled={uploading}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Ta om
+              </Button>
+            </>
+          ) : (
+            <>
+              {/* Analyze Button */}
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-white py-3"
+                onClick={handleAnalyze}
+                disabled={uploading}
+              >
+                {uploading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                {uploading ? "Sparar..." : "Analysera med AI"}
+              </Button>
+              
+              {/* Secondary Actions */}
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 bg-black/50 border-white/20 text-white hover:bg-black/70"
+                  onClick={() => setSelectedCategory(null)}
+                  disabled={uploading}
+                >
+                  Ändra kategori
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 bg-black/50 border-white/20 text-white hover:bg-black/70"
+                  onClick={onRetake}
+                  disabled={uploading}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Ta om
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
