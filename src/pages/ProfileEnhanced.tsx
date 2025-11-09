@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, LogOut, User, Mail, Lock, Shield, Camera, Trophy, TrendingUp, Share2 } from "lucide-react";
+import { Loader2, Upload, LogOut, User, Mail, Lock, Shield, Camera, Trophy, TrendingUp, Share2, Info, HelpCircle, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { useAchievements } from "@/hooks/useAchievements";
@@ -449,6 +449,50 @@ const ProfileEnhanced = () => {
                   <span>Medlem sedan</span>
                   <span>{new Date(user?.created_at).toLocaleDateString('sv-SE')}</span>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* App Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigate('/about')}
+                >
+                  <Info className="mr-2 h-4 w-4" />
+                  Om Svampjakten
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigate('/help')}
+                >
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  Hjälp & FAQ
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigate('/privacy')}
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Integritetspolicy
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigate('/terms')}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Användarvillkor
+                </Button>
               </CardContent>
             </Card>
 

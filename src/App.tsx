@@ -13,6 +13,10 @@ import ProfileEnhanced from "./pages/ProfileEnhanced";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import Install from "./pages/Install";
+import About from "./pages/About";
+import Help from "./pages/Help";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -38,6 +42,10 @@ const AppRoutes = () => {
         <Route path="/map" element={<Map />} />
         <Route path="/profile" element={<ProfileEnhanced />} />
         <Route path="/install" element={<Install />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
