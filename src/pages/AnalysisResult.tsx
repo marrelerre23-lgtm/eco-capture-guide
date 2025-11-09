@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
@@ -43,7 +43,7 @@ const AnalysisResult = () => {
   const alternatives = location.state?.alternatives as Species[] || [];
   const gpsLocation = location.state?.location as { latitude: number; longitude: number } | null;
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Redirect to camera if no alternatives data
     if (!alternatives || alternatives.length === 0) {
       navigate('/camera');
