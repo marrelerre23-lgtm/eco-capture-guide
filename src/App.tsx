@@ -39,6 +39,7 @@ const App = () => {
       enableSystem
       disableTransitionOnChange
     >
+      <TooltipProvider>
         <Toaster />
         <Sonner />
         <OfflineIndicator />
@@ -58,6 +59,7 @@ const App = () => {
             </Routes>
           </Layout>
         </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
   </ErrorBoundary>
