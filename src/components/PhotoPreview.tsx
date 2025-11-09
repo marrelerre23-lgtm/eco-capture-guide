@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope } from "lucide-react";
+import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { AnalyzingScreen } from "./AnalyzingScreen";
+import { TopNavigation } from "./TopNavigation";
+import { PhotoTipsDialog } from "./PhotoTipsDialog";
+import { User } from "@supabase/supabase-js";
 
 interface Species {
   id: string;
@@ -60,9 +63,22 @@ const DETAIL_LEVELS = [
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
-  const [detailLevel, setDetailLevel] = React.useState<string>("standard");
-  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [detailLevel, setDetailLevel] = useState<string>("standard");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const handleAnalyze = async () => {
     try {
@@ -166,16 +182,26 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
     }
   };
 
+  if (isAnalyzing) {
+    return (
+      <AnalyzingScreen 
+        category={CATEGORIES.find(c => c.value === selectedCategory)?.label || "fångst"} 
+        detailLevel={detailLevel}
+        onCancel={() => setIsAnalyzing(false)}
+      />
+    );
+  }
+
   return (
     <>
-      {isAnalyzing && (
-        <AnalyzingScreen 
-          category={CATEGORIES.find(c => c.value === selectedCategory)?.label || "fångst"} 
-          detailLevel={detailLevel}
-        />
-      )}
+      <TopNavigation user={user} onLogout={handleLogout} />
+      <PhotoTipsDialog 
+        open={tipsDialogOpen} 
+        onOpenChange={setTipsDialogOpen}
+        category={selectedCategory || undefined}
+      />
       
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-16">
         {/* Decorative Nature Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-10 right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
@@ -208,6 +234,19 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       {/* Action Buttons */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/90 to-transparent backdrop-blur-sm px-6 pb-8 pt-16">
         <div className="max-w-2xl mx-auto space-y-4">
+          {/* Tips Button */}
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTipsDialogOpen(true)}
+              className="gap-2 bg-card/80 backdrop-blur-sm"
+            >
+              <HelpCircle className="h-4 w-4" />
+              Tips för bättre bilder
+            </Button>
+          </div>
+
           {!selectedCategory ? (
             <>
               {/* Category Selection */}

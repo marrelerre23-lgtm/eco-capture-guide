@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Brain, Sparkles, Search, CheckCircle } from "lucide-react";
+import { Loader2, Brain, Sparkles, Search, X } from "lucide-react";
+import { Button } from "./ui/button";
+import { TopNavigation } from "./TopNavigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { User } from "@supabase/supabase-js";
 
 interface AnalyzingScreenProps {
   category: string;
   detailLevel: string;
+  onCancel: () => void;
 }
 
 const AI_TIPS = [
@@ -22,10 +28,23 @@ const FUN_FACTS = [
   "Det finns fler träd på jorden än stjärnor i Vintergatan",
 ];
 
-export const AnalyzingScreen = ({ category, detailLevel }: AnalyzingScreenProps) => {
+export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingScreenProps) => {
+  const navigate = useNavigate();
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   useEffect(() => {
     // Rotate tips every 2 seconds
@@ -62,8 +81,24 @@ export const AnalyzingScreen = ({ category, detailLevel }: AnalyzingScreenProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-primary/20 via-background to-accent/20 backdrop-blur-sm flex items-center justify-center p-6">
-      {/* Animated Background Elements */}
+    <>
+      <TopNavigation user={user} onLogout={handleLogout} />
+      
+      <div className="fixed inset-0 z-50 bg-gradient-to-br from-primary/20 via-background to-accent/20 backdrop-blur-sm flex items-center justify-center p-6 pt-24">
+        {/* Cancel Button */}
+        <div className="absolute top-20 right-4 z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onCancel}
+            className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background shadow-lg"
+            title="Avbryt analys"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 left-20 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
@@ -143,5 +178,6 @@ export const AnalyzingScreen = ({ category, detailLevel }: AnalyzingScreenProps)
         </div>
       </div>
     </div>
+    </>
   );
 };
