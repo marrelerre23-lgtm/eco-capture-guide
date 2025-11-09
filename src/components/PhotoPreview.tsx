@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, RotateCcw, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AnalyzingScreen } from "./AnalyzingScreen";
 
 interface Species {
   id: string;
@@ -34,9 +34,27 @@ const CATEGORIES = [
 ];
 
 const DETAIL_LEVELS = [
-  { value: "quick", label: "⚡ Snabb (5s)", description: "Grundläggande identifiering" },
-  { value: "standard", label: "⭐ Standard (10s)", description: "Balanserad analys" },
-  { value: "deep", label: "🔬 Djup (20s)", description: "Detaljerad analys" },
+  { 
+    value: "quick", 
+    label: "Snabb", 
+    icon: Zap,
+    time: "5s",
+    description: "Grundläggande identifiering för snabba resultat" 
+  },
+  { 
+    value: "standard", 
+    label: "Standard", 
+    icon: Star,
+    time: "10s",
+    description: "Balanserad analys med bra precision" 
+  },
+  { 
+    value: "deep", 
+    label: "Djup", 
+    icon: Microscope,
+    time: "20s",
+    description: "Detaljerad analys med högsta noggrannhet" 
+  },
 ];
 
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
@@ -44,9 +62,11 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
   const [detailLevel, setDetailLevel] = React.useState<string>("standard");
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
 
   const handleAnalyze = async () => {
     try {
+      setIsAnalyzing(true);
       console.log('Laddar upp bild till Supabase...');
       
       // First upload the image to Supabase Storage
@@ -137,6 +157,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       }
     } catch (error) {
       console.error('AI-analys misslyckades:', error);
+      setIsAnalyzing(false);
       toast({
         title: "Analys misslyckades", 
         description: error instanceof Error ? error.message : "Kunde inte analysera bilden",
@@ -146,12 +167,20 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10">
-      {/* Decorative Nature Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-60 h-60 bg-accent/5 rounded-full blur-3xl" />
-      </div>
+    <>
+      {isAnalyzing && (
+        <AnalyzingScreen 
+          category={CATEGORIES.find(c => c.value === selectedCategory)?.label || "fångst"} 
+          detailLevel={detailLevel}
+        />
+      )}
+      
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+        {/* Decorative Nature Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-10 right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-10 w-60 h-60 bg-accent/5 rounded-full blur-3xl" />
+        </div>
 
       {/* Photo Preview */}
       <div className="relative w-full h-full flex items-center justify-center p-4">
@@ -182,46 +211,80 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           {!selectedCategory ? (
             <>
               {/* Category Selection */}
-              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-border space-y-4">
+              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-5">
                 <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">Vad försöker du fånga?</h3>
+                  <div className="text-5xl mb-2">🔍</div>
+                  <h3 className="text-xl font-bold text-foreground">Vad försöker du fånga?</h3>
                   <p className="text-sm text-muted-foreground">Välj kategori för bättre AI-analys</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {CATEGORIES.map((cat) => (
                     <Button
                       key={cat.value}
                       variant="outline"
-                      className="h-12 bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-border hover:border-primary hover:bg-primary/10 hover:scale-105 transition-all font-medium"
+                      className="h-20 flex flex-col gap-1 bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-border hover:border-primary hover:bg-primary/10 hover:scale-105 hover:shadow-lg active:scale-95 transition-all"
                       onClick={() => setSelectedCategory(cat.value)}
                     >
-                      {cat.label}
+                      <span className="text-2xl">{cat.label.split(' ')[0]}</span>
+                      <span className="text-xs font-medium">{cat.label.split(' ')[1]}</span>
                     </Button>
                   ))}
                 </div>
               </div>
               
               {/* Detail Level Selection */}
-              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-border space-y-3">
-                <div className="text-center space-y-1">
-                  <h3 className="text-base font-semibold text-foreground">Analysnivå</h3>
+              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-4">
+                <div className="text-center space-y-2">
+                  <div className="text-4xl mb-1">⚙️</div>
+                  <h3 className="text-lg font-bold text-foreground">Analysnivå</h3>
                   <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
                 </div>
-                <Select value={detailLevel} onValueChange={setDetailLevel}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DETAIL_LEVELS.map((level) => (
-                      <SelectItem key={level.value} value={level.value}>
-                        <div className="flex flex-col items-start">
-                          <span className="font-medium">{level.label}</span>
-                          <span className="text-xs text-muted-foreground">{level.description}</span>
+                <div className="space-y-3">
+                  {DETAIL_LEVELS.map((level) => {
+                    const Icon = level.icon;
+                    return (
+                      <Button
+                        key={level.value}
+                        variant={detailLevel === level.value ? "default" : "outline"}
+                        className={`w-full h-auto p-4 flex items-start gap-3 transition-all hover:scale-105 active:scale-95 ${
+                          detailLevel === level.value 
+                            ? "bg-gradient-to-r from-primary to-accent border-0 shadow-lg" 
+                            : "bg-card border-2 hover:border-primary hover:bg-primary/5"
+                        }`}
+                        onClick={() => setDetailLevel(level.value)}
+                      >
+                        <div className={`p-2 rounded-lg ${
+                          detailLevel === level.value 
+                            ? "bg-white/20" 
+                            : "bg-primary/10"
+                        }`}>
+                          <Icon className={`w-5 h-5 ${
+                            detailLevel === level.value ? "text-white" : "text-primary"
+                          }`} />
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <div className="flex-1 text-left">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className={`font-bold ${
+                              detailLevel === level.value ? "text-white" : "text-foreground"
+                            }`}>
+                              {level.label}
+                            </span>
+                            <span className={`text-xs font-semibold ${
+                              detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
+                            }`}>
+                              {level.time}
+                            </span>
+                          </div>
+                          <p className={`text-xs ${
+                            detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
+                          }`}>
+                            {level.description}
+                          </p>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
               
               {/* Retake Button */}
@@ -265,7 +328,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     Analyserar...
                   </>
                 ) : (
@@ -303,5 +366,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         </div>
       </div>
     </div>
+    </>
   );
 };

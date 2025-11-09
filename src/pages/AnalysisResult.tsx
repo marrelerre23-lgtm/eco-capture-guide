@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Save, Trash2, AlertTriangle, ZoomIn, MapPin, Leaf, Mountain, Droplet, Sun } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -38,6 +37,7 @@ const AnalysisResult = () => {
   const [saving, setSaving] = useState(false);
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState(0);
   const [reportingError, setReportingError] = useState(false);
+  const [imageZoomed, setImageZoomed] = useState(false);
 
   // Get alternatives data and location from navigation state
   const alternatives = location.state?.alternatives as Species[] || [];
@@ -55,15 +55,28 @@ const AnalysisResult = () => {
   const selectedSpecies = alternatives[selectedAlternativeIndex];
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return "text-green-600 dark:text-green-400";
-    if (confidence >= 0.6) return "text-yellow-600 dark:text-yellow-400";
-    return "text-orange-600 dark:text-orange-400";
+    if (confidence >= 0.8) return "text-success";
+    if (confidence >= 0.6) return "text-warning";
+    return "text-destructive";
+  };
+
+  const getConfidenceEmoji = (confidence: number) => {
+    if (confidence >= 0.8) return "✅";
+    if (confidence >= 0.6) return "⚠️";
+    return "❓";
   };
 
   const getConfidenceLabel = (confidence: number) => {
     if (confidence >= 0.8) return "Hög säkerhet";
     if (confidence >= 0.6) return "Medel säkerhet";
     return "Låg säkerhet";
+  };
+
+  const getFactIcon = (fact: string) => {
+    if (fact.toLowerCase().includes('habitat')) return MapPin;
+    if (fact.toLowerCase().includes('storlek')) return Mountain;
+    if (fact.toLowerCase().includes('sällsynthet')) return Leaf;
+    return Sun;
   };
 
   const handleReportError = async () => {
@@ -239,82 +252,140 @@ const AnalysisResult = () => {
 
       {/* Content */}
       <div className="p-4 space-y-6 pb-32">
-        {/* Image */}
-        <div className="aspect-square rounded-lg overflow-hidden bg-muted shadow-lg">
-          <img 
-            src={selectedSpecies.image}
-            alt={selectedSpecies.name}
-            className="w-full h-full object-cover"
-          />
+        {/* Image with Zoom */}
+        <div className="relative rounded-2xl overflow-hidden bg-muted shadow-2xl group">
+          <div className="flex items-center justify-center max-h-[60vh] bg-black/5">
+            <img 
+              src={selectedSpecies.image}
+              alt={selectedSpecies.name}
+              className={`w-full h-auto object-contain transition-transform duration-300 ${
+                imageZoomed ? 'scale-150 cursor-zoom-out' : 'cursor-zoom-in'
+              }`}
+              onClick={() => setImageZoomed(!imageZoomed)}
+            />
+          </div>
+          <button 
+            onClick={() => setImageZoomed(!imageZoomed)}
+            className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-sm rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ZoomIn className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Alternatives Navigation */}
         {alternatives.length > 1 && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-muted-foreground">
-                    Alternativ {selectedAlternativeIndex + 1} av {alternatives.length}
-                  </h3>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setSelectedAlternativeIndex(Math.max(0, selectedAlternativeIndex - 1))}
-                      disabled={selectedAlternativeIndex === 0}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setSelectedAlternativeIndex(Math.min(alternatives.length - 1, selectedAlternativeIndex + 1))}
-                      disabled={selectedAlternativeIndex === alternatives.length - 1}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Alternative buttons */}
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {alternatives.map((alt, index) => (
-                    <Button
-                      key={index}
-                      variant={selectedAlternativeIndex === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedAlternativeIndex(index)}
-                      className="whitespace-nowrap"
-                    >
-                      {alt.name}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground px-1">
+              Alternativa identifieringar ({alternatives.length})
+            </h3>
+            <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
+              {alternatives.map((alt, index) => (
+                <Card
+                  key={index}
+                  className={`flex-shrink-0 w-48 cursor-pointer snap-start transition-all hover:scale-105 ${
+                    selectedAlternativeIndex === index 
+                      ? 'ring-2 ring-primary shadow-xl bg-primary/5' 
+                      : 'hover:shadow-lg'
+                  }`}
+                  onClick={() => setSelectedAlternativeIndex(index)}
+                >
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className={`text-sm font-semibold line-clamp-2 ${
+                        selectedAlternativeIndex === index ? 'text-primary' : ''
+                      }`}>
+                        {alt.name}
+                      </h4>
                       {alt.confidence && (
-                        <Badge variant="secondary" className="ml-2">
-                          {Math.round(alt.confidence * 100)}%
-                        </Badge>
+                        <span className={`text-lg flex-shrink-0 ${
+                          selectedAlternativeIndex === index ? 'animate-bounce' : ''
+                        }`}>
+                          {getConfidenceEmoji(alt.confidence)}
+                        </span>
                       )}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                    </div>
+                    <p className="text-xs text-muted-foreground italic line-clamp-1">
+                      {alt.scientificName}
+                    </p>
+                    {alt.confidence && (
+                      <div className="pt-1">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-muted-foreground">Säkerhet</span>
+                          <span className={`font-semibold ${getConfidenceColor(alt.confidence)}`}>
+                            {Math.round(alt.confidence * 100)}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all rounded-full ${
+                              alt.confidence >= 0.8 ? 'bg-success' : 
+                              alt.confidence >= 0.6 ? 'bg-warning' : 
+                              'bg-destructive'
+                            }`}
+                            style={{ width: `${alt.confidence * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         )}
 
-        {/* AI Confidence Indicator */}
+        {/* AI Confidence Indicator - Circular */}
         {selectedSpecies.confidence && (
-          <Card className="border-2">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">AI-säkerhet</h3>
-                <span className={`text-sm font-medium ${getConfidenceColor(selectedSpecies.confidence)}`}>
-                  {getConfidenceLabel(selectedSpecies.confidence)}
-                </span>
+          <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-6">
+                {/* Circular Progress */}
+                <div className="relative w-24 h-24 flex-shrink-0">
+                  <svg className="w-24 h-24 transform -rotate-90">
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted"
+                    />
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - selectedSpecies.confidence)}`}
+                      className={`transition-all duration-1000 ${
+                        selectedSpecies.confidence >= 0.8 ? 'text-success' :
+                        selectedSpecies.confidence >= 0.6 ? 'text-warning' :
+                        'text-destructive'
+                      }`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl">
+                      {getConfidenceEmoji(selectedSpecies.confidence)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Text Info */}
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold mb-1">AI-säkerhet</h3>
+                  <p className={`text-2xl font-bold mb-1 ${getConfidenceColor(selectedSpecies.confidence)}`}>
+                    {Math.round(selectedSpecies.confidence * 100)}%
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {getConfidenceLabel(selectedSpecies.confidence)}
+                  </p>
+                </div>
               </div>
-              <Progress value={selectedSpecies.confidence * 100} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                {Math.round(selectedSpecies.confidence * 100)}% säker på denna identifiering
-              </p>
             </CardContent>
           </Card>
         )}
@@ -340,14 +411,23 @@ const AnalysisResult = () => {
 
           {selectedSpecies.facts && selectedSpecies.facts.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold">Fakta</h3>
-              <div className="space-y-2">
-                {selectedSpecies.facts.map((fact, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <p className="text-muted-foreground text-sm leading-relaxed">{fact}</p>
-                  </div>
-                ))}
+              <h3 className="text-lg font-semibold">Fakta & Detaljer</h3>
+              <div className="grid gap-3">
+                {selectedSpecies.facts.map((fact, index) => {
+                  const Icon = getFactIcon(fact);
+                  return (
+                    <Card key={index} className="bg-gradient-to-br from-card to-card/50 border-l-4 border-l-primary hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Icon className="w-4 h-4 text-primary" />
+                          </div>
+                          <p className="text-sm leading-relaxed flex-1 pt-1">{fact}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           )}
