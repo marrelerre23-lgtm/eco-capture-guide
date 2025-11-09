@@ -1,4 +1,3 @@
-import React from "react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Loader2 } from "lucide-react";
