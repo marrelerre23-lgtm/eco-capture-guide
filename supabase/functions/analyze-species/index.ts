@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, category } = await req.json();
+    const { imageUrl, category, detailLevel = 'standard' } = await req.json();
     
     if (!imageUrl) {
       throw new Error('Bild URL saknas');
@@ -22,6 +22,12 @@ serve(async (req) => {
     const categoryHint = category && category !== 'okänt' 
       ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${category === 'svamp' ? 'svampar' : category === 'växt' ? 'växter' : category === 'fågel' ? 'fåglar' : category === 'insekt' ? 'insekter' : category === 'däggdjur' ? 'däggdjur' : 'denna kategori'}.`
       : 'Användaren är osäker på vad detta är. Analysera noggrant och försök identifiera vilken typ av organism det är.';
+
+    const detailPrompt = detailLevel === 'deep' 
+      ? 'Ge en mycket detaljerad och grundlig analys med omfattande beskrivningar.'
+      : detailLevel === 'quick'
+      ? 'Ge en snabb och koncis analys med de viktigaste punkterna.'
+      : 'Ge en balanserad analys med bra detaljnivå.';
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     if (!lovableApiKey) {
@@ -45,28 +51,34 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera arten. 
+                text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera de 3 mest sannolika arterna. 
 
 ${categoryHint}
+${detailPrompt}
 
-Ge svar på svenska i följande JSON-format:
+Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade efter confidence (högst först):
 
 {
-  "species": {
-    "commonName": "Svenskt artnamn",
-    "scientificName": "Vetenskapligt namn",
-    "category": "växt/träd/svamp/mossa/sten/djur",
-    "confidence": 0.85,
-    "description": "Detaljerad beskrivning av arten på svenska",
-    "habitat": "Var arten normalt förekommer",
-    "identificationFeatures": "Kännetecken som hjälper till identifiering",
-    "rarity": "vanlig/ovanlig/sällsynt/hotad",
-    "sizeInfo": "Information om storlek"
-  },
-  "reasoning": "Förklaring av varför du tror det är denna art"
+  "alternatives": [
+    {
+      "species": {
+        "commonName": "Svenskt artnamn",
+        "scientificName": "Vetenskapligt namn",
+        "category": "växt/träd/svamp/mossa/sten/djur",
+        "confidence": 0.85,
+        "description": "Detaljerad beskrivning av arten på svenska",
+        "habitat": "Var arten normalt förekommer",
+        "identificationFeatures": "Kännetecken som hjälper till identifiering",
+        "rarity": "vanlig/ovanlig/sällsynt/hotad",
+        "sizeInfo": "Information om storlek"
+      },
+      "reasoning": "Förklaring av varför du tror det är denna art"
+    }
+  ]
 }
 
-VIKTIGT för kategorisering:
+VIKTIGT:
+- Returnera EXAKT 3 alternativ, sorterade efter confidence
 - Använd "växt" för blommor, örter, buskar (ej träd)
 - Använd "träd" specifikt för träd och större buskar
 - Använd "svamp" för alla svampar
@@ -74,7 +86,7 @@ VIKTIGT för kategorisering:
 - Använd "sten" för stenar, mineraler och bergarter
 - Använd "djur" för allt annat levande (insekter, fåglar, däggdjur etc)
 
-Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du inte kan identifiera arten med hög säkerhet (>70%), säg det tydligt.`
+Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäker, ge lägre confidence-värden.`
               },
               {
                 type: 'image_url',
@@ -118,22 +130,34 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du inte kan i
       } else {
         throw new Error('Kunde inte hitta JSON i svaret');
       }
+      
+      // Ensure we have alternatives array
+      if (!analysisResult.alternatives || !Array.isArray(analysisResult.alternatives)) {
+        throw new Error('Svaret innehåller inte alternatives array');
+      }
+      
+      // Ensure we have at least 1 alternative (preferably 3)
+      if (analysisResult.alternatives.length === 0) {
+        throw new Error('Inga alternativ returnerades från AI');
+      }
     } catch (parseError) {
       console.error('JSON parse fel:', parseError);
-      // Fallback: create structured response from text
+      // Fallback: create structured response with single alternative
       analysisResult = {
-        species: {
-          commonName: "Okänd art",
-          scientificName: "Okänd",
-          category: "okänd",
-          confidence: 0.5,
-          description: content,
-          habitat: "Okänd",
-          identificationFeatures: "Kunde inte identifiera tydliga kännetecken",
-          rarity: "okänd",
-          sizeInfo: "Okänd"
-        },
-        reasoning: "Automatisk analys kunde inte ge en tydlig identifiering"
+        alternatives: [{
+          species: {
+            commonName: "Okänd art",
+            scientificName: "Okänd",
+            category: "okänd",
+            confidence: 0.5,
+            description: content,
+            habitat: "Okänd",
+            identificationFeatures: "Kunde inte identifiera tydliga kännetecken",
+            rarity: "okänd",
+            sizeInfo: "Okänd"
+          },
+          reasoning: "Automatisk analys kunde inte ge en tydlig identifiering"
+        }]
       };
     }
 

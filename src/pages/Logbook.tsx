@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2 } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -12,12 +12,24 @@ import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { ImageViewer } from "@/components/ImageViewer";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
+import { EditCaptureDialog } from "@/components/EditCaptureDialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Predefined categories that always show
 const PREDEFINED_CATEGORIES = [
@@ -157,6 +169,10 @@ const Logbook = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [fullscreenImage, setFullscreenImage] = useState<{ url: string; alt: string } | null>(null);
+  const [editingCapture, setEditingCapture] = useState<{ id: string; notes: string } | null>(null);
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -205,7 +221,6 @@ const Logbook = () => {
 
       if (error) throw error;
 
-      // Invalidate the query cache so all components get updated data
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       toast({
@@ -216,6 +231,77 @@ const Logbook = () => {
       console.error('Error toggling favorite:', err);
       toast({
         title: "Kunde inte uppdatera favorit",
+        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditNotes = async (notes: string) => {
+    if (!editingCapture) return;
+
+    try {
+      const { error } = await supabase
+        .from('species_captures')
+        .update({ notes })
+        .eq('id', editingCapture.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
+      toast({
+        title: "Anteckningar uppdaterade",
+        description: "Dina ändringar har sparats.",
+      });
+    } catch (err) {
+      console.error('Error updating notes:', err);
+      toast({
+        title: "Kunde inte uppdatera anteckningar",
+        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const toggleBulkSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from('species_captures')
+        .delete()
+        .in('id', Array.from(selectedIds));
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
+      toast({
+        title: "Fångster borttagna",
+        description: `${selectedIds.size} fångster har tagits bort.`,
+      });
+
+      setSelectedIds(new Set());
+      setBulkSelectMode(false);
+      setShowBulkDeleteDialog(false);
+    } catch (err) {
+      console.error('Error bulk deleting:', err);
+      toast({
+        title: "Kunde inte ta bort fångster",
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
         variant: "destructive",
       });
@@ -263,6 +349,19 @@ const Logbook = () => {
       switch (sortBy) {
         case "name":
           categorySpecies.sort((a, b) => a.name.localeCompare(b.name, 'sv-SE'));
+          break;
+        case "rarity":
+          const rarityOrder = { "hotad": 0, "sällsynt": 1, "ovanlig": 2, "vanlig": 3 };
+          categorySpecies.sort((a, b) => {
+            const rarityFactA = a.facts.find(f => f.title === "Sällsynthet");
+            const rarityFactB = b.facts.find(f => f.title === "Sällsynthet");
+            const rarityA = rarityFactA?.description?.toLowerCase() || "vanlig";
+            const rarityB = rarityFactB?.description?.toLowerCase() || "vanlig";
+            return (rarityOrder[rarityA as keyof typeof rarityOrder] || 3) - (rarityOrder[rarityB as keyof typeof rarityOrder] || 3);
+          });
+          break;
+        case "location":
+          categorySpecies.sort((a, b) => (a.location || "").localeCompare(b.location || "", 'sv-SE'));
           break;
         case "date":
         default:
@@ -362,21 +461,43 @@ const Logbook = () => {
                 {allSpecies.length} {allSpecies.length === 1 ? 'fångst' : 'fångster'}
               </p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Download className="h-4 w-4" />
+            <div className="flex gap-2">
+              {bulkSelectMode && selectedIds.size > 0 && (
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => setShowBulkDeleteDialog(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Ta bort ({selectedIds.size})
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport('csv')}>
-                  Exportera som CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('json')}>
-                  Exportera som JSON
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )}
+              <Button 
+                variant={bulkSelectMode ? "default" : "outline"} 
+                size="icon"
+                onClick={() => {
+                  setBulkSelectMode(!bulkSelectMode);
+                  setSelectedIds(new Set());
+                }}
+              >
+                {bulkSelectMode ? "✓" : "☐"}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    Exportera som CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('json')}>
+                    Exportera som JSON
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           
           {/* Search Bar */}
@@ -437,6 +558,8 @@ const Logbook = () => {
                         <SelectContent>
                           <SelectItem value="date">Senaste först</SelectItem>
                           <SelectItem value="name">Artnamn A-Ö</SelectItem>
+                          <SelectItem value="rarity">Sällsynthet</SelectItem>
+                          <SelectItem value="location">Plats</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -461,9 +584,9 @@ const Logbook = () => {
                           className="shadow-card hover:shadow-eco transition-all overflow-hidden group"
                         >
                           <CardContent className="p-0">
-                            <div 
+                             <div 
                               className="relative aspect-square cursor-pointer"
-                              onClick={() => setFullscreenImage({ url: species.image, alt: species.name })}
+                              onClick={() => !bulkSelectMode && setFullscreenImage({ url: species.image, alt: species.name })}
                             >
                               <img 
                                 src={species.image}
@@ -473,22 +596,55 @@ const Logbook = () => {
                               {/* Gradient overlay */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               
+                              {/* Bulk select checkbox */}
+                              {bulkSelectMode && (
+                                <div 
+                                  className="absolute top-2 left-2 z-10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleBulkSelect(species.id);
+                                  }}
+                                >
+                                  <Checkbox 
+                                    checked={selectedIds.has(species.id)}
+                                    className="bg-white/90"
+                                  />
+                                </div>
+                              )}
+                              
                               {/* Favorite button */}
-                              <button
-                                onClick={(e) => toggleFavorite(species.id, species.isFavorite || false, e)}
-                                className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
-                              >
-                                <Star 
-                                  className={`h-4 w-4 ${species.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-white'}`}
-                                />
-                              </button>
+                              {!bulkSelectMode && (
+                                <button
+                                  onClick={(e) => toggleFavorite(species.id, species.isFavorite || false, e)}
+                                  className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 ${species.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-white'}`}
+                                  />
+                                </button>
+                              )}
+                              
+                              {/* Edit button */}
+                              {!bulkSelectMode && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingCapture({ id: species.id, notes: species.notes || "" });
+                                  }}
+                                  className="absolute bottom-12 right-2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                                >
+                                  <Edit2 className="h-4 w-4 text-white" />
+                                </button>
+                              )}
                               
                               {/* Text overlay */}
                               <div 
                                 className="absolute bottom-0 left-0 right-0 p-3 text-white cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedSpecies(species);
+                                  if (!bulkSelectMode) {
+                                    setSelectedSpecies(species);
+                                  }
                                 }}
                               >
                                 <h4 className="font-semibold text-sm leading-tight mb-0.5">
@@ -545,6 +701,34 @@ const Logbook = () => {
           onClose={() => setFullscreenImage(null)}
         />
       )}
+      
+      {/* Edit Capture Dialog */}
+      {editingCapture && (
+        <EditCaptureDialog
+          open={!!editingCapture}
+          onOpenChange={(open) => !open && setEditingCapture(null)}
+          currentNotes={editingCapture.notes}
+          onSave={handleEditNotes}
+        />
+      )}
+      
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ta bort flera fångster</AlertDialogTitle>
+            <AlertDialogDescription>
+              Är du säker på att du vill ta bort {selectedIds.size} fångster? Detta går inte att ångra.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Ta bort
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

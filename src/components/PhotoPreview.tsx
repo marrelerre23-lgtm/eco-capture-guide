@@ -81,7 +81,34 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       const analysisResult = data;
       console.log('Analys resultat:', analysisResult);
 
-      if (analysisResult.species) {
+      // Check if we have alternatives (new format) or single species (old format)
+      if (analysisResult.alternatives && Array.isArray(analysisResult.alternatives)) {
+        // Navigate to analysis result page with all alternatives
+        navigate('/analysis-result', { 
+          state: { 
+            alternatives: analysisResult.alternatives.map((alt: any) => ({
+              id: crypto.randomUUID(),
+              name: alt.species.commonName || "Okänd art",
+              scientificName: alt.species.scientificName || "Okänd",
+              image: uploadedImageUrl,
+              dateFound: new Date(),
+              description: alt.species.description || "Ingen beskrivning tillgänglig",
+              confidence: alt.species.confidence || 0.5,
+              reasoning: alt.reasoning || "",
+              facts: [
+                alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
+                alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
+                alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
+                alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
+                alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : "",
+                alt.species.category ? `Kategori: ${alt.species.category}` : ""
+              ].filter(Boolean)
+            })),
+            location: location
+          } 
+        });
+      } else if (analysisResult.species) {
+        // Legacy format - single species
         const species: Species = {
           id: crypto.randomUUID(),
           name: analysisResult.species.commonName || "Okänd art",
@@ -96,13 +123,12 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             analysisResult.species.sizeInfo ? `Storlek: ${analysisResult.species.sizeInfo}` : "",
             analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : "",
             analysisResult.species.category ? `Kategori: ${analysisResult.species.category}` : ""
-          ].filter(Boolean) // Remove empty strings
+          ].filter(Boolean)
         };
         
-        // Navigate to analysis result page with location data
         navigate('/analysis-result', { 
           state: { 
-            species,
+            alternatives: [species],
             location: location
           } 
         });
