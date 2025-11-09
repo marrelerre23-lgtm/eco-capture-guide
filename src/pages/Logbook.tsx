@@ -22,13 +22,24 @@ const PREDEFINED_CATEGORIES = [
 
 // Helper function to map AI category to predefined category
 const mapToCategory = (aiCategory: string): string => {
-  const normalized = aiCategory.toLowerCase();
-  if (normalized.includes('växt') || normalized.includes('blomma') || normalized.includes('blom')) return "växt";
-  if (normalized.includes('träd') || normalized.includes('buske') || normalized.includes('bush')) return "träd";
-  if (normalized.includes('svamp') || normalized.includes('mushroom')) return "svamp";
-  if (normalized.includes('mossa') || normalized.includes('lav') || normalized.includes('moss')) return "mossa";
-  if (normalized.includes('sten') || normalized.includes('mineral') || normalized.includes('rock')) return "sten";
-  return "växt"; // Default fallback
+  const normalized = aiCategory.toLowerCase().trim();
+  
+  // Exact matches first
+  if (normalized === 'träd') return "träd";
+  if (normalized === 'svamp') return "svamp";
+  if (normalized === 'mossa') return "mossa";
+  if (normalized === 'sten') return "sten";
+  if (normalized === 'växt') return "växt";
+  
+  // Partial matches for variations
+  if (normalized.includes('träd') || normalized === 'tree') return "träd";
+  if (normalized.includes('svamp') || normalized === 'mushroom' || normalized === 'fungi') return "svamp";
+  if (normalized.includes('mossa') || normalized.includes('lav') || normalized === 'moss' || normalized === 'lichen') return "mossa";
+  if (normalized.includes('sten') || normalized.includes('mineral') || normalized === 'rock' || normalized === 'stone') return "sten";
+  if (normalized.includes('växt') || normalized.includes('blomma') || normalized === 'plant' || normalized === 'flower') return "växt";
+  
+  // Default fallback
+  return "växt";
 };
 
 interface Species {

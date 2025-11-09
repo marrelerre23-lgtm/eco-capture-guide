@@ -55,7 +55,7 @@ Ge svar på svenska i följande JSON-format:
   "species": {
     "commonName": "Svenskt artnamn",
     "scientificName": "Vetenskapligt namn",
-    "category": "svamp/växt/djur",
+    "category": "växt/träd/svamp/mossa/sten/djur",
     "confidence": 0.85,
     "description": "Detaljerad beskrivning av arten på svenska",
     "habitat": "Var arten normalt förekommer",
@@ -65,6 +65,14 @@ Ge svar på svenska i följande JSON-format:
   },
   "reasoning": "Förklaring av varför du tror det är denna art"
 }
+
+VIKTIGT för kategorisering:
+- Använd "växt" för blommor, örter, buskar (ej träd)
+- Använd "träd" specifikt för träd och större buskar
+- Använd "svamp" för alla svampar
+- Använd "mossa" för mossor och lavar
+- Använd "sten" för stenar, mineraler och bergarter
+- Använd "djur" för allt annat levande (insekter, fåglar, däggdjur etc)
 
 Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du inte kan identifiera arten med hög säkerhet (>70%), säg det tydligt.`
               },
