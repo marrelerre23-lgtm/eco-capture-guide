@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sun, Moon, User, Leaf } from "lucide-react";
@@ -13,17 +12,7 @@ interface TopNavigationProps {
 
 export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
-
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
