@@ -613,7 +613,7 @@ const Logbook = () => {
                           <CardContent className="p-0">
                              <div 
                               className="relative aspect-square cursor-pointer"
-                              onClick={() => !bulkSelectMode && setFullscreenImage({ url: species.image, alt: species.name })}
+                              onClick={() => !bulkSelectMode && setSelectedSpecies(species)}
                             >
                               <LazyImage 
                                 src={species.image}
@@ -666,13 +666,7 @@ const Logbook = () => {
                               
                               {/* Text overlay */}
                               <div 
-                                className="absolute bottom-0 left-0 right-0 p-3 text-white cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!bulkSelectMode) {
-                                    setSelectedSpecies(species);
-                                  }
-                                }}
+                                className="absolute bottom-0 left-0 right-0 p-3 text-white"
                               >
                                 <h4 className="font-semibold text-sm leading-tight mb-0.5">
                                   {species.name}
