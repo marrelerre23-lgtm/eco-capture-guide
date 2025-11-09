@@ -15,7 +15,13 @@ import ForgotPassword from "./pages/ForgotPassword";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 const AppRoutes = () => {
   return (
