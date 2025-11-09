@@ -6,6 +6,7 @@ import { OfflineIndicator } from "./OfflineIndicator";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
+import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 
 interface LayoutProps {
   children: ReactNode;
@@ -17,6 +18,9 @@ const Layout = ({ children }: LayoutProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Background sync for offline captures
+  useBackgroundSync();
   
   // Pages where navigation should be hidden
   const hideNavigation = location.pathname === "/camera" || location.pathname === "/photo-preview" || location.pathname === "/auth" || location.pathname === "/analysis-result";

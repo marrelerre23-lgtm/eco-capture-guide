@@ -15,7 +15,6 @@ import ForgotPassword from "./pages/ForgotPassword";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
-import { useBackgroundSync } from "./hooks/useBackgroundSync";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,9 +26,6 @@ const queryClient = new QueryClient({
 });
 
 const AppRoutes = () => {
-  // Background sync for offline captures
-  useBackgroundSync();
-  
   return (
     <RouterSafeLayout>
       <PWAInstallPrompt />
