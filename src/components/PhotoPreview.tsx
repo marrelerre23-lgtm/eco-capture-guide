@@ -247,161 +247,130 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             </Button>
           </div>
 
-          {!selectedCategory ? (
-            <>
-              {/* Category Selection */}
-              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-5">
-                <div className="text-center space-y-2">
-                  <div className="text-5xl mb-2">🔍</div>
-                  <h3 className="text-xl font-bold text-foreground">Vad försöker du fånga?</h3>
-                  <p className="text-sm text-muted-foreground">Välj kategori för bättre AI-analys</p>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {CATEGORIES.map((cat) => (
-                    <Button
-                      key={cat.value}
-                      variant="outline"
-                      className="h-20 flex flex-col gap-1 bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-border hover:border-primary hover:bg-primary/10 hover:scale-105 hover:shadow-lg active:scale-95 transition-all"
-                      onClick={() => setSelectedCategory(cat.value)}
-                    >
-                      <span className="text-2xl">{cat.label.split(' ')[0]}</span>
-                      <span className="text-xs font-medium">{cat.label.split(' ')[1]}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Detail Level Selection */}
-              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-4">
-                <div className="text-center space-y-2">
-                  <div className="text-4xl mb-1">⚙️</div>
-                  <h3 className="text-lg font-bold text-foreground">Analysnivå</h3>
-                  <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
-                </div>
-                <div className="space-y-3">
-                  {DETAIL_LEVELS.map((level) => {
-                    const Icon = level.icon;
-                    return (
-                      <Button
-                        key={level.value}
-                        variant={detailLevel === level.value ? "default" : "outline"}
-                        className={`w-full h-auto p-4 flex items-start gap-3 transition-all hover:scale-105 active:scale-95 ${
-                          detailLevel === level.value 
-                            ? "bg-gradient-to-r from-primary to-accent border-0 shadow-lg" 
-                            : "bg-card border-2 hover:border-primary hover:bg-primary/5"
-                        }`}
-                        onClick={() => setDetailLevel(level.value)}
-                      >
-                        <div className={`p-2 rounded-lg ${
-                          detailLevel === level.value 
-                            ? "bg-white/20" 
-                            : "bg-primary/10"
+          {/* Category Selection - Optional */}
+          <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-5">
+            <div className="text-center space-y-2">
+              <div className="text-5xl mb-2">🔍</div>
+              <h3 className="text-xl font-bold text-foreground">Vad försöker du fånga?</h3>
+              <p className="text-sm text-muted-foreground">Valfritt: Välj kategori om det är svårt att isolera fångsten på bilden</p>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {CATEGORIES.map((cat) => (
+                <Button
+                  key={cat.value}
+                  variant="outline"
+                  className={`h-20 flex flex-col gap-1 border-2 transition-all ${
+                    selectedCategory === cat.value
+                      ? "bg-primary/20 border-primary shadow-lg scale-105"
+                      : "bg-gradient-to-br from-primary/5 to-accent/5 border-border hover:border-primary hover:bg-primary/10 hover:scale-105 hover:shadow-lg"
+                  } active:scale-95`}
+                  onClick={() => setSelectedCategory(selectedCategory === cat.value ? null : cat.value)}
+                >
+                  <span className="text-2xl">{cat.label.split(' ')[0]}</span>
+                  <span className="text-xs font-medium">{cat.label.split(' ')[1]}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Detail Level Selection */}
+          <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-4">
+            <div className="text-center space-y-2">
+              <div className="text-4xl mb-1">⚙️</div>
+              <h3 className="text-lg font-bold text-foreground">Analysnivå</h3>
+              <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
+            </div>
+            <div className="space-y-3">
+              {DETAIL_LEVELS.map((level) => {
+                const Icon = level.icon;
+                return (
+                  <Button
+                    key={level.value}
+                    variant={detailLevel === level.value ? "default" : "outline"}
+                    className={`w-full h-auto p-4 flex items-start gap-3 transition-all hover:scale-105 active:scale-95 ${
+                      detailLevel === level.value 
+                        ? "bg-gradient-to-r from-primary to-accent border-0 shadow-lg" 
+                        : "bg-card border-2 hover:border-primary hover:bg-primary/5"
+                    }`}
+                    onClick={() => setDetailLevel(level.value)}
+                  >
+                    <div className={`p-2 rounded-lg ${
+                      detailLevel === level.value 
+                        ? "bg-white/20" 
+                        : "bg-primary/10"
+                    }`}>
+                      <Icon className={`w-5 h-5 ${
+                        detailLevel === level.value ? "text-white" : "text-primary"
+                      }`} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`font-bold ${
+                          detailLevel === level.value ? "text-white" : "text-foreground"
                         }`}>
-                          <Icon className={`w-5 h-5 ${
-                            detailLevel === level.value ? "text-white" : "text-primary"
-                          }`} />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className={`font-bold ${
-                              detailLevel === level.value ? "text-white" : "text-foreground"
-                            }`}>
-                              {level.label}
-                            </span>
-                            <span className={`text-xs font-semibold ${
-                              detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
-                            }`}>
-                              {level.time}
-                            </span>
-                          </div>
-                          <p className={`text-xs ${
-                            detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
-                          }`}>
-                            {level.description}
-                          </p>
-                        </div>
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Retake Button */}
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="w-full h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
-                onClick={onRetake}
-                disabled={uploading}
-              >
-                <RotateCcw className="mr-2 h-5 w-5" />
-                Ta om bild
-              </Button>
-            </>
-          ) : (
-            <>
-              {/* Selected Settings Display */}
-              <div className="bg-primary/10 border-2 border-primary/20 rounded-xl p-4">
-                <div className="grid grid-cols-2 gap-3 text-center">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Kategori</p>
-                    <p className="text-sm font-semibold text-primary">
-                      {CATEGORIES.find(c => c.value === selectedCategory)?.label}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Analysnivå</p>
-                    <p className="text-sm font-semibold text-primary">
-                      {DETAIL_LEVELS.find(l => l.value === detailLevel)?.label}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                          {level.label}
+                        </span>
+                        <span className={`text-xs font-semibold ${
+                          detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
+                        }`}>
+                          {level.time}
+                        </span>
+                      </div>
+                      <p className={`text-xs ${
+                        detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
+                      }`}>
+                        {level.description}
+                      </p>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
 
-              {/* Analyze Button */}
-              <Button 
-                size="lg"
-                className="w-full h-14 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-                onClick={handleAnalyze}
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <>
-                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Analyserar...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="mr-2 h-5 w-5" />
-                    Analysera med AI
-                  </>
-                )}
-              </Button>
-              
-              {/* Secondary Actions */}
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="flex-1 h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
-                  onClick={() => setSelectedCategory(null)}
-                  disabled={uploading}
-                >
-                  Ändra kategori
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="flex-1 h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
-                  onClick={onRetake}
-                  disabled={uploading}
-                >
-                  <RotateCcw className="mr-2 h-5 w-5" />
-                  Ta om
-                </Button>
+          {/* Selected Category Display (if any) */}
+          {selectedCategory && (
+            <div className="bg-primary/10 border-2 border-primary/20 rounded-xl p-3">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Vald kategori</p>
+                <p className="text-sm font-semibold text-primary">
+                  {CATEGORIES.find(c => c.value === selectedCategory)?.label}
+                </p>
               </div>
-            </>
+            </div>
           )}
+
+          {/* Analyze Button */}
+          <Button 
+            size="lg"
+            className="w-full h-14 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            onClick={handleAnalyze}
+            disabled={uploading}
+          >
+            {uploading ? (
+              <>
+                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Analyserar...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="mr-2 h-5 w-5" />
+                Analysera med AI
+              </>
+            )}
+          </Button>
+          
+          {/* Retake Button */}
+          <Button 
+            variant="outline" 
+            size="lg"
+            className="w-full h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
+            onClick={onRetake}
+            disabled={uploading}
+          >
+            <RotateCcw className="mr-2 h-5 w-5" />
+            Ta om bild
+          </Button>
         </div>
       </div>
     </div>
