@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -39,27 +38,25 @@ const App = () => {
       enableSystem
       disableTransitionOnChange
     >
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <OfflineIndicator />
-        {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Overview />} />
-              <Route path="/camera" element={<Camera />} />
-              <Route path="/analysis-result" element={<AnalysisResult />} />
-              <Route path="/logbook" element={<Logbook />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
-      </TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <OfflineIndicator />
+      {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Overview />} />
+            <Route path="/camera" element={<Camera />} />
+            <Route path="/analysis-result" element={<AnalysisResult />} />
+            <Route path="/logbook" element={<Logbook />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
     </ThemeProvider>
   </QueryClientProvider>
   </ErrorBoundary>
