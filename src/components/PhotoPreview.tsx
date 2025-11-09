@@ -208,172 +208,178 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           <div className="absolute bottom-20 left-10 w-60 h-60 bg-accent/5 rounded-full blur-3xl" />
         </div>
 
-      {/* Photo Preview */}
-      <div className="relative w-full h-full flex items-center justify-center p-4">
-        <div className="relative max-w-2xl w-full">
-          <div className="rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/20">
-            <img 
-              src={imageUrl} 
-              alt="Captured" 
-              className="w-full h-auto object-contain max-h-[60vh]"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-4 left-4 bg-white/90 text-foreground hover:bg-white backdrop-blur-sm shadow-lg"
-        onClick={() => navigate('/')}
-      >
-        <ArrowLeft className="h-6 w-6" />
-      </Button>
-
-      {/* Action Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/90 to-transparent backdrop-blur-sm px-6 pb-8 pt-16">
-        <div className="max-w-2xl mx-auto space-y-4">
-          {/* Tips Button */}
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setTipsDialogOpen(true)}
-              className="gap-2 bg-card/80 backdrop-blur-sm"
-            >
-              <HelpCircle className="h-4 w-4" />
-              Tips för bättre bilder
-            </Button>
-          </div>
-
-          {/* Category Selection - Optional */}
-          <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-5">
-            <div className="text-center space-y-2">
-              <div className="text-5xl mb-2">🔍</div>
-              <h3 className="text-xl font-bold text-foreground">Vad försöker du fånga?</h3>
-              <p className="text-sm text-muted-foreground">Valfritt: Välj kategori om det är svårt att isolera fångsten på bilden</p>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {CATEGORIES.map((cat) => (
+        {/* Scrollable Content Container */}
+        <div className="h-full overflow-y-auto">
+          <div className="min-h-full flex flex-col">
+            {/* Main Content - Scrollable */}
+            <div className="flex-1 px-4 pt-4 pb-4 space-y-4 max-w-2xl mx-auto w-full">
+              
+              {/* Back Button */}
+              <div className="flex justify-start">
                 <Button
-                  key={cat.value}
-                  variant="outline"
-                  className={`h-20 flex flex-col gap-1 border-2 transition-all ${
-                    selectedCategory === cat.value
-                      ? "bg-primary/20 border-primary shadow-lg scale-105"
-                      : "bg-gradient-to-br from-primary/5 to-accent/5 border-border hover:border-primary hover:bg-primary/10 hover:scale-105 hover:shadow-lg"
-                  } active:scale-95`}
-                  onClick={() => setSelectedCategory(selectedCategory === cat.value ? null : cat.value)}
+                  variant="ghost"
+                  size="icon"
+                  className="bg-card/90 backdrop-blur-sm shadow-md hover:shadow-lg"
+                  onClick={() => navigate('/')}
                 >
-                  <span className="text-2xl">{cat.label.split(' ')[0]}</span>
-                  <span className="text-xs font-medium">{cat.label.split(' ')[1]}</span>
+                  <ArrowLeft className="h-5 w-5" />
                 </Button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Detail Level Selection */}
-          <div className="bg-card/95 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-border space-y-4">
-            <div className="text-center space-y-2">
-              <div className="text-4xl mb-1">⚙️</div>
-              <h3 className="text-lg font-bold text-foreground">Analysnivå</h3>
-              <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
-            </div>
-            <div className="space-y-3">
-              {DETAIL_LEVELS.map((level) => {
-                const Icon = level.icon;
-                return (
-                  <Button
-                    key={level.value}
-                    variant={detailLevel === level.value ? "default" : "outline"}
-                    className={`w-full h-auto p-4 flex items-start gap-3 transition-all hover:scale-105 active:scale-95 ${
-                      detailLevel === level.value 
-                        ? "bg-gradient-to-r from-primary to-accent border-0 shadow-lg" 
-                        : "bg-card border-2 hover:border-primary hover:bg-primary/5"
-                    }`}
-                    onClick={() => setDetailLevel(level.value)}
-                  >
-                    <div className={`p-2 rounded-lg ${
-                      detailLevel === level.value 
-                        ? "bg-white/20" 
-                        : "bg-primary/10"
-                    }`}>
-                      <Icon className={`w-5 h-5 ${
-                        detailLevel === level.value ? "text-white" : "text-primary"
-                      }`} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`font-bold ${
-                          detailLevel === level.value ? "text-white" : "text-foreground"
-                        }`}>
-                          {level.label}
-                        </span>
-                        <span className={`text-xs font-semibold ${
-                          detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
-                        }`}>
-                          {level.time}
-                        </span>
-                      </div>
-                      <p className={`text-xs ${
-                        detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
-                      }`}>
-                        {level.description}
-                      </p>
-                    </div>
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
+              </div>
 
-          {/* Selected Category Display (if any) */}
-          {selectedCategory && (
-            <div className="bg-primary/10 border-2 border-primary/20 rounded-xl p-3">
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-1">Vald kategori</p>
-                <p className="text-sm font-semibold text-primary">
-                  {CATEGORIES.find(c => c.value === selectedCategory)?.label}
-                </p>
+              {/* Photo Preview - Compact */}
+              <div className="relative w-full">
+                <div className="rounded-xl overflow-hidden shadow-xl ring-2 ring-border">
+                  <img 
+                    src={imageUrl} 
+                    alt="Captured" 
+                    className="w-full h-auto object-contain max-h-[35vh]"
+                  />
+                </div>
+              </div>
+
+              {/* Tips Button - Discreet */}
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setTipsDialogOpen(true)}
+                  className="gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Tips för bättre bilder
+                </Button>
+              </div>
+
+              {/* Category Selection - Compact */}
+              <div className="bg-card/95 backdrop-blur-md rounded-xl p-4 shadow-lg border border-border space-y-3">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-foreground">Vad försöker du fånga?</h3>
+                  <p className="text-xs text-muted-foreground">Valfritt: Hjälper AI:n om fångsten är svår att isolera</p>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {CATEGORIES.map((cat) => (
+                    <Button
+                      key={cat.value}
+                      variant="outline"
+                      className={`h-16 flex flex-col gap-1 border transition-all ${
+                        selectedCategory === cat.value
+                          ? "bg-primary/20 border-primary shadow-md"
+                          : "bg-card border-border hover:border-primary hover:bg-primary/5"
+                      }`}
+                      onClick={() => setSelectedCategory(selectedCategory === cat.value ? null : cat.value)}
+                    >
+                      <span className="text-xl">{cat.label.split(' ')[0]}</span>
+                      <span className="text-[10px] font-medium leading-tight">{cat.label.split(' ')[1]}</span>
+                    </Button>
+                  ))}
+                </div>
+                {selectedCategory && (
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-2 text-center">
+                    <p className="text-xs text-muted-foreground">Vald:</p>
+                    <p className="text-sm font-semibold text-primary">
+                      {CATEGORIES.find(c => c.value === selectedCategory)?.label}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Detail Level Selection - Compact */}
+              <div className="bg-card/95 backdrop-blur-md rounded-xl p-4 shadow-lg border border-border space-y-3">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-foreground">Analysnivå</h3>
+                  <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
+                </div>
+                <div className="space-y-2">
+                  {DETAIL_LEVELS.map((level) => {
+                    const Icon = level.icon;
+                    return (
+                      <Button
+                        key={level.value}
+                        variant={detailLevel === level.value ? "default" : "outline"}
+                        className={`w-full h-auto p-3 flex items-start gap-3 transition-all ${
+                          detailLevel === level.value 
+                            ? "bg-gradient-to-r from-primary to-accent border-0 shadow-md" 
+                            : "bg-card border hover:border-primary hover:bg-primary/5"
+                        }`}
+                        onClick={() => setDetailLevel(level.value)}
+                      >
+                        <div className={`p-1.5 rounded-lg ${
+                          detailLevel === level.value 
+                            ? "bg-white/20" 
+                            : "bg-primary/10"
+                        }`}>
+                          <Icon className={`w-4 h-4 ${
+                            detailLevel === level.value ? "text-white" : "text-primary"
+                          }`} />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-sm font-bold ${
+                              detailLevel === level.value ? "text-white" : "text-foreground"
+                            }`}>
+                              {level.label}
+                            </span>
+                            <span className={`text-xs font-semibold ${
+                              detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
+                            }`}>
+                              {level.time}
+                            </span>
+                          </div>
+                          <p className={`text-xs leading-tight ${
+                            detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
+                          }`}>
+                            {level.description}
+                          </p>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Spacer for sticky buttons */}
+              <div className="h-32" />
+            </div>
+
+            {/* Sticky Action Buttons at Bottom */}
+            <div className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border px-4 py-4 shadow-lg">
+              <div className="max-w-2xl mx-auto space-y-3">
+                {/* Analyze Button */}
+                <Button 
+                  size="lg"
+                  className="w-full h-12 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                  onClick={handleAnalyze}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Analyserar...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-5 w-5" />
+                      Analysera med AI
+                    </>
+                  )}
+                </Button>
+                
+                {/* Retake Button */}
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="w-full h-10 bg-card/90 backdrop-blur-sm border hover:bg-muted"
+                  onClick={onRetake}
+                  disabled={uploading}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Ta om bild
+                </Button>
               </div>
             </div>
-          )}
-
-          {/* Analyze Button */}
-          <Button 
-            size="lg"
-            className="w-full h-14 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-            onClick={handleAnalyze}
-            disabled={uploading}
-          >
-            {uploading ? (
-              <>
-                <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Analyserar...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="mr-2 h-5 w-5" />
-                Analysera med AI
-              </>
-            )}
-          </Button>
-          
-          {/* Retake Button */}
-          <Button 
-            variant="outline" 
-            size="lg"
-            className="w-full h-12 bg-card/90 backdrop-blur-sm border-2 hover:bg-muted"
-            onClick={onRetake}
-            disabled={uploading}
-          >
-            <RotateCcw className="mr-2 h-5 w-5" />
-            Ta om bild
-          </Button>
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 };
