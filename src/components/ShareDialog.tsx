@@ -67,22 +67,60 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
     }
   };
 
-  // Native Web Share API (for mobile devices)
+  // Native Web Share API with image (for mobile devices)
   const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: capture.species_name,
-          text: shareText,
-          url: shareUrl,
-        });
+    if (!navigator.share) {
+      handleCopyLink();
+      return;
+    }
+
+    try {
+      // Try to share with image if supported
+      if (navigator.canShare) {
+        try {
+          // Fetch the image as a blob
+          const response = await fetch(capture.image_url);
+          const blob = await response.blob();
+          const file = new File([blob], 'capture.jpg', { type: blob.type });
+
+          const shareData = {
+            title: capture.species_name,
+            text: shareText,
+            files: [file],
+          };
+
+          if (navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            toast({
+              title: "Delat! 🎉",
+              description: "Fångsten har delats med bild.",
+            });
+            return;
+          }
+        } catch (error) {
+          console.log('Could not share with image, falling back to URL only');
+        }
+      }
+
+      // Fallback to sharing without image
+      await navigator.share({
+        title: capture.species_name,
+        text: shareText,
+        url: shareUrl,
+      });
+      
+      toast({
+        title: "Delat! 🎉",
+        description: "Fångsten har delats.",
+      });
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Share failed:', error);
         toast({
-          title: "Delat!",
-          description: "Fångsten har delats.",
+          title: "Kunde inte dela",
+          description: "Försök kopiera länken istället.",
+          variant: "destructive",
         });
-      } catch (error) {
-        // User cancelled or share failed
-        console.log('Share cancelled:', error);
       }
     }
   };

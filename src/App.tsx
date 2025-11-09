@@ -12,6 +12,7 @@ import AnalysisResult from "./pages/AnalysisResult";
 import ProfileEnhanced from "./pages/ProfileEnhanced";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
+import Install from "./pages/Install";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -36,6 +37,7 @@ const AppRoutes = () => {
         <Route path="/logbook" element={<Logbook />} />
         <Route path="/map" element={<Map />} />
         <Route path="/profile" element={<ProfileEnhanced />} />
+        <Route path="/install" element={<Install />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

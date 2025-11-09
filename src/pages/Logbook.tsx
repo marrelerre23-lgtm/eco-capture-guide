@@ -176,10 +176,20 @@ const Logbook = () => {
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [categoryPages, setCategoryPages] = useState<Record<string, number>>({});
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
   const { vibrateSuccess, vibrateError, vibrateClick } = useVibration();
+
+  const loadMoreInCategory = (categoryKey: string, totalItems: number) => {
+    const currentPage = categoryPages[categoryKey] || 1;
+    const nextPage = currentPage + 1;
+    if (nextPage * 10 < totalItems) {
+      setCategoryPages(prev => ({ ...prev, [categoryKey]: nextPage }));
+      vibrateClick();
+    }
+  };
 
   const handleDelete = async () => {
     if (!selectedSpecies) return;
@@ -333,7 +343,7 @@ const Logbook = () => {
     );
   }, [captures, searchQuery]);
 
-  // Group species by category, always show all categories
+  // Group species by category with infinite scroll per category
   const categorizedSpecies = useMemo(() => {
     const speciesByCategory = allSpecies.reduce((acc, species) => {
       const categoryKey = species.category;
@@ -384,7 +394,13 @@ const Logbook = () => {
         key: category.key,
         count: categorySpecies.length,
         icon: category.icon,
-        species: categorySpecies
+        species: categorySpecies,
+        // Initialize infinite scroll for each category
+        infiniteScroll: {
+          displayedItems: categorySpecies.slice(0, 10),
+          hasMore: categorySpecies.length > 10,
+          totalItems: categorySpecies.length
+        }
       };
     });
   }, [allSpecies, categorySortBy]);
@@ -587,8 +603,9 @@ const Logbook = () => {
                       <p className="text-sm">Börja utforska och fånga {category.name.toLowerCase()}!</p>
                     </div>
                   ) : (
-                     <div className="grid grid-cols-2 gap-3">
-                      {category.species.map((species) => (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        {category.species.slice(0, (categoryPages[category.key] || 1) * 10).map((species) => (
                         <Card 
                           key={species.id}
                           className="shadow-card hover:shadow-eco transition-all overflow-hidden group"
@@ -667,8 +684,20 @@ const Logbook = () => {
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                      {/* Load more button */}
+                      {category.species.length > (categoryPages[category.key] || 1) * 10 && (
+                        <div className="mt-4 text-center">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => loadMoreInCategory(category.key, category.species.length)}
+                          >
+                            Ladda fler ({category.species.length - (categoryPages[category.key] || 1) * 10} kvar)
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}
