@@ -20,6 +20,7 @@ interface PhotoPreviewProps {
   imageUrl: string;
   onRetake: () => void;
   uploading?: boolean;
+  location?: { latitude: number; longitude: number } | null;
 }
 
 const CATEGORIES = [
@@ -32,7 +33,7 @@ const CATEGORIES = [
   { value: "okänt", label: "Okänt" },
 ];
 
-export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPreviewProps) => {
+export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
@@ -90,8 +91,13 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false }: PhotoPre
           ].filter(Boolean) // Remove empty strings
         };
         
-        // Navigate to analysis result page instead of calling onSave
-        navigate('/analysis-result', { state: { species } });
+        // Navigate to analysis result page with location data
+        navigate('/analysis-result', { 
+          state: { 
+            species,
+            location: location
+          } 
+        });
       } else {
         throw new Error('Ingen artidentifiering kunde göras');
       }

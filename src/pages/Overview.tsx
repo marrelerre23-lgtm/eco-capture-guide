@@ -33,11 +33,10 @@ const Overview = () => {
         .filter(Boolean)
     );
 
-    // Calculate rare finds (confidence < 0.7 or rarity mentioned)
+    // Calculate rare finds (based on rarity level only)
     const rareFinds = captures.filter(c => {
-      const confidence = c.ai_analysis?.species?.confidence;
       const rarity = c.ai_analysis?.species?.rarity?.toLowerCase();
-      return (confidence && confidence < 0.7) || (rarity && (rarity.includes('sällsynt') || rarity.includes('ovanlig')));
+      return rarity && (rarity.includes('sällsynt') || rarity.includes('ovanlig') || rarity.includes('rare'));
     });
 
     // Calculate unique locations
@@ -202,9 +201,8 @@ const Overview = () => {
           <div className="space-y-2">
             {statistics.recentActivity.length > 0 ? statistics.recentActivity.map((capture, index) => {
               const species = capture.ai_analysis?.species;
-              const isRare = (species?.confidence && species.confidence < 0.7) || 
-                            (species?.rarity?.toLowerCase().includes('sällsynt')) ||
-                            (species?.rarity?.toLowerCase().includes('ovanlig'));
+              const rarity = species?.rarity?.toLowerCase();
+              const isRare = rarity && (rarity.includes('sällsynt') || rarity.includes('ovanlig') || rarity.includes('rare'));
               
               return (
                 <Card key={capture.id} className="shadow-card">

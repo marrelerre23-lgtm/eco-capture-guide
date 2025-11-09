@@ -27,6 +27,7 @@ const Camera = () => {
   const [uploading, setUploading] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const startCamera = async () => {
     try {
@@ -86,6 +87,22 @@ const Camera = () => {
     }
   };
 
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Kunde inte hämta plats:', error);
+        }
+      );
+    }
+  };
+
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
       const canvas = canvasRef.current;
@@ -99,6 +116,9 @@ const Camera = () => {
         ctx.drawImage(video, 0, 0);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setCapturedImage(imageDataUrl);
+        
+        // Get location when photo is captured
+        getLocation();
         
         // Turn off torch before stopping camera
         if (stream && torchOn) {
@@ -132,6 +152,8 @@ const Camera = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setCapturedImage(e.target?.result as string);
+        // Get location when file is uploaded
+        getLocation();
         // Stop camera when uploading
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -165,6 +187,7 @@ const Camera = () => {
         imageUrl={capturedImage} 
         onRetake={retakePhoto}
         uploading={uploading}
+        location={location}
       />
     );
   }

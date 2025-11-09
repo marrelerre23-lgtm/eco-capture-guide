@@ -135,7 +135,6 @@ const Logbook = () => {
   const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
   const [categorySortBy, setCategorySortBy] = useState<Record<string, string>>({});
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -170,42 +169,6 @@ const Logbook = () => {
       });
     } finally {
       setIsDeleting(false);
-    }
-  };
-
-  const handleSaveLocation = async () => {
-    if (!selectedSpecies) return;
-
-    const location = prompt("Ange platsnamn för denna fångst:", selectedSpecies.location || "");
-    if (location === null) return; // User cancelled
-
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('species_captures')
-        .update({ location_name: location })
-        .eq('id', selectedSpecies.id);
-
-      if (error) throw error;
-
-      // Invalidate the query cache so all components get updated data
-      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
-
-      toast({
-        title: "Plats sparad",
-        description: `Plats "${location}" har sparats för ${selectedSpecies.name}.`,
-      });
-
-      setSelectedSpecies(null);
-    } catch (err) {
-      console.error('Error saving location:', err);
-      toast({
-        title: "Kunde inte spara plats",
-        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -462,7 +425,6 @@ const Logbook = () => {
           species={selectedSpecies}
           isOpen={!!selectedSpecies}
           onClose={() => setSelectedSpecies(null)}
-          onSave={handleSaveLocation}
           onDelete={handleDelete}
           isDeleting={isDeleting}
           showActions={true}

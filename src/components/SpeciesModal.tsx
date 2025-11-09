@@ -118,11 +118,6 @@ export const SpeciesModal = ({
                 {isAnalyzing ? "Analyserar..." : "Analysera med AI"}
               </Button>
             )}
-            {onSave && (
-              <Button onClick={onSave} variant="outline" className="w-full">
-                Spara plats
-              </Button>
-            )}
             {onDelete && (
               <Button 
                 onClick={onDelete} 

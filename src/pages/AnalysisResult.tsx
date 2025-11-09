@@ -21,8 +21,9 @@ const AnalysisResult = () => {
   const { toast } = useToast();
   const [saving, setSaving] = React.useState(false);
 
-  // Get species data from navigation state
+  // Get species data and location from navigation state
   const species = location.state?.species as Species;
+  const gpsLocation = location.state?.location as { latitude: number; longitude: number } | null;
 
   React.useEffect(() => {
     // Redirect to camera if no species data
@@ -76,6 +77,35 @@ const AnalysisResult = () => {
         }
       }
 
+      // Generate location name from coordinates if available
+      let locationName = null;
+      if (gpsLocation) {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${gpsLocation.latitude}&lon=${gpsLocation.longitude}&zoom=14&addressdetails=1`,
+            {
+              headers: {
+                'User-Agent': 'SpeciesCapture/1.0'
+              }
+            }
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            const parts = [];
+            if (data.address.village || data.address.town || data.address.city) {
+              parts.push(data.address.village || data.address.town || data.address.city);
+            }
+            if (data.address.municipality && parts[0] !== data.address.municipality) {
+              parts.push(data.address.municipality);
+            }
+            locationName = parts.join(', ') || data.display_name;
+          }
+        } catch (error) {
+          console.log('Kunde inte hämta platsnamn:', error);
+        }
+      }
+
       // Save to species_captures table with complete structure
       const { error } = await supabase
         .from('species_captures')
@@ -83,6 +113,9 @@ const AnalysisResult = () => {
           user_id: user.id,
           image_url: species.image,
           captured_at: species.dateFound.toISOString(),
+          latitude: gpsLocation?.latitude || null,
+          longitude: gpsLocation?.longitude || null,
+          location_name: locationName,
           ai_analysis: {
             species: {
               commonName: species.name,
