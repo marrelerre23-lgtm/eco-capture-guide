@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ interface Profile {
 const ProfileEnhanced = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const fileInputRef = useState<HTMLInputElement | null>(null)[0];
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,7 +127,7 @@ const ProfileEnhanced = () => {
   };
 
   const handleAvatarClick = () => {
-    fileInputRef?.click();
+    fileInputRef.current?.click();
   };
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,7 +259,7 @@ const ProfileEnhanced = () => {
                   )}
                 </Button>
                 <input
-                  ref={(el) => (fileInputRef as any) = el}
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleAvatarUpload}
