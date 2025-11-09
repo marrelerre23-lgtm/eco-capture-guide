@@ -134,6 +134,14 @@ const Auth = () => {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Logga in
                 </Button>
+                <Button 
+                  type="button" 
+                  variant="link" 
+                  className="w-full text-sm"
+                  onClick={() => navigate('/forgot-password')}
+                >
+                  Glömt lösenord?
+                </Button>
               </form>
             </TabsContent>
             

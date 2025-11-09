@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/utils/imageCompression";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 
 interface Species {
   id: string;
@@ -28,6 +31,9 @@ const Camera = () => {
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const isOnline = useOnlineStatus();
+  const { saveOfflineCapture } = useOfflineStorage();
+  const [compressing, setCompressing] = useState(false);
 
   const startCamera = async () => {
     try {
@@ -103,7 +109,7 @@ const Camera = () => {
     }
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const canvas = canvasRef.current;
       const video = videoRef.current;
@@ -113,12 +119,43 @@ const Camera = () => {
       
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(video, 0, 0);
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setCapturedImage(imageDataUrl);
-        
-        // Get location when photo is captured
-        getLocation();
+        setCompressing(true);
+        try {
+          ctx.drawImage(video, 0, 0);
+          const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          
+          // Compress image before storing
+          const compressedImage = await compressImage(imageDataUrl, 1920, 1920, 0.8);
+          
+          // Save offline if not connected
+          if (!isOnline) {
+            saveOfflineCapture({ 
+              imageUrl: compressedImage,
+              location 
+            });
+          }
+          
+          setCapturedImage(compressedImage);
+          
+          // Get location when photo is captured
+          getLocation();
+          
+          toast({
+            title: 'Bild tagen!',
+            description: isOnline 
+              ? 'Bilden är redo för analys.' 
+              : 'Bilden sparad offline.'
+          });
+        } catch (error) {
+          console.error('Error compressing image:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Fel',
+            description: 'Kunde inte bearbeta bilden.'
+          });
+        } finally {
+          setCompressing(false);
+        }
         
         // Turn off torch before stopping camera
         if (stream && torchOn) {
@@ -146,14 +183,48 @@ const Camera = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setCompressing(true);
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setCapturedImage(e.target?.result as string);
-        // Get location when file is uploaded
-        getLocation();
+      reader.onload = async (e) => {
+        try {
+          const originalImage = e.target?.result as string;
+          
+          // Compress uploaded image
+          const compressedImage = await compressImage(originalImage, 1920, 1920, 0.8);
+          
+          // Save offline if not connected
+          if (!isOnline) {
+            saveOfflineCapture({ 
+              imageUrl: compressedImage,
+              location 
+            });
+          }
+          
+          setCapturedImage(compressedImage);
+          
+          // Get location when file is uploaded
+          getLocation();
+          
+          toast({
+            title: 'Bild uppladdad!',
+            description: isOnline 
+              ? 'Bilden är redo för analys.' 
+              : 'Bilden sparad offline.'
+          });
+        } catch (error) {
+          console.error('Error processing image:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Fel',
+            description: 'Kunde inte bearbeta bilden.'
+          });
+        } finally {
+          setCompressing(false);
+        }
+        
         // Stop camera when uploading
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -293,10 +364,14 @@ const Camera = () => {
               size="icon"
               className="bg-white text-black hover:bg-gray-200 rounded-full w-20 h-20 border-4 border-white/30 shadow-xl hover:scale-105 transition-transform"
               onClick={capturePhoto}
+              disabled={compressing}
+              aria-label="Ta bild"
             >
               <div className="w-16 h-16 rounded-full bg-current" />
             </Button>
-            <span className="text-white text-xs font-semibold">Ta bild</span>
+            <span className="text-white text-xs font-semibold">
+              {compressing ? 'Bearbetar...' : 'Ta bild'}
+            </span>
           </div>
 
           {/* Flip Camera Button */}

@@ -12,11 +12,27 @@ import Auth from "./pages/Auth";
 import AnalysisResult from "./pages/AnalysisResult";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { OfflineIndicator } from "./components/OfflineIndicator";
+import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
+import { useState, useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Check if user has completed onboarding
+    if (!hasCompletedOnboarding()) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  return (
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
     <ThemeProvider
       attribute="class"
       defaultTheme="light"
@@ -26,6 +42,8 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <OfflineIndicator />
+        {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
         <BrowserRouter>
           <Layout>
             <Routes>
@@ -35,6 +53,7 @@ const App = () => (
               <Route path="/logbook" element={<Logbook />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -43,6 +62,8 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
-);
+  </ErrorBoundary>
+  );
+};
 
 export default App;
