@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -13,7 +12,6 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { OfflineIndicator } from "./components/OfflineIndicator";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 
 const queryClient = new QueryClient();
@@ -37,8 +35,6 @@ const App = () => {
       enableSystem
       disableTransitionOnChange
     >
-      <Toaster />
-      <OfflineIndicator />
       {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
       <BrowserRouter>
         <Layout>
