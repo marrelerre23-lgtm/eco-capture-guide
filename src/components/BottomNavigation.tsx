@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { BarChart3, Camera, BookOpen, MapPin } from "lucide-react";
+import { BarChart3, Camera, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +20,6 @@ const BottomNavigation = () => {
       icon: Camera,
       label: "Kamera",
       isCamera: true,
-    },
-    {
-      to: "/map",
-      icon: MapPin,
-      label: "Karta",
     },
   ];
 

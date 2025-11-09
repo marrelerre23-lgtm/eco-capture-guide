@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sun, Moon, User, Leaf } from "lucide-react";
+import { Sun, Moon, User, Leaf, MapPin } from "lucide-react";
 import { useTheme } from "next-themes";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +31,16 @@ export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
 
         {/* Right Side Controls */}
         <div className="flex items-center gap-2">
+          {/* Map Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/map')}
+            className="rounded-full"
+          >
+            <MapPin className="h-5 w-5" />
+          </Button>
+
           {/* Theme Toggle */}
           <Button
             variant="ghost"

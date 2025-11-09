@@ -4,6 +4,7 @@ import { Trophy, Leaf, Camera, MapPin, Loader2, AlertCircle } from "lucide-react
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -51,7 +52,7 @@ const Overview = () => {
       uniqueSpecies: uniqueSpeciesNames.size,
       rareFinds: rareFinds.length,
       locations: uniqueLocations.size,
-      latestCapture: sortedCaptures[0] || null,
+      latestCaptures: sortedCaptures.slice(0, 5), // Get the 5 most recent captures
       recentActivity: sortedCaptures.slice(0, 3)
     };
   }, [captures]);
@@ -87,39 +88,49 @@ const Overview = () => {
   return (
     <div className="min-h-screen bg-background pb-20 pt-16">
       <div className="p-4 space-y-6">
-        {/* Latest Capture */}
+        {/* Latest Captures Carousel */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground">Senaste fångsten</h2>
-          {statistics.latestCapture ? (
-            <Card className="overflow-hidden shadow-card">
-              <div className="aspect-square relative bg-gradient-earth">
-                <img 
-                  src={statistics.latestCapture.image_url}
-                  alt="Latest capture"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                  <h3 className="text-white font-medium">
-                    {statistics.latestCapture.ai_analysis?.species?.commonName || "Okänd art"}
-                  </h3>
-                  <p className="text-white/80 text-sm">
-                    {statistics.latestCapture.ai_analysis?.species?.scientificName || "Okänd"}
-                  </p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <MapPin className="h-3 w-3 text-white/60" />
-                    <span className="text-white/60 text-xs">
-                      Fångad {new Date(statistics.latestCapture.captured_at).toLocaleDateString('sv-SE', { 
-                        day: 'numeric', 
-                        month: 'long' 
-                      })}, kl. {new Date(statistics.latestCapture.captured_at).toLocaleTimeString('sv-SE', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Card>
+          <h2 className="text-lg font-semibold text-foreground">Senaste fångsterna</h2>
+          {statistics.latestCaptures && statistics.latestCaptures.length > 0 ? (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {statistics.latestCaptures.map((capture) => (
+                  <CarouselItem key={capture.id}>
+                    <Card className="overflow-hidden shadow-card">
+                      <div className="aspect-square relative bg-gradient-earth">
+                        <img 
+                          src={capture.image_url}
+                          alt={capture.ai_analysis?.species?.commonName || "Capture"}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                          <h3 className="text-white font-medium">
+                            {capture.ai_analysis?.species?.commonName || "Okänd art"}
+                          </h3>
+                          <p className="text-white/80 text-sm">
+                            {capture.ai_analysis?.species?.scientificName || "Okänd"}
+                          </p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <MapPin className="h-3 w-3 text-white/60" />
+                            <span className="text-white/60 text-xs">
+                              Fångad {new Date(capture.captured_at).toLocaleDateString('sv-SE', { 
+                                day: 'numeric', 
+                                month: 'long' 
+                              })}, kl. {new Date(capture.captured_at).toLocaleTimeString('sv-SE', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
           ) : (
             <Card className="overflow-hidden shadow-card">
               <div className="aspect-square relative bg-muted flex items-center justify-center">
