@@ -17,9 +17,15 @@ const Layout = ({ children }: LayoutProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   
   // Pages where navigation should be hidden
   const hideNavigation = location.pathname === "/camera" || location.pathname === "/photo-preview" || location.pathname === "/auth" || location.pathname === "/analysis-result";
+
+  // Ensure components are only rendered after mount to avoid context issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -68,8 +74,8 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Toaster />
-      <OfflineIndicator />
+      {mounted && <Toaster />}
+      {mounted && <OfflineIndicator />}
       {!hideNavigation && <TopNavigation user={user} onLogout={handleLogout} />}
       <main className={hideNavigation ? "" : "pt-16 pb-20"}>
         {children}
