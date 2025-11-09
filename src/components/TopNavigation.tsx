@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sun, Moon, User, Leaf } from "lucide-react";
@@ -17,7 +17,7 @@ export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
   const navigate = useNavigate();
 
   // useEffect only runs on the client, so now we can safely show the UI
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
   }, []);
 

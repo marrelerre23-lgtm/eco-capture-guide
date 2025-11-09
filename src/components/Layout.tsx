@@ -76,11 +76,11 @@ const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen bg-background">
       {mounted && <Toaster />}
       {mounted && <OfflineIndicator />}
-      {!hideNavigation && <TopNavigation user={user} onLogout={handleLogout} />}
+      {mounted && !hideNavigation && <TopNavigation user={user} onLogout={handleLogout} />}
       <main className={hideNavigation ? "" : "pt-16 pb-20"}>
         {children}
       </main>
-      {!hideNavigation && <BottomNavigation />}
+      {mounted && !hideNavigation && <BottomNavigation />}
     </div>
   );
 };
