@@ -14,6 +14,9 @@ import { ImageViewer } from "@/components/ImageViewer";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
 import { EditCaptureDialog } from "@/components/EditCaptureDialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LazyImage } from "@/components/LazyImage";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useVibration } from "@/hooks/useVibration";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -176,6 +179,7 @@ const Logbook = () => {
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
+  const { vibrateSuccess, vibrateError, vibrateClick } = useVibration();
 
   const handleDelete = async () => {
     if (!selectedSpecies) return;
@@ -212,6 +216,7 @@ const Logbook = () => {
 
   const toggleFavorite = async (speciesId: string, currentFavorite: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
+    vibrateClick();
     
     try {
       const { error } = await supabase
@@ -223,11 +228,13 @@ const Logbook = () => {
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
+      vibrateSuccess();
       toast({
         title: !currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter",
         description: !currentFavorite ? "Fångsten har markerats som favorit." : "Fångsten har tagits bort från favoriter.",
       });
     } catch (err) {
+      vibrateError();
       console.error('Error toggling favorite:', err);
       toast({
         title: "Kunde inte uppdatera favorit",
@@ -280,6 +287,7 @@ const Logbook = () => {
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
 
+    vibrateClick();
     try {
       const { error } = await supabase
         .from('species_captures')
@@ -290,6 +298,7 @@ const Logbook = () => {
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
+      vibrateSuccess();
       toast({
         title: "Fångster borttagna",
         description: `${selectedIds.size} fångster har tagits bort.`,
@@ -299,6 +308,7 @@ const Logbook = () => {
       setBulkSelectMode(false);
       setShowBulkDeleteDialog(false);
     } catch (err) {
+      vibrateError();
       console.error('Error bulk deleting:', err);
       toast({
         title: "Kunde inte ta bort fångster",
@@ -577,7 +587,7 @@ const Logbook = () => {
                       <p className="text-sm">Börja utforska och fånga {category.name.toLowerCase()}!</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3">
+                     <div className="grid grid-cols-2 gap-3">
                       {category.species.map((species) => (
                         <Card 
                           key={species.id}
@@ -588,10 +598,10 @@ const Logbook = () => {
                               className="relative aspect-square cursor-pointer"
                               onClick={() => !bulkSelectMode && setFullscreenImage({ url: species.image, alt: species.name })}
                             >
-                              <img 
+                              <LazyImage 
                                 src={species.image}
                                 alt={species.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full"
                               />
                               {/* Gradient overlay */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

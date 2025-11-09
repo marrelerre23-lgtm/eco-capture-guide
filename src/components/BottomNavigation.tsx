@@ -11,15 +11,15 @@ const BottomNavigation = () => {
       label: "Översikt",
     },
     {
-      to: "/logbook",
-      icon: BookOpen,
-      label: "Loggbok",
-    },
-    {
       to: "/camera",
       icon: Camera,
       label: "Kamera",
       isCamera: true,
+    },
+    {
+      to: "/logbook",
+      icon: BookOpen,
+      label: "Loggbok",
     },
   ];
 
