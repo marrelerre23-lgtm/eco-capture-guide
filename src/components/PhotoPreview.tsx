@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Species {
   id: string;
@@ -24,19 +25,25 @@ interface PhotoPreviewProps {
 }
 
 const CATEGORIES = [
-  { value: "svamp", label: "Svamp" },
-  { value: "växt", label: "Växt" },
-  { value: "fågel", label: "Fågel" },
-  { value: "insekt", label: "Insekt" },
-  { value: "däggdjur", label: "Däggdjur" },
-  { value: "annat", label: "Annat" },
-  { value: "okänt", label: "Okänt" },
+  { value: "svamp", label: "🍄 Svamp" },
+  { value: "växt", label: "🌿 Växt" },
+  { value: "träd", label: "🌳 Träd" },
+  { value: "mossa", label: "🌱 Mossa" },
+  { value: "sten", label: "💎 Sten" },
+  { value: "okänt", label: "❓ Okänt" },
+];
+
+const DETAIL_LEVELS = [
+  { value: "quick", label: "⚡ Snabb (5s)", description: "Grundläggande identifiering" },
+  { value: "standard", label: "⭐ Standard (10s)", description: "Balanserad analys" },
+  { value: "deep", label: "🔬 Djup (20s)", description: "Detaljerad analys" },
 ];
 
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
+  const [detailLevel, setDetailLevel] = React.useState<string>("standard");
 
   const handleAnalyze = async () => {
     try {
@@ -52,7 +59,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       const { data, error } = await supabase.functions.invoke('analyze-species', {
         body: { 
           imageUrl: uploadedImageUrl,
-          category: selectedCategory || "okänt"
+          category: selectedCategory || "okänt",
+          detailLevel: detailLevel
         }
       });
 
@@ -167,6 +175,29 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                 </div>
               </div>
               
+              {/* Detail Level Selection */}
+              <div className="bg-card/95 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-border space-y-3">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-foreground">Analysnivå</h3>
+                  <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
+                </div>
+                <Select value={detailLevel} onValueChange={setDetailLevel}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DETAIL_LEVELS.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{level.label}</span>
+                          <span className="text-xs text-muted-foreground">{level.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
               {/* Retake Button */}
               <Button 
                 variant="outline" 
@@ -181,12 +212,22 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             </>
           ) : (
             <>
-              {/* Selected Category Display */}
-              <div className="bg-primary/10 border-2 border-primary/20 rounded-xl p-4 text-center">
-                <p className="text-sm text-muted-foreground mb-1">Vald kategori:</p>
-                <p className="text-lg font-semibold text-primary">
-                  {CATEGORIES.find(c => c.value === selectedCategory)?.label}
-                </p>
+              {/* Selected Settings Display */}
+              <div className="bg-primary/10 border-2 border-primary/20 rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Kategori</p>
+                    <p className="text-sm font-semibold text-primary">
+                      {CATEGORIES.find(c => c.value === selectedCategory)?.label}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Analysnivå</p>
+                    <p className="text-sm font-semibold text-primary">
+                      {DETAIL_LEVELS.find(l => l.value === detailLevel)?.label}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Analyze Button */}

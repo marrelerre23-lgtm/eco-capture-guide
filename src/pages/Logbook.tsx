@@ -1,14 +1,23 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, Filter, SortAsc, Star } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { ImageViewer } from "@/components/ImageViewer";
+import { exportToCSV, exportToJSON } from "@/utils/exportData";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Predefined categories that always show
 const PREDEFINED_CATEGORIES = [
@@ -146,6 +155,8 @@ const Logbook = () => {
   const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
   const [categorySortBy, setCategorySortBy] = useState<Record<string, string>>({});
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [fullscreenImage, setFullscreenImage] = useState<{ url: string; alt: string } | null>(null);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -211,11 +222,20 @@ const Logbook = () => {
     }
   };
 
-  // Convert captures to species (no global filtering/sorting)
+  // Convert captures to species with search filtering
   const allSpecies = useMemo(() => {
     if (!captures) return [];
-    return captures.map(convertCaptureToSpecies);
-  }, [captures]);
+    const converted = captures.map(convertCaptureToSpecies);
+    
+    if (!searchQuery.trim()) return converted;
+    
+    const query = searchQuery.toLowerCase();
+    return converted.filter(species => 
+      species.name.toLowerCase().includes(query) ||
+      species.scientificName.toLowerCase().includes(query) ||
+      species.description.toLowerCase().includes(query)
+    );
+  }, [captures, searchQuery]);
 
   // Group species by category, always show all categories
   const categorizedSpecies = useMemo(() => {
@@ -264,6 +284,44 @@ const Logbook = () => {
     setExpandedCategory(expandedCategory === categoryKey ? "" : categoryKey);
   };
 
+  const handleExport = (format: 'csv' | 'json') => {
+    if (!captures) return;
+    
+    const exportData = captures.map(capture => {
+      const species = capture.ai_analysis?.species;
+      return {
+        id: capture.id,
+        name: species?.commonName || "Okänd",
+        scientificName: species?.scientificName || "Okänd",
+        category: species?.category || "okänd",
+        capturedAt: new Date(capture.captured_at).toISOString(),
+        location: capture.location_name,
+        latitude: capture.latitude ? Number(capture.latitude) : undefined,
+        longitude: capture.longitude ? Number(capture.longitude) : undefined,
+        description: species?.description || "",
+        habitat: species?.habitat,
+        rarity: species?.rarity,
+        confidence: species?.confidence,
+        notes: capture.notes,
+        isFavorite: capture.is_favorite || false
+      };
+    });
+
+    if (format === 'csv') {
+      exportToCSV(exportData);
+      toast({
+        title: "Export klar",
+        description: `${exportData.length} fångster exporterade till CSV.`,
+      });
+    } else {
+      exportToJSON(exportData);
+      toast({
+        title: "Export klar",
+        description: `${exportData.length} fångster exporterade till JSON.`,
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
@@ -296,14 +354,42 @@ const Logbook = () => {
     <div className="min-h-screen bg-background pb-20 pt-16">
       <div className="p-4 space-y-4">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">Min Loggbok</h1>
-          <p className="text-muted-foreground">
-            En översikt av alla dina upptäckter. Klicka på en bild för detaljer.
-          </p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Min Loggbok</h1>
+              <p className="text-sm text-muted-foreground">
+                {allSpecies.length} {allSpecies.length === 1 ? 'fångst' : 'fångster'}
+              </p>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  Exportera som CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('json')}>
+                  Exportera som JSON
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Sök efter artnamn..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
-
-        {/* Filters and Sorting - removed, now per-category */}
 
         {/* Categories */}
         <div className="space-y-3">
@@ -372,11 +458,13 @@ const Logbook = () => {
                       {category.species.map((species) => (
                         <Card 
                           key={species.id}
-                          className="cursor-pointer shadow-card hover:shadow-eco transition-all overflow-hidden group"
-                          onClick={() => setSelectedSpecies(species)}
+                          className="shadow-card hover:shadow-eco transition-all overflow-hidden group"
                         >
                           <CardContent className="p-0">
-                            <div className="relative aspect-square">
+                            <div 
+                              className="relative aspect-square cursor-pointer"
+                              onClick={() => setFullscreenImage({ url: species.image, alt: species.name })}
+                            >
                               <img 
                                 src={species.image}
                                 alt={species.name}
@@ -396,7 +484,13 @@ const Logbook = () => {
                               </button>
                               
                               {/* Text overlay */}
-                              <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                              <div 
+                                className="absolute bottom-0 left-0 right-0 p-3 text-white cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedSpecies(species);
+                                }}
+                              >
                                 <h4 className="font-semibold text-sm leading-tight mb-0.5">
                                   {species.name}
                                 </h4>
@@ -439,6 +533,16 @@ const Logbook = () => {
           onDelete={handleDelete}
           isDeleting={isDeleting}
           showActions={true}
+        />
+      )}
+      
+      {/* Fullscreen Image Viewer */}
+      {fullscreenImage && (
+        <ImageViewer
+          imageUrl={fullscreenImage.url}
+          alt={fullscreenImage.alt}
+          isOpen={!!fullscreenImage}
+          onClose={() => setFullscreenImage(null)}
         />
       )}
     </div>

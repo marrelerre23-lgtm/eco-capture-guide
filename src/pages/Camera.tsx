@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff } from "lucide-react";
+import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
+import { Slider } from "@/components/ui/slider";
 
 interface Species {
   id: string;
@@ -34,30 +35,85 @@ const Camera = () => {
   const isOnline = useOnlineStatus();
   const { saveOfflineCapture } = useOfflineStorage();
   const [compressing, setCompressing] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [zoomSupported, setZoomSupported] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   const startCamera = async () => {
+    setCameraError(null);
     try {
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Kameran stöds inte i din webbläsare");
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment" } // Prefer back camera
       });
+      
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
         
-        // Check if torch is supported
+        // Check capabilities
         const videoTrack = mediaStream.getVideoTracks()[0];
         const capabilities = videoTrack.getCapabilities?.() as any;
+        
         if (capabilities?.torch) {
           setTorchSupported(true);
         }
+        
+        if (capabilities?.zoom) {
+          setZoomSupported(true);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error accessing camera:", error);
+      let errorMessage = "Kunde inte komma åt kameran.";
+      
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        errorMessage = "Kamerabehörighet nekad. Ge webbläsaren tillgång till kameran i inställningarna.";
+      } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+        errorMessage = "Ingen kamera hittades på enheten.";
+      } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+        errorMessage = "Kameran används redan av en annan app. Stäng andra appar som använder kameran.";
+      } else if (error.name === "OverconstrainedError") {
+        errorMessage = "Kameran stöder inte de begärda inställningarna.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setCameraError(errorMessage);
       toast({
         variant: "destructive",
         title: "Kamerafel",
-        description: "Kunde inte komma åt kameran. Kontrollera behörigheter.",
+        description: errorMessage,
       });
+    }
+  };
+
+  const applyZoom = async (newZoom: number) => {
+    if (!stream || !zoomSupported) return;
+    
+    try {
+      const videoTrack = stream.getVideoTracks()[0];
+      const capabilities = videoTrack.getCapabilities() as any;
+      
+      if (capabilities.zoom) {
+        const clampedZoom = Math.max(
+          capabilities.zoom.min || 1,
+          Math.min(capabilities.zoom.max || 5, newZoom)
+        );
+        
+        await videoTrack.applyConstraints({
+          // @ts-ignore
+          advanced: [{ zoom: clampedZoom }]
+        });
+        
+        setZoom(clampedZoom);
+      }
+    } catch (error) {
+      console.error("Error applying zoom:", error);
     }
   };
 
@@ -65,7 +121,7 @@ const Camera = () => {
     if (!stream || !torchSupported) {
       toast({
         title: "Ljus ej tillgängligt",
-        description: "Din enhet stöder inte kamerans ljus i webbläsaren. Använd den nativa appen för full funktionalitet.",
+        description: "Din enhet stöder inte kamerans ljus i webbläsaren.",
       });
       return;
     }
@@ -80,15 +136,11 @@ const Camera = () => {
       });
       
       setTorchOn(newTorchState);
-      toast({
-        title: newTorchState ? "Ljus påslaget" : "Ljus avslaget",
-      });
     } catch (error) {
       console.error("Error toggling torch:", error);
       toast({
         variant: "destructive",
         title: "Kunde inte styra ljuset",
-        description: "Ett fel uppstod när ljuset skulle ändras.",
       });
     }
   };
@@ -263,6 +315,43 @@ const Camera = () => {
     );
   }
 
+  // Show error state if camera failed
+  if (cameraError) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center p-6">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-6xl">📷</div>
+          <h2 className="text-xl font-semibold text-white">Kamera ej tillgänglig</h2>
+          <p className="text-white/70">{cameraError}</p>
+          <div className="space-y-2">
+            <Button
+              onClick={startCamera}
+              className="w-full"
+            >
+              Försök igen
+            </Button>
+            <Button
+              variant="outline"
+              onClick={uploadFromDevice}
+              className="w-full bg-white/10 text-white border-white/20 hover:bg-white/20"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Välj bild istället
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/')}
+              className="w-full text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Tillbaka
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black flex flex-col">
       {/* Camera View */}
@@ -308,6 +397,7 @@ const Camera = () => {
                 torchOn ? 'bg-primary/80' : ''
               }`}
               onClick={toggleTorch}
+              disabled={!torchSupported}
             >
               {torchOn ? (
                 <Flashlight className="h-6 w-6" />
@@ -317,6 +407,22 @@ const Camera = () => {
             </Button>
           </div>
         </div>
+        
+        {/* Zoom Controls */}
+        {zoomSupported && (
+          <div className="absolute bottom-32 left-4 right-4 flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-4 py-3">
+            <ZoomOut className="h-5 w-5 text-white flex-shrink-0" />
+            <Slider
+              value={[zoom]}
+              onValueChange={(value) => applyZoom(value[0])}
+              min={1}
+              max={5}
+              step={0.1}
+              className="flex-1"
+            />
+            <ZoomIn className="h-5 w-5 text-white flex-shrink-0" />
+          </div>
+        )}
         
         {/* Focus Frame */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
