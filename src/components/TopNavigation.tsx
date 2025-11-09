@@ -37,7 +37,7 @@ export const TopNavigation = ({ user, onLogout }: TopNavigationProps) => {
             size="icon"
             onClick={() => navigate('/map')}
             className="rounded-full"
-            aria-label="Visa karta"
+            title="Visa karta"
           >
             <MapPin className="h-5 w-5" />
           </Button>
