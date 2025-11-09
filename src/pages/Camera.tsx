@@ -31,7 +31,7 @@ const Camera = () => {
   const [uploading, setUploading] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number; accuracy?: number } | null>(null);
   const isOnline = useOnlineStatus();
   const { saveOfflineCapture } = useOfflineStorage();
   const [compressing, setCompressing] = useState(false);
@@ -151,12 +151,14 @@ const Camera = () => {
         (position) => {
           setLocation({
             latitude: position.coords.latitude,
-            longitude: position.coords.longitude
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy // GPS accuracy in meters
           });
         },
         (error) => {
           console.log('Kunde inte hämta plats:', error);
-        }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
   };

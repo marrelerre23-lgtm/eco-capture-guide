@@ -6,9 +6,10 @@ import { RouterSafeLayout } from "./components/RouterSafeLayout";
 import Overview from "./pages/Overview";
 import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
+import Map from "./pages/Map";
 import Auth from "./pages/Auth";
 import AnalysisResult from "./pages/AnalysisResult";
-import Profile from "./pages/Profile";
+import ProfileEnhanced from "./pages/ProfileEnhanced";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -24,7 +25,8 @@ const AppRoutes = () => {
         <Route path="/camera" element={<Camera />} />
         <Route path="/analysis-result" element={<AnalysisResult />} />
         <Route path="/logbook" element={<Logbook />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/map" element={<Map />} />
+        <Route path="/profile" element={<ProfileEnhanced />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

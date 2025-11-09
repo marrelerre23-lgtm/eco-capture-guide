@@ -135,3 +135,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Leaflet map styles */
+.leaflet-container {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+  padding: 0;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}

@@ -41,7 +41,7 @@ const AnalysisResult = () => {
 
   // Get alternatives data and location from navigation state
   const alternatives = location.state?.alternatives as Species[] || [];
-  const gpsLocation = location.state?.location as { latitude: number; longitude: number } | null;
+  const gpsLocation = location.state?.location as { latitude: number; longitude: number; accuracy?: number } | null;
 
   useEffect(() => {
     // Redirect to camera if no alternatives data
@@ -157,6 +157,7 @@ const AnalysisResult = () => {
           captured_at: selectedSpecies.dateFound.toISOString(),
           latitude: gpsLocation?.latitude || null,
           longitude: gpsLocation?.longitude || null,
+          gps_accuracy: gpsLocation?.accuracy || null,
           location_name: locationName,
           ai_analysis: {
             species: {

@@ -21,7 +21,7 @@ interface PhotoPreviewProps {
   imageUrl: string;
   onRetake: () => void;
   uploading?: boolean;
-  location?: { latitude: number; longitude: number } | null;
+  location?: { latitude: number; longitude: number; accuracy?: number } | null;
 }
 
 const CATEGORIES = [

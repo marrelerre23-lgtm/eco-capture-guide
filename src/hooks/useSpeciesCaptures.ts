@@ -12,6 +12,7 @@ export interface SpeciesCapture {
   latitude?: number;
   longitude?: number;
   is_favorite?: boolean;
+  gps_accuracy?: number;
 }
 
 // Helper type for parsed AI analysis
