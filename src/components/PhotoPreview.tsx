@@ -67,6 +67,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [detailLevel, setDetailLevel] = useState<string>("standard");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -200,6 +202,123 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         onOpenChange={setTipsDialogOpen}
         category={selectedCategory || undefined}
       />
+
+      {/* Category Selection Dialog */}
+      <dialog 
+        open={categoryDialogOpen} 
+        className={`fixed inset-0 z-50 ${categoryDialogOpen ? 'flex' : 'hidden'} items-end justify-center`}
+        onClick={() => setCategoryDialogOpen(false)}
+      >
+        <div 
+          className="bg-card rounded-t-3xl w-full max-w-2xl p-6 shadow-xl border-t border-border"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="text-center space-y-2 mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Välj kategori</h3>
+            <p className="text-sm text-muted-foreground">Valfritt: Hjälper AI:n identifiera fångsten</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {CATEGORIES.map((cat) => (
+              <Button
+                key={cat.value}
+                variant="outline"
+                className={`h-20 flex flex-col gap-2 border transition-all ${
+                  selectedCategory === cat.value
+                    ? "bg-primary/20 border-primary shadow-md"
+                    : "bg-card border-border hover:border-primary hover:bg-primary/5"
+                }`}
+                onClick={() => {
+                  setSelectedCategory(selectedCategory === cat.value ? null : cat.value);
+                  setCategoryDialogOpen(false);
+                }}
+              >
+                <span className="text-2xl">{cat.label.split(' ')[0]}</span>
+                <span className="text-xs font-medium">{cat.label.split(' ')[1]}</span>
+              </Button>
+            ))}
+          </div>
+          <Button 
+            variant="ghost" 
+            className="w-full"
+            onClick={() => setCategoryDialogOpen(false)}
+          >
+            Stäng
+          </Button>
+        </div>
+      </dialog>
+
+      {/* Detail Level Selection Dialog */}
+      <dialog 
+        open={detailDialogOpen} 
+        className={`fixed inset-0 z-50 ${detailDialogOpen ? 'flex' : 'hidden'} items-end justify-center`}
+        onClick={() => setDetailDialogOpen(false)}
+      >
+        <div 
+          className="bg-card rounded-t-3xl w-full max-w-2xl p-6 shadow-xl border-t border-border"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="text-center space-y-2 mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Välj analysnivå</h3>
+            <p className="text-sm text-muted-foreground">Hur grundlig ska AI-analysen vara?</p>
+          </div>
+          <div className="space-y-3 mb-4">
+            {DETAIL_LEVELS.map((level) => {
+              const Icon = level.icon;
+              return (
+                <Button
+                  key={level.value}
+                  variant={detailLevel === level.value ? "default" : "outline"}
+                  className={`w-full h-auto p-4 flex items-start gap-3 transition-all ${
+                    detailLevel === level.value 
+                      ? "bg-gradient-to-r from-primary to-accent border-0 shadow-md" 
+                      : "bg-card border hover:border-primary hover:bg-primary/5"
+                  }`}
+                  onClick={() => {
+                    setDetailLevel(level.value);
+                    setDetailDialogOpen(false);
+                  }}
+                >
+                  <div className={`p-2 rounded-lg ${
+                    detailLevel === level.value 
+                      ? "bg-white/20" 
+                      : "bg-primary/10"
+                  }`}>
+                    <Icon className={`w-5 h-5 ${
+                      detailLevel === level.value ? "text-white" : "text-primary"
+                    }`} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-base font-bold ${
+                        detailLevel === level.value ? "text-white" : "text-foreground"
+                      }`}>
+                        {level.label}
+                      </span>
+                      <span className={`text-sm font-semibold ${
+                        detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
+                      }`}>
+                        {level.time}
+                      </span>
+                    </div>
+                    <p className={`text-sm ${
+                      detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
+                    }`}>
+                      {level.description}
+                    </p>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+          <Button 
+            variant="ghost" 
+            className="w-full"
+            onClick={() => setDetailDialogOpen(false)}
+          >
+            Stäng
+          </Button>
+        </div>
+      </dialog>
       
       <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-16">
         {/* Decorative Nature Elements */}
@@ -250,90 +369,46 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                 </Button>
               </div>
 
-              {/* Category Selection - Compact */}
-              <div className="bg-card/95 backdrop-blur-md rounded-xl p-4 shadow-lg border border-border space-y-3">
-                <div className="text-center space-y-1">
-                  <h3 className="text-base font-semibold text-foreground">Vad försöker du fånga?</h3>
-                  <p className="text-xs text-muted-foreground">Valfritt: Hjälper AI:n om fångsten är svår att isolera</p>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {CATEGORIES.map((cat) => (
-                    <Button
-                      key={cat.value}
-                      variant="outline"
-                      className={`h-16 flex flex-col gap-1 border transition-all ${
-                        selectedCategory === cat.value
-                          ? "bg-primary/20 border-primary shadow-md"
-                          : "bg-card border-border hover:border-primary hover:bg-primary/5"
-                      }`}
-                      onClick={() => setSelectedCategory(selectedCategory === cat.value ? null : cat.value)}
-                    >
-                      <span className="text-xl">{cat.label.split(' ')[0]}</span>
-                      <span className="text-[10px] font-medium leading-tight">{cat.label.split(' ')[1]}</span>
-                    </Button>
-                  ))}
-                </div>
-                {selectedCategory && (
-                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-2 text-center">
-                    <p className="text-xs text-muted-foreground">Vald:</p>
-                    <p className="text-sm font-semibold text-primary">
-                      {CATEGORIES.find(c => c.value === selectedCategory)?.label}
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Detail Level Selection - Compact */}
-              <div className="bg-card/95 backdrop-blur-md rounded-xl p-4 shadow-lg border border-border space-y-3">
-                <div className="text-center space-y-1">
-                  <h3 className="text-base font-semibold text-foreground">Analysnivå</h3>
-                  <p className="text-xs text-muted-foreground">Välj hur grundlig AI-analysen ska vara</p>
-                </div>
-                <div className="space-y-2">
-                  {DETAIL_LEVELS.map((level) => {
-                    const Icon = level.icon;
-                    return (
-                      <Button
-                        key={level.value}
-                        variant={detailLevel === level.value ? "default" : "outline"}
-                        className={`w-full h-auto p-3 flex items-start gap-3 transition-all ${
-                          detailLevel === level.value 
-                            ? "bg-gradient-to-r from-primary to-accent border-0 shadow-md" 
-                            : "bg-card border hover:border-primary hover:bg-primary/5"
-                        }`}
-                        onClick={() => setDetailLevel(level.value)}
-                      >
-                        <div className={`p-1.5 rounded-lg ${
-                          detailLevel === level.value 
-                            ? "bg-white/20" 
-                            : "bg-primary/10"
-                        }`}>
-                          <Icon className={`w-4 h-4 ${
-                            detailLevel === level.value ? "text-white" : "text-primary"
-                          }`} />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="flex items-center justify-between mb-0.5">
-                            <span className={`text-sm font-bold ${
-                              detailLevel === level.value ? "text-white" : "text-foreground"
-                            }`}>
-                              {level.label}
+              {/* Compact Selection Summary */}
+              <div className="bg-card/95 backdrop-blur-md rounded-xl p-4 shadow-lg border border-border">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Category Button */}
+                  <button
+                    onClick={() => setCategoryDialogOpen(true)}
+                    className="flex flex-col items-center justify-center p-4 rounded-lg border border-border bg-card hover:bg-accent/10 transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground mb-1">Kategori</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xl">
+                        {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Kategori'}
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Detail Level Button */}
+                  <button
+                    onClick={() => setDetailDialogOpen(true)}
+                    className="flex flex-col items-center justify-center p-4 rounded-lg border border-border bg-card hover:bg-accent/10 transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground mb-1">Analysnivå</span>
+                    <div className="flex items-center gap-1">
+                      {(() => {
+                        const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
+                        const Icon = level?.icon || Star;
+                        return (
+                          <>
+                            <Icon className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">
+                              {level?.label} ({level?.time})
                             </span>
-                            <span className={`text-xs font-semibold ${
-                              detailLevel === level.value ? "text-white/80" : "text-muted-foreground"
-                            }`}>
-                              {level.time}
-                            </span>
-                          </div>
-                          <p className={`text-xs leading-tight ${
-                            detailLevel === level.value ? "text-white/90" : "text-muted-foreground"
-                          }`}>
-                            {level.description}
-                          </p>
-                        </div>
-                      </Button>
-                    );
-                  })}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </button>
                 </div>
               </div>
 
