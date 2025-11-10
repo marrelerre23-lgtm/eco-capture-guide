@@ -1,8 +1,9 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOut, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
+import { PhotoTipsDialog } from "@/components/PhotoTipsDialog";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/utils/imageCompression";
@@ -38,6 +39,7 @@ const Camera = () => {
   const [zoom, setZoom] = useState(1);
   const [zoomSupported, setZoomSupported] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
 
   const startCamera = async () => {
     setCameraError(null);
@@ -355,9 +357,15 @@ const Camera = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col">
-      {/* Camera View */}
-      <div className="relative flex-1">
+    <>
+      <PhotoTipsDialog 
+        open={tipsDialogOpen} 
+        onOpenChange={setTipsDialogOpen}
+      />
+      
+      <div className="fixed inset-0 bg-black flex flex-col">
+        {/* Camera View */}
+        <div className="relative flex-1">
         <video
           ref={videoRef}
           autoPlay
@@ -392,21 +400,32 @@ const Camera = () => {
               <p className="text-white/70 text-xs mt-1">Håll telefonen stadigt</p>
             </div>
             
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
-                torchOn ? 'bg-primary/80' : ''
-              }`}
-              onClick={toggleTorch}
-              disabled={!torchSupported}
-            >
-              {torchOn ? (
-                <Flashlight className="h-6 w-6" />
-              ) : (
-                <FlashlightOff className="h-6 w-6" />
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 backdrop-blur-sm"
+                onClick={() => setTipsDialogOpen(true)}
+              >
+                <HelpCircle className="h-6 w-6" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
+                  torchOn ? 'bg-primary/80' : ''
+                }`}
+                onClick={toggleTorch}
+                disabled={!torchSupported}
+              >
+                {torchOn ? (
+                  <Flashlight className="h-6 w-6" />
+                ) : (
+                  <FlashlightOff className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -502,6 +521,7 @@ const Camera = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

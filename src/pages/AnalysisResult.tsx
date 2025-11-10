@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { AIPhotoTips } from "@/components/AIPhotoTips";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -407,6 +408,17 @@ const AnalysisResult = () => {
               <h3 className="text-sm font-semibold">AI:s resonemang</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{selectedSpecies.reasoning}</p>
             </div>
+          )}
+
+          {/* AI Photo Tips */}
+          {selectedSpecies.confidence && (
+            <AIPhotoTips 
+              category={
+                selectedSpecies.facts.find(f => f.includes('Kategori:'))?.split(': ')[1] || 
+                selectedSpecies.description
+              }
+              confidence={selectedSpecies.confidence}
+            />
           )}
 
           {selectedSpecies.facts && selectedSpecies.facts.length > 0 && (
