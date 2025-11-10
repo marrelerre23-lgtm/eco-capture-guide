@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOut, Lightbulb } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
@@ -9,6 +9,8 @@ import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 import { Slider } from "@/components/ui/slider";
+import { PhotoTipsDialog } from "@/components/PhotoTipsDialog";
+import { analyzePhotoQuality } from "@/utils/photoQuality";
 
 interface Species {
   id: string;
@@ -38,6 +40,7 @@ const Camera = () => {
   const [zoom, setZoom] = useState(1);
   const [zoomSupported, setZoomSupported] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [showTipsDialog, setShowTipsDialog] = useState(false);
 
   const startCamera = async () => {
     setCameraError(null);
@@ -180,6 +183,22 @@ const Camera = () => {
           
           // Compress image before storing
           const compressedImage = await compressImage(imageDataUrl, 1920, 1920, 0.8);
+          
+          // Check photo quality
+          const qualityCheck = await analyzePhotoQuality(compressedImage);
+          
+          if (!qualityCheck.passed) {
+            toast({
+              variant: "destructive",
+              title: "Fotokvalitet kan förbättras",
+              description: qualityCheck.issues[0] || "Försök ta en ny bild med bättre ljus",
+            });
+          } else if (qualityCheck.warnings.length > 0) {
+            toast({
+              title: "Tips för bättre resultat",
+              description: qualityCheck.warnings[0],
+            });
+          }
           
           // Save offline if not connected
           if (!isOnline) {
@@ -392,21 +411,32 @@ const Camera = () => {
               <p className="text-white/70 text-xs mt-1">Håll telefonen stadigt</p>
             </div>
             
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
-                torchOn ? 'bg-primary/80' : ''
-              }`}
-              onClick={toggleTorch}
-              disabled={!torchSupported}
-            >
-              {torchOn ? (
-                <Flashlight className="h-6 w-6" />
-              ) : (
-                <FlashlightOff className="h-6 w-6" />
-              )}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20 backdrop-blur-sm"
+                onClick={() => setShowTipsDialog(true)}
+              >
+                <Lightbulb className="h-6 w-6" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`text-white hover:bg-white/20 backdrop-blur-sm transition-all ${
+                  torchOn ? 'bg-primary/80' : ''
+                }`}
+                onClick={toggleTorch}
+                disabled={!torchSupported}
+              >
+                {torchOn ? (
+                  <Flashlight className="h-6 w-6" />
+                ) : (
+                  <FlashlightOff className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -436,6 +466,12 @@ const Camera = () => {
           </div>
         </div>
       </div>
+      
+      {/* Photo Tips Dialog */}
+      <PhotoTipsDialog 
+        open={showTipsDialog} 
+        onOpenChange={setShowTipsDialog}
+      />
       
       {/* Hidden canvas for capturing photos */}
       <canvas ref={canvasRef} className="hidden" />
