@@ -28,12 +28,17 @@ interface PhotoPreviewProps {
 }
 
 const CATEGORIES = [
-  { value: "svamp", label: "🍄 Svamp" },
-  { value: "växt", label: "🌿 Växt" },
+  { value: "blomma", label: "🌸 Blomma" },
+  { value: "buske", label: "🌿 Buske" },
+  { value: "ört", label: "🌾 Ört" },
   { value: "träd", label: "🌳 Träd" },
+  { value: "svamp", label: "🍄 Svamp" },
   { value: "mossa", label: "🌱 Mossa" },
   { value: "sten", label: "💎 Sten" },
-  { value: "okänt", label: "❓ Okänt" },
+  { value: "insekt", label: "🐛 Insekt" },
+  { value: "fågel", label: "🦅 Fågel" },
+  { value: "däggdjur", label: "🦌 Däggdjur" },
+  { value: "annat", label: "❓ Annat" },
 ];
 
 const DETAIL_LEVELS = [
@@ -97,7 +102,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       const { data, error } = await supabase.functions.invoke('analyze-species', {
         body: { 
           imageUrl: uploadedImageUrl,
-          category: selectedCategory || "okänt",
+          category: selectedCategory || "annat",
           detailLevel: detailLevel
         }
       });
@@ -217,7 +222,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             <h3 className="text-lg font-semibold text-foreground">Välj kategori</h3>
             <p className="text-sm text-muted-foreground">Valfritt: Hjälper AI:n identifiera fångsten</p>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-4 max-h-[60vh] overflow-y-auto">
             {CATEGORIES.map((cat) => (
               <Button
                 key={cat.value}
@@ -353,10 +358,10 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                   >
                     <span className="text-2xl">
-                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '🌿'}
+                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
                     </span>
                     <span className="text-base font-semibold text-white">
-                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Växt'}
+                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Annat'}
                     </span>
                   </button>
                 </div>

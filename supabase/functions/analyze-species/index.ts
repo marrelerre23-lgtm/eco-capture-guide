@@ -19,9 +19,21 @@ serve(async (req) => {
       throw new Error('Bild URL saknas');
     }
     
-    const categoryHint = category && category !== 'okänt' 
-      ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${category === 'svamp' ? 'svampar' : category === 'växt' ? 'växter' : category === 'fågel' ? 'fåglar' : category === 'insekt' ? 'insekter' : category === 'däggdjur' ? 'däggdjur' : 'denna kategori'}.`
-      : 'Användaren är osäker på vad detta är. Analysera noggrant och försök identifiera vilken typ av organism det är.';
+    const categoryHint = category && category !== 'annat' 
+      ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${
+          category === 'svamp' ? 'svampar' : 
+          category === 'blomma' ? 'blommor' : 
+          category === 'buske' ? 'buskar' : 
+          category === 'ört' ? 'örter' : 
+          category === 'träd' ? 'träd' : 
+          category === 'mossa' ? 'mossor och lavar' : 
+          category === 'sten' ? 'stenar och mineraler' : 
+          category === 'fågel' ? 'fåglar' : 
+          category === 'insekt' ? 'insekter' : 
+          category === 'däggdjur' ? 'däggdjur' : 
+          'denna kategori'
+        }.`
+      : 'Användaren är osäker på vad detta är. Analysera noggrant och försök identifiera vilken typ av organism eller objekt det är.';
 
     const detailPrompt = detailLevel === 'deep' 
       ? 'Ge en mycket detaljerad och grundlig analys med omfattande beskrivningar.'
@@ -64,7 +76,7 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
       "species": {
         "commonName": "Svenskt artnamn",
         "scientificName": "Vetenskapligt namn",
-        "category": "växt/träd/svamp/mossa/sten/djur",
+        "category": "blomma/buske/ört/träd/svamp/mossa/sten/insekt/fågel/däggdjur/annat",
         "confidence": 0.85,
         "description": "Detaljerad beskrivning av arten på svenska",
         "habitat": "Var arten normalt förekommer",
@@ -79,12 +91,17 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
 
 VIKTIGT:
 - Returnera EXAKT 3 alternativ, sorterade efter confidence
-- Använd "växt" för blommor, örter, buskar (ej träd)
-- Använd "träd" specifikt för träd och större buskar
+- Använd "blomma" för alla blommande växter (vildblommor, prydnadsblommor)
+- Använd "buske" specifikt för buskar och större buskartade växter
+- Använd "ört" för örtartade växter, gräs och icke-blommande växter
+- Använd "träd" specifikt för träd
 - Använd "svamp" för alla svampar
 - Använd "mossa" för mossor och lavar
 - Använd "sten" för stenar, mineraler och bergarter
-- Använd "djur" för allt annat levande (insekter, fåglar, däggdjur etc)
+- Använd "insekt" för alla insekter (flugor, bin, fjärilar, skalbaggar etc)
+- Använd "fågel" för alla fåglar
+- Använd "däggdjur" för alla däggdjur
+- Använd "annat" för allt som inte passar i ovanstående kategorier
 
 Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäker, ge lägre confidence-värden.`
               },
@@ -148,7 +165,7 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
           species: {
             commonName: "Okänd art",
             scientificName: "Okänd",
-            category: "okänd",
+            category: "annat",
             confidence: 0.5,
             description: content,
             habitat: "Okänd",
