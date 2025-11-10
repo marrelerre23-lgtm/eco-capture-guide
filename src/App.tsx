@@ -32,26 +32,23 @@ const queryClient = new QueryClient({
 
 const AppRoutes = () => {
   return (
-    <Layout>
-      <PWAInstallPrompt />
-      <Routes>
-        <Route path="/" element={<Overview />} />
-        <Route path="/camera" element={<Camera />} />
-        <Route path="/analysis-result" element={<AnalysisResult />} />
-        <Route path="/logbook" element={<Logbook />} />
-        <Route path="/map" element={<Map />} />
-        <Route path="/profile" element={<ProfileEnhanced />} />
-        <Route path="/install" element={<Install />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      <Route path="/" element={<Overview />} />
+      <Route path="/camera" element={<Camera />} />
+      <Route path="/analysis-result" element={<AnalysisResult />} />
+      <Route path="/logbook" element={<Logbook />} />
+      <Route path="/map" element={<Map />} />
+      <Route path="/profile" element={<ProfileEnhanced />} />
+      <Route path="/install" element={<Install />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 
@@ -75,8 +72,11 @@ const App = () => {
           disableTransitionOnChange
         >
           <BrowserRouter>
-            {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
-            <AppRoutes />
+            <Layout>
+              <PWAInstallPrompt />
+              {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+              <AppRoutes />
+            </Layout>
           </BrowserRouter>
         </ThemeProvider>
       </QueryClientProvider>
