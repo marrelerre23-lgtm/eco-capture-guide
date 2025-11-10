@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { RouterSafeLayout } from "./components/RouterSafeLayout";
+import Layout from "./components/Layout";
 import Overview from "./pages/Overview";
 import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
@@ -32,7 +32,7 @@ const queryClient = new QueryClient({
 
 const AppRoutes = () => {
   return (
-    <RouterSafeLayout>
+    <Layout>
       <PWAInstallPrompt />
       <Routes>
         <Route path="/" element={<Overview />} />
@@ -51,7 +51,7 @@ const AppRoutes = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </RouterSafeLayout>
+    </Layout>
   );
 };
 
