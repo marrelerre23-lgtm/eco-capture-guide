@@ -320,137 +320,117 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         </div>
       </dialog>
       
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pt-16">
-        {/* Decorative Nature Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 left-10 w-60 h-60 bg-accent/5 rounded-full blur-3xl" />
+      <div className="fixed inset-0 pt-16 pb-0 flex flex-col bg-background">
+        {/* Back Button */}
+        <div className="absolute top-20 left-4 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-card/90 backdrop-blur-sm shadow-md hover:shadow-lg"
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
         </div>
 
-        {/* Scrollable Content Container */}
-        <div className="h-full overflow-y-auto">
-          <div className="min-h-full flex flex-col">
-            {/* Main Content - Scrollable */}
-            <div className="flex-1 px-4 pt-4 pb-4 space-y-4 max-w-2xl mx-auto w-full">
-              
-              {/* Back Button */}
-              <div className="flex justify-start">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-card/90 backdrop-blur-sm shadow-md hover:shadow-lg"
-                  onClick={() => navigate('/')}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </div>
-
-              {/* Photo Preview with Overlay */}
-              <div className="relative w-full flex-1">
-                <div className="rounded-3xl overflow-hidden shadow-2xl h-full">
-                  <img 
-                    src={imageUrl} 
-                    alt="Captured" 
-                    className="w-full h-full object-cover min-h-[60vh]"
-                  />
-                  
-                  {/* Selection Summary Overlaid on Image */}
-                  <div className="absolute bottom-4 left-4 right-4 bg-card/40 backdrop-blur-xl rounded-2xl p-4 shadow-lg border border-border/30">
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Category Section */}
-                      <div className="flex flex-col items-center">
-                        <span className="text-xs text-muted-foreground/80 mb-2">Kategori</span>
-                        <button
-                          onClick={() => setCategoryDialogOpen(true)}
-                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                        >
-                          <span className="text-2xl">
-                            {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '🌿'}
-                          </span>
-                          <span className="text-base font-semibold text-primary">
-                            {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Växt'}
-                          </span>
-                        </button>
-                      </div>
-
-                      {/* Detail Level Section */}
-                      <div className="flex flex-col items-center">
-                        <span className="text-xs text-muted-foreground/80 mb-2">Analysnivå</span>
-                        <button
-                          onClick={() => setDetailDialogOpen(true)}
-                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                        >
-                          {(() => {
-                            const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
-                            const Icon = level?.icon || Star;
-                            return (
-                              <>
-                                <Icon className="w-5 h-5 text-accent" />
-                                <span className="text-base font-semibold text-accent">
-                                  {level?.label} ({level?.time})
-                                </span>
-                              </>
-                            );
-                          })()}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Spacer for sticky buttons */}
-              <div className="h-40" />
-            </div>
-
-            {/* Sticky Action Buttons at Bottom */}
-            <div className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border px-4 py-4 shadow-lg">
-              <div className="max-w-2xl mx-auto space-y-3">
-                {/* Analyze Button */}
-                <Button 
-                  size="lg"
-                  className="w-full h-14 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-md hover:shadow-lg transition-all rounded-2xl"
-                  onClick={handleAnalyze}
-                  disabled={uploading}
-                >
-                  {uploading ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Analyserar...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="mr-2 h-5 w-5" />
-                      Analysera med AI
-                    </>
-                  )}
-                </Button>
-                
-                {/* Bottom Action Buttons Row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="h-12 bg-card/90 backdrop-blur-sm border hover:bg-muted rounded-2xl"
+        {/* Photo Preview - Takes up remaining space */}
+        <div className="flex-1 relative px-4 pt-4 overflow-hidden">
+          <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl relative">
+            <img 
+              src={imageUrl} 
+              alt="Captured" 
+              className="w-full h-full object-cover"
+            />
+            
+            {/* Selection Summary Overlaid on Image */}
+            <div className="absolute bottom-6 left-4 right-4 bg-transparent border-2 border-primary/30 rounded-2xl p-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Category Section */}
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-muted-foreground mb-2">Kategori</span>
+                  <button
                     onClick={() => setCategoryDialogOpen(true)}
-                    disabled={uploading}
+                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                   >
-                    Ändra kategori
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="h-12 bg-card/90 backdrop-blur-sm border hover:bg-muted rounded-2xl"
-                    onClick={onRetake}
-                    disabled={uploading}
+                    <span className="text-2xl">
+                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '🌿'}
+                    </span>
+                    <span className="text-base font-semibold text-primary">
+                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Växt'}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Detail Level Section */}
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-muted-foreground mb-2">Analysnivå</span>
+                  <button
+                    onClick={() => setDetailDialogOpen(true)}
+                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                   >
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    Ta om
-                  </Button>
+                    {(() => {
+                      const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
+                      const Icon = level?.icon || Star;
+                      return (
+                        <>
+                          <Icon className="w-5 h-5 text-accent" />
+                          <span className="text-base font-semibold text-accent">
+                            {level?.label} ({level?.time})
+                          </span>
+                        </>
+                      );
+                    })()}
+                  </button>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Fixed Action Buttons at Bottom */}
+        <div className="px-4 py-4 bg-background space-y-3">
+          {/* Analyze Button */}
+          <Button 
+            size="lg"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-2xl"
+            onClick={handleAnalyze}
+            disabled={uploading}
+          >
+            {uploading ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Analyserar...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="mr-2 h-5 w-5" />
+                Analysera med AI
+              </>
+            )}
+          </Button>
+          
+          {/* Bottom Action Buttons Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="h-12 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
+              onClick={() => setCategoryDialogOpen(true)}
+              disabled={uploading}
+            >
+              Ändra kategori
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="h-12 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
+              onClick={onRetake}
+              disabled={uploading}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Ta om
+            </Button>
           </div>
         </div>
       </div>
