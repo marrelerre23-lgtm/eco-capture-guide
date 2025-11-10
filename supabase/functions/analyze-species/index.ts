@@ -70,9 +70,7 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
         "habitat": "Var arten normalt förekommer",
         "identificationFeatures": "Kännetecken som hjälper till identifiering",
         "rarity": "vanlig/ovanlig/sällsynt/hotad",
-        "sizeInfo": "Information om storlek",
-        "age": "Uppskattad ålder baserat på storlek och utseende (t.ex. '2-3 år', 'ung', 'mogen', 'gammal')",
-        "health": "Hälsostatus baserat på utseende (t.ex. 'frisk', 'god hälsa', 'vissa skador', 'skadad')"
+        "sizeInfo": "Information om storlek"
       },
       "reasoning": "Förklaring av varför du tror det är denna art"
     }

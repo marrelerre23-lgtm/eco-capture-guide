@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, Trash2, AlertTriangle, ZoomIn, MapPin, Leaf, Mountain, Droplet, Sun, RefreshCw, Camera, Lightbulb } from "lucide-react";
+import { ArrowLeft, Save, Trash2, AlertTriangle, ZoomIn, MapPin, Leaf, Mountain, Droplet, Sun } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,6 @@ interface Species {
   facts: string[];
   confidence?: number;
   reasoning?: string;
-  age?: string;
-  health?: string;
 }
 
 const AnalysisResult = () => {
@@ -40,7 +38,6 @@ const AnalysisResult = () => {
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState(0);
   const [reportingError, setReportingError] = useState(false);
   const [imageZoomed, setImageZoomed] = useState(false);
-  const [reanalyzing, setReanalyzing] = useState(false);
 
   // Get alternatives data and location from navigation state
   const alternatives = location.state?.alternatives as Species[] || [];
@@ -76,12 +73,9 @@ const AnalysisResult = () => {
   };
 
   const getFactIcon = (fact: string) => {
-    const lowerFact = fact.toLowerCase();
-    if (lowerFact.includes('habitat')) return MapPin;
-    if (lowerFact.includes('storlek')) return Mountain;
-    if (lowerFact.includes('sällsynthet')) return Leaf;
-    if (lowerFact.includes('ålder')) return Sun;
-    if (lowerFact.includes('hälsa')) return Droplet;
+    if (fact.toLowerCase().includes('habitat')) return MapPin;
+    if (fact.toLowerCase().includes('storlek')) return Mountain;
+    if (fact.toLowerCase().includes('sällsynthet')) return Leaf;
     return Sun;
   };
 
@@ -189,8 +183,6 @@ const AnalysisResult = () => {
               identificationFeatures: factsMap['Kännetecken'] || undefined,
               rarity: factsMap['Sällsynthet'] || undefined,
               sizeInfo: factsMap['Storlek'] || undefined,
-              age: selectedSpecies.age || factsMap['Ålder'] || undefined,
-              health: selectedSpecies.health || factsMap['Hälsa'] || undefined,
             }
           },
           notes: `AI-identifierad som ${selectedSpecies.name} (${selectedSpecies.scientificName})`
@@ -219,102 +211,6 @@ const AnalysisResult = () => {
 
   const handleDiscard = () => {
     navigate('/camera', { replace: true });
-  };
-
-  const handleReanalyze = async () => {
-    setReanalyzing(true);
-    try {
-      console.log('Startar omanalys av bild...');
-      
-      // Call the Supabase Edge Function for re-analysis
-      const { data, error } = await supabase.functions.invoke('analyze-species', {
-        body: { 
-          imageUrl: selectedSpecies.image,
-          category: "okänt", // Don't assume category on re-analysis
-          detailLevel: "deep" // Use deep analysis for better results
-        }
-      });
-
-      if (error) {
-        console.error('Edge Function error:', error);
-        throw new Error(`Omanalys misslyckades: ${error.message}`);
-      }
-
-      if (!data || data.error) {
-        throw new Error(data?.error || 'Inget svar från AI-analysen');
-      }
-
-      const analysisResult = data;
-      console.log('Omanalys resultat:', analysisResult);
-
-      if (analysisResult.alternatives && Array.isArray(analysisResult.alternatives)) {
-        // Navigate back with new alternatives
-        navigate('/analysis-result', { 
-          state: { 
-            alternatives: analysisResult.alternatives.map((alt: any) => ({
-              id: crypto.randomUUID(),
-              name: alt.species.commonName || "Okänd art",
-              scientificName: alt.species.scientificName || "Okänd",
-              image: selectedSpecies.image,
-              dateFound: new Date(),
-              description: alt.species.description || "Ingen beskrivning tillgänglig",
-              confidence: alt.species.confidence || 0.5,
-              reasoning: alt.reasoning || "",
-              age: alt.species.age,
-              health: alt.species.health,
-              facts: [
-                alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
-                alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
-                alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
-                alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
-                alt.species.age ? `Ålder: ${alt.species.age}` : "",
-                alt.species.health ? `Hälsa: ${alt.species.health}` : "",
-                alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : "",
-                alt.species.category ? `Kategori: ${alt.species.category}` : ""
-              ].filter(Boolean)
-            })),
-            location: gpsLocation
-          },
-          replace: true
-        });
-
-        toast({
-          title: "Omanalys klar!",
-          description: "Nya alternativ har identifierats",
-        });
-      }
-    } catch (error) {
-      console.error('Omanalys misslyckades:', error);
-      toast({
-        title: "Omanalys misslyckades", 
-        description: error instanceof Error ? error.message : "Kunde inte analysera bilden igen",
-        variant: "destructive"
-      });
-    } finally {
-      setReanalyzing(false);
-    }
-  };
-
-  const getConfidenceTip = (confidence: number) => {
-    if (confidence >= 0.8) {
-      return {
-        text: "Hög säkerhet! Bilden är tydlig och arten är lättidentifierad.",
-        icon: "✅",
-        color: "text-success"
-      };
-    } else if (confidence >= 0.6) {
-      return {
-        text: "Ta en tydligare bild med bättre ljus eller närmare avstånd för högre säkerhet.",
-        icon: "💡",
-        color: "text-warning"
-      };
-    } else {
-      return {
-        text: "Låg säkerhet. Ta en ny bild med bättre ljus, närmare avstånd eller välj en annan vinkel. Prova också 'Analysera på nytt' för djupare analys.",
-        icon: "📸",
-        color: "text-destructive"
-      };
-    }
   };
 
   return (
@@ -494,49 +390,6 @@ const AnalysisResult = () => {
           </Card>
         )}
 
-        {/* Smart Tips based on Confidence */}
-        {selectedSpecies.confidence && selectedSpecies.confidence < 0.8 && (
-          <Card className="border-l-4 border-l-warning bg-gradient-to-r from-warning/5 to-transparent">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-warning/10 flex-shrink-0">
-                  <Lightbulb className="w-5 h-5 text-warning" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1 flex items-center gap-2">
-                    <span className="text-lg">{getConfidenceTip(selectedSpecies.confidence).icon}</span>
-                    Tips för bättre resultat
-                  </h3>
-                  <p className={`text-sm ${getConfidenceTip(selectedSpecies.confidence).color}`}>
-                    {getConfidenceTip(selectedSpecies.confidence).text}
-                  </p>
-                  {selectedSpecies.confidence < 0.6 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-3 w-full border-warning/30 hover:bg-warning/10"
-                      onClick={handleReanalyze}
-                      disabled={reanalyzing}
-                    >
-                      {reanalyzing ? (
-                        <>
-                          <div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          Analyserar...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Analysera på nytt (Djup)
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Species Info */}
         <div className="space-y-4">
           <div className="space-y-2">
@@ -582,35 +435,13 @@ const AnalysisResult = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-4 space-y-2">
-        {/* Re-analyze Button (for medium confidence) */}
-        {selectedSpecies.confidence && selectedSpecies.confidence >= 0.6 && selectedSpecies.confidence < 0.8 && (
-          <Button
-            variant="outline"
-            onClick={handleReanalyze}
-            className="w-full border-warning/30 hover:bg-warning/10"
-            disabled={saving || reanalyzing}
-          >
-            {reanalyzing ? (
-              <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Analyserar på nytt...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Analysera på nytt för bättre säkerhet
-              </>
-            )}
-          </Button>
-        )}
-        
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-4">
         <div className="flex gap-3">
           <Button
             variant="outline"
             onClick={handleDiscard}
             className="flex-1"
-            disabled={saving || reanalyzing}
+            disabled={saving}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Radera
@@ -618,7 +449,7 @@ const AnalysisResult = () => {
           <Button
             onClick={handleSave}
             className="flex-1"
-            disabled={saving || reanalyzing}
+            disabled={saving}
           >
             {saving ? (
               <>

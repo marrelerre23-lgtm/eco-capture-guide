@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
+import { RouterSafeLayout } from "./components/RouterSafeLayout";
 import Overview from "./pages/Overview";
 import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
@@ -32,23 +32,26 @@ const queryClient = new QueryClient({
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Overview />} />
-      <Route path="/camera" element={<Camera />} />
-      <Route path="/analysis-result" element={<AnalysisResult />} />
-      <Route path="/logbook" element={<Logbook />} />
-      <Route path="/map" element={<Map />} />
-      <Route path="/profile" element={<ProfileEnhanced />} />
-      <Route path="/install" element={<Install />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/help" element={<Help />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <RouterSafeLayout>
+      <PWAInstallPrompt />
+      <Routes>
+        <Route path="/" element={<Overview />} />
+        <Route path="/camera" element={<Camera />} />
+        <Route path="/analysis-result" element={<AnalysisResult />} />
+        <Route path="/logbook" element={<Logbook />} />
+        <Route path="/map" element={<Map />} />
+        <Route path="/profile" element={<ProfileEnhanced />} />
+        <Route path="/install" element={<Install />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </RouterSafeLayout>
   );
 };
 
@@ -72,11 +75,8 @@ const App = () => {
           disableTransitionOnChange
         >
           <BrowserRouter>
-            <Layout>
-              <PWAInstallPrompt />
-              {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
-              <AppRoutes />
-            </Layout>
+            {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+            <AppRoutes />
           </BrowserRouter>
         </ThemeProvider>
       </QueryClientProvider>

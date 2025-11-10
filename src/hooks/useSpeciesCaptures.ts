@@ -28,8 +28,6 @@ export interface ParsedSpeciesCapture extends Omit<SpeciesCapture, 'ai_analysis'
       identificationFeatures?: string;
       rarity?: string;
       sizeInfo?: string;
-      age?: string;
-      health?: string;
     };
   } | null;
 }
