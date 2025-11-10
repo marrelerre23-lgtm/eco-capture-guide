@@ -345,75 +345,62 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                 </Button>
               </div>
 
-              {/* Photo Preview - Compact */}
-              <div className="relative w-full">
-                <div className="rounded-xl overflow-hidden shadow-xl ring-2 ring-border">
+              {/* Photo Preview with Overlay */}
+              <div className="relative w-full flex-1">
+                <div className="rounded-3xl overflow-hidden shadow-2xl h-full">
                   <img 
                     src={imageUrl} 
                     alt="Captured" 
-                    className="w-full h-auto object-contain max-h-[35vh]"
+                    className="w-full h-full object-cover min-h-[60vh]"
                   />
-                </div>
-              </div>
+                  
+                  {/* Selection Summary Overlaid on Image */}
+                  <div className="absolute bottom-4 left-4 right-4 bg-card/40 backdrop-blur-xl rounded-2xl p-4 shadow-lg border border-border/30">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Category Section */}
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs text-muted-foreground/80 mb-2">Kategori</span>
+                        <button
+                          onClick={() => setCategoryDialogOpen(true)}
+                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                        >
+                          <span className="text-2xl">
+                            {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '🌿'}
+                          </span>
+                          <span className="text-base font-semibold text-primary">
+                            {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Växt'}
+                          </span>
+                        </button>
+                      </div>
 
-              {/* Tips Button - Discreet */}
-              <div className="flex justify-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTipsDialogOpen(true)}
-                  className="gap-2 text-muted-foreground hover:text-foreground"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                  Tips för bättre bilder
-                </Button>
-              </div>
-
-              {/* Selection Summary */}
-              <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-border/50">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Category Section */}
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs text-muted-foreground mb-2">Kategori</span>
-                    <button
-                      onClick={() => setCategoryDialogOpen(true)}
-                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                    >
-                      <span className="text-2xl">
-                        {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
-                      </span>
-                      <span className="text-base font-semibold text-primary">
-                        {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Kategori'}
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Detail Level Section */}
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs text-muted-foreground mb-2">Analysnivå</span>
-                    <button
-                      onClick={() => setDetailDialogOpen(true)}
-                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                    >
-                      {(() => {
-                        const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
-                        const Icon = level?.icon || Star;
-                        return (
-                          <>
-                            <Icon className="w-5 h-5 text-accent" />
-                            <span className="text-base font-semibold text-accent">
-                              {level?.label} ({level?.time})
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </button>
+                      {/* Detail Level Section */}
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs text-muted-foreground/80 mb-2">Analysnivå</span>
+                        <button
+                          onClick={() => setDetailDialogOpen(true)}
+                          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                        >
+                          {(() => {
+                            const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
+                            const Icon = level?.icon || Star;
+                            return (
+                              <>
+                                <Icon className="w-5 h-5 text-accent" />
+                                <span className="text-base font-semibold text-accent">
+                                  {level?.label} ({level?.time})
+                                </span>
+                              </>
+                            );
+                          })()}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Spacer for sticky buttons */}
-              <div className="h-32" />
+              <div className="h-40" />
             </div>
 
             {/* Sticky Action Buttons at Bottom */}
@@ -422,7 +409,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                 {/* Analyze Button */}
                 <Button 
                   size="lg"
-                  className="w-full h-12 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                  className="w-full h-14 bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white font-semibold shadow-md hover:shadow-lg transition-all rounded-2xl"
                   onClick={handleAnalyze}
                   disabled={uploading}
                 >
@@ -439,17 +426,29 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                   )}
                 </Button>
                 
-                {/* Retake Button */}
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="w-full h-10 bg-card/90 backdrop-blur-sm border hover:bg-muted"
-                  onClick={onRetake}
-                  disabled={uploading}
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Ta om bild
-                </Button>
+                {/* Bottom Action Buttons Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="h-12 bg-card/90 backdrop-blur-sm border hover:bg-muted rounded-2xl"
+                    onClick={() => setCategoryDialogOpen(true)}
+                    disabled={uploading}
+                  >
+                    Ändra kategori
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="h-12 bg-card/90 backdrop-blur-sm border hover:bg-muted rounded-2xl"
+                    onClick={onRetake}
+                    disabled={uploading}
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Ta om
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
