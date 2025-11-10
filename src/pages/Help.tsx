@@ -64,44 +64,13 @@ const Help = () => {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">Allmänna tips:</h4>
-                      <ul className="space-y-2 ml-4">
-                        <li>• Använd naturligt dagsljus - undvik blixt och starka skuggor</li>
-                        <li>• Håll motivet i fokus och centrera det i bildrutan</li>
-                        <li>• Fyll bilden med motivet - kom tillräckligt nära</li>
-                        <li>• Ta bilder från flera olika vinklar</li>
-                        <li>• Håll telefonen stadigt för att undvika suddighet</li>
-                        <li>• Undvik motljus och för mörka förhållanden</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">För svamp:</h4>
-                      <ul className="space-y-2 ml-4">
-                        <li>• Fotografera ovansidan (hatten) tydligt</li>
-                        <li>• <strong>Viktigast:</strong> Ta bild av undersidan (lameller/porer)</li>
-                        <li>• Fota foten och dess fäste vid marken</li>
-                        <li>• Visa växplatsen (skog, gräsmatta, ved, etc.)</li>
-                        <li>• Ta både närbild och översiktsbild</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">För bär och växter:</h4>
-                      <ul className="space-y-2 ml-4">
-                        <li>• Fotografera bären/blommorna tydligt - färg är viktigt</li>
-                        <li>• Ta närbilder på bladens form och struktur</li>
-                        <li>• Visa hur bären/bladen sitter på växten</li>
-                        <li>• Fota stammen/stjälken</li>
-                        <li>• Inkludera växplatsens omgivning</li>
-                      </ul>
-                    </div>
-                    <div className="bg-primary/10 p-3 rounded-lg">
-                      <p className="text-sm">
-                        💡 <strong>Tips:</strong> Tryck på glödlampan i kameravyn för fler detaljerade fotograferingstips!
-                      </p>
-                    </div>
-                  </div>
+                  <ul className="space-y-2 ml-4">
+                    <li>• Använd naturligt ljus och undvik blixt</li>
+                    <li>• Ta bilder från olika vinklar (ovanifrån, från sidan, undersidan)</li>
+                    <li>• Se till att svampen/bäret är i fokus och fyller bilden</li>
+                    <li>• Inkludera omgivningen för att visa växplats</li>
+                    <li>• Undvik suddiga eller dåligt belysta bilder</li>
+                  </ul>
                 </AccordionContent>
               </AccordionItem>
 
