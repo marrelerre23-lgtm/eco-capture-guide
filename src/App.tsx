@@ -32,7 +32,7 @@ const queryClient = new QueryClient({
 
 const AppRoutes = () => {
   return (
-    <Layout>
+    <>
       <PWAInstallPrompt />
       <Routes>
         <Route path="/" element={<Overview />} />
@@ -51,7 +51,7 @@ const AppRoutes = () => {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </Layout>
+    </>
   );
 };
 
@@ -76,7 +76,9 @@ const App = () => {
         >
           <BrowserRouter>
             {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
-            <AppRoutes />
+            <Layout>
+              <AppRoutes />
+            </Layout>
           </BrowserRouter>
         </ThemeProvider>
       </QueryClientProvider>
