@@ -320,7 +320,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         </div>
       </dialog>
       
-      <div className="fixed inset-0 pt-16 pb-0 flex flex-col bg-background">
+      <div className="fixed inset-0 pt-14 pb-0 flex flex-col bg-background">
         {/* Back Button */}
         <div className="absolute top-20 left-4 z-10">
           <Button
@@ -334,7 +334,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         </div>
 
         {/* Photo Preview - Takes up remaining space */}
-        <div className="flex-1 relative px-4 pt-4 overflow-hidden">
+        <div className="flex-1 relative px-3 pt-2 overflow-hidden">
           <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl relative">
             <img 
               src={imageUrl} 
@@ -343,11 +343,11 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             />
             
             {/* Selection Summary Overlaid on Image */}
-            <div className="absolute bottom-6 left-4 right-4 bg-transparent border-2 border-primary/30 rounded-2xl p-4">
+            <div className="absolute bottom-4 left-3 right-3 bg-black/20 border-2 border-primary/30 backdrop-blur-sm rounded-2xl p-4">
               <div className="grid grid-cols-2 gap-4">
                 {/* Category Section */}
                 <div className="flex flex-col items-center">
-                  <span className="text-xs text-muted-foreground mb-2">Kategori</span>
+                  <span className="text-xs text-white/70 mb-2">Kategori</span>
                   <button
                     onClick={() => setCategoryDialogOpen(true)}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -355,7 +355,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                     <span className="text-2xl">
                       {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '🌿'}
                     </span>
-                    <span className="text-base font-semibold text-primary">
+                    <span className="text-base font-semibold text-white">
                       {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Växt'}
                     </span>
                   </button>
@@ -363,7 +363,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
                 {/* Detail Level Section */}
                 <div className="flex flex-col items-center">
-                  <span className="text-xs text-muted-foreground mb-2">Analysnivå</span>
+                  <span className="text-xs text-white/70 mb-2">Analysnivå</span>
                   <button
                     onClick={() => setDetailDialogOpen(true)}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -373,8 +373,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                       const Icon = level?.icon || Star;
                       return (
                         <>
-                          <Icon className="w-5 h-5 text-accent" />
-                          <span className="text-base font-semibold text-accent">
+                          <Icon className="w-5 h-5 text-white" />
+                          <span className="text-base font-semibold text-white">
                             {level?.label} ({level?.time})
                           </span>
                         </>
@@ -388,7 +388,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         </div>
 
         {/* Fixed Action Buttons at Bottom */}
-        <div className="px-4 py-4 bg-background space-y-3">
+        <div className="px-3 py-3 bg-background space-y-3">
           {/* Analyze Button */}
           <Button 
             size="lg"
@@ -414,7 +414,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             <Button 
               variant="outline" 
               size="lg"
-              className="h-12 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
+              className="h-11 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
               onClick={() => setCategoryDialogOpen(true)}
               disabled={uploading}
             >
@@ -424,7 +424,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             <Button 
               variant="outline" 
               size="lg"
-              className="h-12 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
+              className="h-11 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
               onClick={onRetake}
               disabled={uploading}
             >
