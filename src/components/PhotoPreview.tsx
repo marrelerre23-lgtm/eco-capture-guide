@@ -369,46 +369,46 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                 </Button>
               </div>
 
-              {/* Compact Selection Summary */}
-              <div className="bg-card/95 backdrop-blur-md rounded-xl p-4 shadow-lg border border-border">
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Category Button */}
-                  <button
-                    onClick={() => setCategoryDialogOpen(true)}
-                    className="flex flex-col items-center justify-center p-4 rounded-lg border border-border bg-card hover:bg-accent/10 transition-colors"
-                  >
-                    <span className="text-xs text-muted-foreground mb-1">Kategori</span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xl">
+              {/* Selection Summary */}
+              <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 shadow-lg border border-border/50">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Category Section */}
+                  <div className="flex flex-col items-center">
+                    <span className="text-xs text-muted-foreground mb-2">Kategori</span>
+                    <button
+                      onClick={() => setCategoryDialogOpen(true)}
+                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    >
+                      <span className="text-2xl">
                         {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
                       </span>
-                      <span className="text-sm font-semibold text-foreground">
+                      <span className="text-base font-semibold text-primary">
                         {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Kategori'}
                       </span>
-                    </div>
-                  </button>
+                    </button>
+                  </div>
 
-                  {/* Detail Level Button */}
-                  <button
-                    onClick={() => setDetailDialogOpen(true)}
-                    className="flex flex-col items-center justify-center p-4 rounded-lg border border-border bg-card hover:bg-accent/10 transition-colors"
-                  >
-                    <span className="text-xs text-muted-foreground mb-1">Analysnivå</span>
-                    <div className="flex items-center gap-1">
+                  {/* Detail Level Section */}
+                  <div className="flex flex-col items-center">
+                    <span className="text-xs text-muted-foreground mb-2">Analysnivå</span>
+                    <button
+                      onClick={() => setDetailDialogOpen(true)}
+                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    >
                       {(() => {
                         const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
                         const Icon = level?.icon || Star;
                         return (
                           <>
-                            <Icon className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-semibold text-foreground">
+                            <Icon className="w-5 h-5 text-accent" />
+                            <span className="text-base font-semibold text-accent">
                               {level?.label} ({level?.time})
                             </span>
                           </>
                         );
                       })()}
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 </div>
               </div>
 
