@@ -28,6 +28,8 @@ interface Species {
   facts: string[];
   confidence?: number;
   reasoning?: string;
+  age?: string;
+  health?: string;
 }
 
 const AnalysisResult = () => {
@@ -73,9 +75,12 @@ const AnalysisResult = () => {
   };
 
   const getFactIcon = (fact: string) => {
-    if (fact.toLowerCase().includes('habitat')) return MapPin;
-    if (fact.toLowerCase().includes('storlek')) return Mountain;
-    if (fact.toLowerCase().includes('sällsynthet')) return Leaf;
+    const lowerFact = fact.toLowerCase();
+    if (lowerFact.includes('habitat')) return MapPin;
+    if (lowerFact.includes('storlek')) return Mountain;
+    if (lowerFact.includes('sällsynthet')) return Leaf;
+    if (lowerFact.includes('ålder')) return Sun;
+    if (lowerFact.includes('hälsa')) return Droplet;
     return Sun;
   };
 
@@ -183,6 +188,8 @@ const AnalysisResult = () => {
               identificationFeatures: factsMap['Kännetecken'] || undefined,
               rarity: factsMap['Sällsynthet'] || undefined,
               sizeInfo: factsMap['Storlek'] || undefined,
+              age: selectedSpecies.age || factsMap['Ålder'] || undefined,
+              health: selectedSpecies.health || factsMap['Hälsa'] || undefined,
             }
           },
           notes: `AI-identifierad som ${selectedSpecies.name} (${selectedSpecies.scientificName})`

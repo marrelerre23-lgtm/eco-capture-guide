@@ -18,6 +18,8 @@ interface Species {
   dateFound: Date;
   description: string;
   facts: string[];
+  age?: string;
+  health?: string;
 }
 
 interface PhotoPreviewProps {
@@ -133,11 +135,15 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
               description: alt.species.description || "Ingen beskrivning tillgänglig",
               confidence: alt.species.confidence || 0.5,
               reasoning: alt.reasoning || "",
+              age: alt.species.age,
+              health: alt.species.health,
               facts: [
                 alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
                 alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
                 alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
                 alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
+                alt.species.age ? `Ålder: ${alt.species.age}` : "",
+                alt.species.health ? `Hälsa: ${alt.species.health}` : "",
                 alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : "",
                 alt.species.category ? `Kategori: ${alt.species.category}` : ""
               ].filter(Boolean)

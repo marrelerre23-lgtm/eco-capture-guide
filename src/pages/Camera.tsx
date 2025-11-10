@@ -18,6 +18,8 @@ interface Species {
   dateFound: Date;
   description: string;
   facts: string[];
+  age?: string;
+  health?: string;
 }
 
 const Camera = () => {
