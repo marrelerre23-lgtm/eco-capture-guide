@@ -76,7 +76,7 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
       "species": {
         "commonName": "Svenskt artnamn",
         "scientificName": "Vetenskapligt namn",
-        "category": "blomma/buske/ört/träd/svamp/mossa/sten/insekt/fågel/däggdjur/okänt",
+        "category": "blomma/buske/ört/träd/svamp/mossa/sten/insekt/fågel/däggdjur",
         "confidence": 0.85,
         "description": "Detaljerad beskrivning av arten på svenska",
         "habitat": "Var arten normalt förekommer",
@@ -101,7 +101,8 @@ VIKTIGT:
 - Använd "insekt" för alla insekter (flugor, bin, fjärilar, skalbaggar etc)
 - Använd "fågel" för alla fåglar
 - Använd "däggdjur" för alla däggdjur
-- Använd "okänt" för allt som inte passar i ovanstående kategorier
+- Du MÅSTE alltid välja en av ovanstående kategorier baserat på bilden, även om användaren valde "okänt"
+- Gör alltid ditt bästa för att identifiera rätt kategori från bilden
 
 Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäker, ge lägre confidence-värden.`
               },
@@ -165,8 +166,8 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
           species: {
             commonName: "Okänd art",
             scientificName: "Okänd",
-            category: "okänt",
-            confidence: 0.5,
+            category: "ört",
+            confidence: 0.3,
             description: content,
             habitat: "Okänd",
             identificationFeatures: "Kunde inte identifiera tydliga kännetecken",

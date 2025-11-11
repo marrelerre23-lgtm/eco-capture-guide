@@ -46,9 +46,32 @@ const PREDEFINED_CATEGORIES = [
   { name: "Stenar och mineraler", icon: "💎", key: "sten" },
   { name: "Insekter", icon: "🦋", key: "insekt" },
   { name: "Fåglar", icon: "🦅", key: "fågel" },
-  { name: "Däggdjur", icon: "🦌", key: "däggdjur" },
-  { name: "Okänt", icon: "❓", key: "okänt" }
+  { name: "Däggdjur", icon: "🦌", key: "däggdjur" }
 ];
+
+// Helper function to map AI category to predefined category
+const mapToCategory = (aiCategory: string): string => {
+  const normalized = aiCategory.toLowerCase().trim();
+  
+  // Return existing categories as-is
+  if (normalized === 'blomma') return "blomma";
+  if (normalized === 'buske') return "buske";
+  if (normalized === 'ört') return "ört";
+  if (normalized === 'träd') return "träd";
+  if (normalized === 'svamp') return "svamp";
+  if (normalized === 'mossa') return "mossa";
+  if (normalized === 'sten') return "sten";
+  if (normalized === 'insekt') return "insekt";
+  if (normalized === 'fågel') return "fågel";
+  if (normalized === 'däggdjur') return "däggdjur";
+  
+  // Map old "växt" category to appropriate new categories
+  // Since we can't determine the exact type, default to "ört"
+  if (normalized === 'växt') return "ört";
+  
+  // For any unknown category, default to "ört"
+  return "ört";
+};
 
 interface Species {
   id: string;
@@ -89,7 +112,7 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
       minute: '2-digit' 
     })}`,
     description: species?.description || "Ingen beskrivning tillgänglig",
-    category: species?.category || "okänt",
+    category: mapToCategory(species?.category || "ört"),
     confidence: species?.confidence,
     location: capture.location_name,
     notes: capture.notes,
