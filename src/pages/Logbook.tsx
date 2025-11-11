@@ -37,34 +37,18 @@ import {
 // Predefined categories that always show
 const PREDEFINED_CATEGORIES = [
   { name: "Favoriter", icon: "⭐", key: "favoriter" },
-  { name: "Växter och blommor", icon: "🌸", key: "växt" },
-  { name: "Träd och buskar", icon: "🌳", key: "träd" },
+  { name: "Blommor", icon: "🌸", key: "blomma" },
+  { name: "Buskar", icon: "🌱", key: "buske" },
+  { name: "Örter", icon: "🌿", key: "ört" },
+  { name: "Träd", icon: "🌳", key: "träd" },
   { name: "Svampar", icon: "🍄", key: "svamp" },
-  { name: "Mossa och lavar", icon: "🌿", key: "mossa" },
-  { name: "Stenar och mineraler", icon: "💎", key: "sten" }
+  { name: "Mossa och lavar", icon: "🌾", key: "mossa" },
+  { name: "Stenar och mineraler", icon: "💎", key: "sten" },
+  { name: "Insekter", icon: "🦋", key: "insekt" },
+  { name: "Fåglar", icon: "🦅", key: "fågel" },
+  { name: "Däggdjur", icon: "🦌", key: "däggdjur" },
+  { name: "Okänt", icon: "❓", key: "okänt" }
 ];
-
-// Helper function to map AI category to predefined category
-const mapToCategory = (aiCategory: string): string => {
-  const normalized = aiCategory.toLowerCase().trim();
-  
-  // Exact matches first
-  if (normalized === 'träd') return "träd";
-  if (normalized === 'svamp') return "svamp";
-  if (normalized === 'mossa') return "mossa";
-  if (normalized === 'sten') return "sten";
-  if (normalized === 'växt') return "växt";
-  
-  // Partial matches for variations
-  if (normalized.includes('träd') || normalized === 'tree') return "träd";
-  if (normalized.includes('svamp') || normalized === 'mushroom' || normalized === 'fungi') return "svamp";
-  if (normalized.includes('mossa') || normalized.includes('lav') || normalized === 'moss' || normalized === 'lichen') return "mossa";
-  if (normalized.includes('sten') || normalized.includes('mineral') || normalized === 'rock' || normalized === 'stone') return "sten";
-  if (normalized.includes('växt') || normalized.includes('blomma') || normalized === 'plant' || normalized === 'flower') return "växt";
-  
-  // Default fallback
-  return "växt";
-};
 
 interface Species {
   id: string;
@@ -105,7 +89,7 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
       minute: '2-digit' 
     })}`,
     description: species?.description || "Ingen beskrivning tillgänglig",
-    category: mapToCategory(species?.category || "okänd"),
+    category: species?.category || "okänt",
     confidence: species?.confidence,
     location: capture.location_name,
     notes: capture.notes,
@@ -154,13 +138,17 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
 // Helper function to get category icon
 const getCategoryIcon = (category: string): string => {
   const icons: Record<string, string> = {
-    'växt': '🌿',
-    'svamp': '🍄',
+    'blomma': '🌸',
+    'buske': '🌱',
+    'ört': '🌿',
     'träd': '🌳',
+    'svamp': '🍄',
+    'mossa': '🌾',
+    'sten': '💎',
     'insekt': '🦋',
     'fågel': '🦅',
-    'blomma': '🌸',
-    'buske': '🌱'
+    'däggdjur': '🦌',
+    'okänt': '❓'
   };
   return icons[category.toLowerCase()] || '🔍';
 };
@@ -418,7 +406,7 @@ const Logbook = () => {
         id: capture.id,
         name: species?.commonName || "Okänd",
         scientificName: species?.scientificName || "Okänd",
-        category: species?.category || "okänd",
+        category: species?.category || "okänt",
         capturedAt: new Date(capture.captured_at).toISOString(),
         location: capture.location_name,
         latitude: capture.latitude ? Number(capture.latitude) : undefined,

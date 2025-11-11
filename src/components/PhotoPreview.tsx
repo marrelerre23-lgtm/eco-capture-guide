@@ -38,7 +38,7 @@ const CATEGORIES = [
   { value: "insekt", label: "🐛 Insekt" },
   { value: "fågel", label: "🦅 Fågel" },
   { value: "däggdjur", label: "🦌 Däggdjur" },
-  { value: "annat", label: "❓ Annat" },
+  { value: "okänt", label: "❓ Okänt" },
 ];
 
 const DETAIL_LEVELS = [
@@ -102,7 +102,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       const { data, error } = await supabase.functions.invoke('analyze-species', {
         body: { 
           imageUrl: uploadedImageUrl,
-          category: selectedCategory || "annat",
+          category: selectedCategory || "okänt",
           detailLevel: detailLevel
         }
       });
@@ -361,7 +361,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                       {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
                     </span>
                     <span className="text-base font-semibold text-white">
-                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Annat'}
+                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Okänt'}
                     </span>
                   </button>
                 </div>

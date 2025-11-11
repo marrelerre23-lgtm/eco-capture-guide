@@ -19,7 +19,7 @@ serve(async (req) => {
       throw new Error('Bild URL saknas');
     }
     
-    const categoryHint = category && category !== 'annat' 
+    const categoryHint = category && category !== 'okänt' 
       ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${
           category === 'svamp' ? 'svampar' : 
           category === 'blomma' ? 'blommor' : 
@@ -76,7 +76,7 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
       "species": {
         "commonName": "Svenskt artnamn",
         "scientificName": "Vetenskapligt namn",
-        "category": "blomma/buske/ört/träd/svamp/mossa/sten/insekt/fågel/däggdjur/annat",
+        "category": "blomma/buske/ört/träd/svamp/mossa/sten/insekt/fågel/däggdjur/okänt",
         "confidence": 0.85,
         "description": "Detaljerad beskrivning av arten på svenska",
         "habitat": "Var arten normalt förekommer",
@@ -101,7 +101,7 @@ VIKTIGT:
 - Använd "insekt" för alla insekter (flugor, bin, fjärilar, skalbaggar etc)
 - Använd "fågel" för alla fåglar
 - Använd "däggdjur" för alla däggdjur
-- Använd "annat" för allt som inte passar i ovanstående kategorier
+- Använd "okänt" för allt som inte passar i ovanstående kategorier
 
 Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäker, ge lägre confidence-värden.`
               },
@@ -165,7 +165,7 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
           species: {
             commonName: "Okänd art",
             scientificName: "Okänd",
-            category: "annat",
+            category: "okänt",
             confidence: 0.5,
             description: content,
             habitat: "Okänd",
