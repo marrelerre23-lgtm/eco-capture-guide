@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope, HelpCircle, Sparkles, Settings, X, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -471,6 +472,29 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+
+              {/* Subscription Status */}
+              {subscription && subscription.tier === 'free' && (
+                <div className="bg-muted/50 rounded-lg p-3 space-y-2 mb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium">Din plan</span>
+                    <Badge variant="secondary" className="text-xs">Gratis</Badge>
+                  </div>
+                  <div className="text-xs space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Analyser idag:</span>
+                      <span className={subscription.isAnalysisLimitReached ? 'text-destructive font-medium' : ''}>
+                        {subscription.analysesToday} / {subscription.maxAnalysesPerDay}
+                      </span>
+                    </div>
+                  </div>
+                  {subscription.isAnalysisLimitReached && (
+                    <p className="text-xs text-destructive mt-1">
+                      Gräns nådd. Återställs vid midnatt.
+                    </p>
+                  )}
+                </div>
+              )}
               
               <button
                 onClick={() => setCategoryDialogOpen(true)}

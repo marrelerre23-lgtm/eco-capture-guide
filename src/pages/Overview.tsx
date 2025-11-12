@@ -6,6 +6,7 @@ import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 import { OverviewSkeleton } from "@/components/LoadingSkeleton";
+import { SubscriptionBanner } from "@/components/SubscriptionBanner";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -99,6 +100,9 @@ const Overview = () => {
   return (
     <div className="min-h-screen bg-background pb-20 pt-16">
       <div className="p-4 space-y-6">
+        {/* Subscription Status Banner */}
+        <SubscriptionBanner />
+
         {/* Latest Captures Carousel */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Senaste fångsterna</h2>
