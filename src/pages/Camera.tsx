@@ -65,12 +65,21 @@ const Camera = () => {
       console.error("Error accessing camera:", error);
       let errorMessage = "Kunde inte komma åt kameran.";
       
+      // iOS-specific error handling
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      
       if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        errorMessage = "Kamerabehörighet nekad. Ge webbläsaren tillgång till kameran i inställningarna.";
+        if (isIOS) {
+          errorMessage = "Kamerabehörighet nekad.\n\nFör Safari på iPhone/iPad:\n1. Öppna Inställningar\n2. Scrolla ner till Safari\n3. Tryck på Kamera\n4. Välj 'Fråga' eller 'Tillåt'\n5. Ladda om sidan";
+        } else {
+          errorMessage = "Kamerabehörighet nekad. Ge webbläsaren tillgång till kameran i inställningarna.";
+        }
       } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
         errorMessage = "Ingen kamera hittades på enheten.";
       } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
-        errorMessage = "Kameran används redan av en annan app. Stäng andra appar som använder kameran.";
+        errorMessage = isIOS
+          ? "Kameran används redan av en annan app. Stäng andra appar och försök igen."
+          : "Kameran används redan av en annan app. Stäng andra appar som använder kameran.";
       } else if (error.name === "OverconstrainedError") {
         errorMessage = "Kameran stöder inte de begärda inställningarna.";
       } else if (error.message) {

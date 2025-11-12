@@ -119,28 +119,43 @@ const AnalysisResult = () => {
       let locationName = null;
       if (gpsLocation) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${gpsLocation.latitude}&lon=${gpsLocation.longitude}&zoom=14&addressdetails=1`,
             {
+              signal: controller.signal,
               headers: {
                 'User-Agent': 'SpeciesCapture/1.0'
               }
             }
           );
-          const data = await response.json();
           
-          if (data.address) {
-            const parts = [];
-            if (data.address.village || data.address.town || data.address.city) {
-              parts.push(data.address.village || data.address.town || data.address.city);
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data.address) {
+              const parts = [];
+              if (data.address.village || data.address.town || data.address.city) {
+                parts.push(data.address.village || data.address.town || data.address.city);
+              }
+              if (data.address.municipality && parts[0] !== data.address.municipality) {
+                parts.push(data.address.municipality);
+              }
+              locationName = parts.join(', ') || data.display_name;
             }
-            if (data.address.municipality && parts[0] !== data.address.municipality) {
-              parts.push(data.address.municipality);
-            }
-            locationName = parts.join(', ') || data.display_name;
           }
         } catch (error) {
-          console.log('Kunde inte hämta platsnamn:', error);
+          if (error instanceof Error && error.name === 'AbortError') {
+            console.log('Geocoding timeout, using coordinates');
+          } else {
+            console.log('Geocoding error:', error);
+          }
+          // Fallback to coordinates if geocoding fails or times out
+          locationName = `${gpsLocation.latitude.toFixed(4)}, ${gpsLocation.longitude.toFixed(4)}`;
         }
       }
 
@@ -152,7 +167,7 @@ const AnalysisResult = () => {
           image_url: selectedSpecies.image,
           captured_at: selectedSpecies.dateFound instanceof Date 
             ? selectedSpecies.dateFound.toISOString() 
-            : selectedSpecies.dateFound,
+            : new Date(selectedSpecies.dateFound).toISOString(), // Always convert to ISO string
           latitude: gpsLocation?.latitude || null,
           longitude: gpsLocation?.longitude || null,
           gps_accuracy: gpsLocation?.accuracy || null,
@@ -162,7 +177,7 @@ const AnalysisResult = () => {
               commonName: selectedSpecies.name,
               scientificName: selectedSpecies.scientificName,
               category: category,
-              confidence: selectedSpecies.confidence || 0.85,
+              confidence: selectedSpecies.confidence || 0.5, // Default to 0.5 if undefined
               description: selectedSpecies.description,
               habitat: factsMap['Habitat'] || undefined,
               identificationFeatures: factsMap['Kännetecken'] || undefined,

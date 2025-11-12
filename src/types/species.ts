@@ -43,7 +43,8 @@ export const CATEGORY_TO_MAIN: Record<CategoryKey, MainCategoryKey> = {
 };
 
 // Display information for main categories
-export const MAIN_CATEGORY_DISPLAY: Record<MainCategoryKey, { icon: string; name: string; subcategories: string[] }> = {
+export const MAIN_CATEGORY_DISPLAY: Record<MainCategoryKey | 'favoriter', { icon: string; name: string; subcategories: string[] }> = {
+  'favoriter': { icon: '⭐', name: 'Favoriter', subcategories: [] },
   'växter': { icon: '🌿', name: 'Växter', subcategories: ['Blomma', 'Buske', 'Ört', 'Träd', 'Mossa'] },
   'svamp': { icon: '🍄', name: 'Svampar', subcategories: [] },
   'insekter': { icon: '🦋', name: 'Insekter', subcategories: [] },

@@ -230,6 +230,13 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
         } else {
           alt.species.category = category;
         }
+        
+        // Set default confidence if missing or invalid
+        if (typeof alt.species.confidence !== 'number' || isNaN(alt.species.confidence)) {
+          console.warn('Confidence saknas eller är ogiltig, använder default 0.5');
+          alt.species.confidence = 0.5;
+        }
+        
         return alt;
       });
     } catch (parseError) {
