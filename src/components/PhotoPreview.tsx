@@ -11,6 +11,8 @@ import { PhotoTipsDialog } from "./PhotoTipsDialog";
 import { User } from "@supabase/supabase-js";
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 import { getCachedResult, setCachedResult } from "@/utils/imageCache";
+import { getCachedAnalysis, setCachedAnalysis } from "@/utils/analysisCache";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface PhotoPreviewProps {
   imageUrl: string;
@@ -65,6 +67,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const { subscription, checkCanAnalyze } = useSubscription();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -79,9 +82,15 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
   const handleAnalyze = async () => {
     try {
+      // Check subscription limits first
+      const canAnalyze = await checkCanAnalyze();
+      if (!canAnalyze) {
+        return;
+      }
+
       // Rate limiting check
       const RATE_LIMIT_KEY = 'last_analysis_time';
-      const MIN_INTERVAL = 5000; // 5 seconds between analyses
+      const MIN_INTERVAL = 2000; // 2 seconds between analyses
       const lastAnalysisTime = parseInt(localStorage.getItem(RATE_LIMIT_KEY) || '0');
       const now = Date.now();
 
@@ -101,14 +110,12 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       // Mark that user has performed an analysis (for PWA prompt timing)
       localStorage.setItem('has_analyzed', 'true');
 
-      // Check AI result cache using new cache utility
-      const imageHash = imageUrl.substring(0, 100); // Use first 100 chars as hash
-      const cachedResult = getCachedResult(imageHash);
-      
-      if (cachedResult) {
-        console.log('Using cached AI result');
+      // Check analysis cache (5 min TTL) to prevent accidental duplicates
+      const cachedAnalysis = await getCachedAnalysis(imageUrl);
+      if (cachedAnalysis) {
+        console.log('Using cached analysis (within 5 min window)');
         navigate('/analysis-result', { 
-          state: cachedResult
+          state: cachedAnalysis
         });
         return;
       }
@@ -134,6 +141,17 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       if (error) {
         console.error('Edge Function error:', error);
         const errorMsg = error.message || 'Edge Function returnerade ett fel';
+        
+        // Check if upgrade is required (429 or upgradeRequired flag)
+        if (data?.upgradeRequired) {
+          toast({
+            title: "Gräns nådd",
+            description: data.error || "Du har nått din analysgräns. Uppgradera till Premium för obegränsade analyser!",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         throw new Error(`Analys misslyckades: ${errorMsg}`);
       }
 
@@ -142,6 +160,15 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       }
 
       if (data.error) {
+        // Check if upgrade is required
+        if (data.upgradeRequired) {
+          toast({
+            title: "Gräns nådd",
+            description: data.error,
+            variant: "destructive"
+          });
+          return;
+        }
         throw new Error(`AI-fel: ${data.error}`);
       }
 
@@ -172,9 +199,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           location: location
         };
 
-        // Cache the result using new cache utility
-        setCachedResult(imageHash, resultState);
-        console.log('AI result cached');
+        // Cache the result with 5-minute TTL
+        await setCachedAnalysis(imageUrl, resultState);
+        console.log('Analysis result cached with 5-min TTL');
 
         // Navigate to analysis result page with all alternatives
         navigate('/analysis-result', { state: resultState });
@@ -202,9 +229,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           location: location
         };
 
-        // Cache the result using new cache utility
-        setCachedResult(imageHash, resultState);
-        console.log('AI result cached');
+        // Cache the result with 5-minute TTL
+        await setCachedAnalysis(imageUrl, resultState);
+        console.log('Analysis result cached with 5-min TTL');
         
         navigate('/analysis-result', { state: resultState });
       } else {
@@ -227,6 +254,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         category={selectedCategory ? MAIN_CATEGORY_DISPLAY[selectedCategory].name : "fångst"} 
         detailLevel={detailLevel}
         onCancel={() => setIsAnalyzing(false)}
+        isFreeUser={subscription?.tier === 'free'}
       />
     );
   }

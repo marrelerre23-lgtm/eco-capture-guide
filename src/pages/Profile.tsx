@@ -7,9 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, User, LogOut, Mail, Calendar, Camera, Lock } from "lucide-react";
+import { Loader2, User, LogOut, Mail, Calendar, Camera, Lock, Sparkles, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { uploadAvatarImage } from "@/utils/storage";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradeDialog } from "@/components/UpgradeDialog";
+import { Badge } from "@/components/ui/badge";
 
 interface Profile {
   display_name: string | null;
@@ -29,6 +32,8 @@ const Profile = () => {
   });
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const { subscription, loading: subscriptionLoading } = useSubscription();
 
   useEffect(() => {
     getProfile();
@@ -337,6 +342,95 @@ const Profile = () => {
           </CardContent>
         </Card>
 
+        {/* Subscription Info */}
+        <Card className={subscription?.tier !== 'free' ? 'border-primary/50 bg-gradient-to-br from-primary/5 to-accent/5' : ''}>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {subscription?.tier !== 'free' ? (
+                  <Crown className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <Sparkles className="h-5 w-5" />
+                )}
+                Prenumeration
+              </div>
+              {subscription?.tier !== 'free' && (
+                <Badge variant="default" className="bg-gradient-to-r from-primary to-accent border-0">
+                  Premium
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {subscriptionLoading ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : subscription ? (
+              <>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <span className="text-sm text-muted-foreground">Plan</span>
+                    <span className="text-sm font-medium capitalize">
+                      {subscription.tier === 'free' ? 'Gratis' : subscription.tier}
+                    </span>
+                  </div>
+                  
+                  {subscription.tier === 'free' && (
+                    <>
+                      <div className="flex items-center justify-between py-2 border-b border-border">
+                        <span className="text-sm text-muted-foreground">Analyser idag</span>
+                        <span className="text-sm font-medium">
+                          {subscription.analysesToday} / {subscription.maxAnalysesPerDay || '∞'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between py-2 border-b border-border">
+                        <span className="text-sm text-muted-foreground">Sparade fångster</span>
+                        <span className="text-sm font-medium">
+                          {subscription.capturesCount} / {subscription.maxCaptures || '∞'}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {subscription.tier !== 'free' && (
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-sm text-muted-foreground">Status</span>
+                      <Badge variant="outline" className="border-green-500 text-green-500">
+                        Aktiv
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                {subscription.tier === 'free' && (
+                  <div className="pt-2">
+                    <Button 
+                      onClick={() => setUpgradeDialogOpen(true)} 
+                      className="w-full"
+                      size="lg"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Uppgradera till Premium
+                    </Button>
+                    
+                    <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs text-muted-foreground text-center">
+                        Med Premium får du obegränsade analyser, ingen annonser, och mycket mer!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Kunde inte ladda prenumerationsinformation
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Account Info */}
         <Card>
           <CardHeader>
@@ -376,6 +470,9 @@ const Profile = () => {
           Logga ut
         </Button>
       </div>
+
+      {/* Upgrade Dialog */}
+      <UpgradeDialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen} />
     </div>
   );
 };

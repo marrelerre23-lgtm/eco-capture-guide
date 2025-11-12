@@ -19,6 +19,65 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized', upgradeRequired: false }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    // Verify JWT and get user ID
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized', upgradeRequired: false }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Authenticated user:', user.id);
+
+    // Check user limits BEFORE analysis
+    const { data: limitCheck, error: limitError } = await supabaseClient
+      .rpc('check_user_limits', { user_id_input: user.id, action_type: 'analysis' });
+
+    if (limitError) {
+      console.error('Error checking limits:', limitError);
+      return new Response(JSON.stringify({ 
+        error: 'Kunde inte kontrollera användargränser',
+        upgradeRequired: false 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Limit check result:', limitCheck);
+
+    if (!limitCheck || limitCheck.length === 0 || !limitCheck[0]?.allowed) {
+      const reason = limitCheck?.[0]?.reason || 'Analysgräns nådd';
+      console.log('User limit reached:', reason);
+      return new Response(JSON.stringify({ 
+        error: reason,
+        upgradeRequired: true 
+      }), {
+        status: 429, // Too Many Requests
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { imageUrl, category, detailLevel = 'standard' } = await req.json();
     
     // Validate image URL exists
@@ -261,6 +320,18 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
     }
 
     console.log('Slutgiltig analys:', analysisResult);
+
+    // Increment usage counter after successful analysis
+    try {
+      await supabaseClient.rpc('increment_usage_counter', { 
+        user_id_input: user.id, 
+        action_type: 'analysis' 
+      });
+      console.log('Usage counter incremented for user:', user.id);
+    } catch (counterError) {
+      console.error('Error incrementing usage counter:', counterError);
+      // Don't fail the request if counter update fails
+    }
 
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

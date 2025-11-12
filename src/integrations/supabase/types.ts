@@ -49,26 +49,50 @@ export type Database = {
       }
       profiles: {
         Row: {
+          analyses_count: number | null
+          analyses_today: number | null
           avatar_url: string | null
+          captures_count: number | null
           created_at: string
           display_name: string | null
           id: string
+          last_analysis_date: string | null
+          max_analyses_per_day: number | null
+          max_captures: number | null
+          subscription_expires_at: string | null
+          subscription_tier: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          analyses_count?: number | null
+          analyses_today?: number | null
           avatar_url?: string | null
+          captures_count?: number | null
           created_at?: string
           display_name?: string | null
           id?: string
+          last_analysis_date?: string | null
+          max_analyses_per_day?: number | null
+          max_captures?: number | null
+          subscription_expires_at?: string | null
+          subscription_tier?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          analyses_count?: number | null
+          analyses_today?: number | null
           avatar_url?: string | null
+          captures_count?: number | null
           created_at?: string
           display_name?: string | null
           id?: string
+          last_analysis_date?: string | null
+          max_analyses_per_day?: number | null
+          max_captures?: number | null
+          subscription_expires_at?: string | null
+          subscription_tier?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -215,7 +239,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_user_limits: {
+        Args: { action_type: string; user_id_input: string }
+        Returns: {
+          allowed: boolean
+          reason: string
+        }[]
+      }
+      increment_usage_counter: {
+        Args: { action_type: string; user_id_input: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
