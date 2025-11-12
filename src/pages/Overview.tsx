@@ -2,12 +2,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Leaf, Camera, MapPin, Loader2, AlertCircle } from "lucide-react";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [slideCount, setSlideCount] = useState(0);
 
   // Calculate statistics from real data
   const statistics = useMemo(() => {
@@ -57,6 +60,20 @@ const Overview = () => {
     };
   }, [captures]);
 
+  // Track carousel slides
+  useEffect(() => {
+    if (!carouselApi) {
+      return;
+    }
+
+    setSlideCount(carouselApi.scrollSnapList().length);
+    setCurrentSlide(carouselApi.selectedScrollSnap());
+
+    carouselApi.on("select", () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap());
+    });
+  }, [carouselApi]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
@@ -92,45 +109,65 @@ const Overview = () => {
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Senaste fångsterna</h2>
           {statistics.latestCaptures && statistics.latestCaptures.length > 0 ? (
-            <Carousel className="w-full">
-              <CarouselContent>
-                {statistics.latestCaptures.map((capture) => (
-                  <CarouselItem key={capture.id}>
-                    <Card className="overflow-hidden shadow-card">
-                      <div className="aspect-square relative bg-gradient-earth">
-                        <img 
-                          src={capture.image_url}
-                          alt={capture.ai_analysis?.species?.commonName || "Capture"}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                          <h3 className="text-white font-medium">
-                            {capture.ai_analysis?.species?.commonName || "Okänd art"}
-                          </h3>
-                          <p className="text-white/80 text-sm">
-                            {capture.ai_analysis?.species?.scientificName || "Okänd"}
-                          </p>
-                          <div className="flex items-center gap-1 mt-1">
-                            <MapPin className="h-3 w-3 text-white/60" />
-                            <span className="text-white/60 text-xs">
-                              Fångad {new Date(capture.captured_at).toLocaleDateString('sv-SE', { 
-                                day: 'numeric', 
-                                month: 'long' 
-                              })}, kl. {new Date(capture.captured_at).toLocaleTimeString('sv-SE', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </span>
+            <div className="space-y-3">
+              <Carousel className="w-full" setApi={setCarouselApi}>
+                <CarouselContent>
+                  {statistics.latestCaptures.map((capture) => (
+                    <CarouselItem key={capture.id}>
+                      <Card className="overflow-hidden shadow-card">
+                        <div className="aspect-square relative bg-gradient-earth">
+                          <img 
+                            src={capture.image_url}
+                            alt={capture.ai_analysis?.species?.commonName || "Capture"}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                            <h3 className="text-white font-medium">
+                              {capture.ai_analysis?.species?.commonName || "Okänd art"}
+                            </h3>
+                            <p className="text-white/80 text-sm">
+                              {capture.ai_analysis?.species?.scientificName || "Okänd"}
+                            </p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <MapPin className="h-3 w-3 text-white/60" />
+                              <span className="text-white/60 text-xs">
+                                Fångad {new Date(capture.captured_at).toLocaleDateString('sv-SE', { 
+                                  day: 'numeric', 
+                                  month: 'long' 
+                                })}, kl. {new Date(capture.captured_at).toLocaleTimeString('sv-SE', { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </Carousel>
+              
+              {/* Dots Indicator */}
+              {slideCount > 1 && (
+                <div className="flex items-center justify-center gap-2">
+                  {Array.from({ length: slideCount }).map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => carouselApi?.scrollTo(index)}
+                      className={`h-2 rounded-full transition-all ${
+                        index === currentSlide 
+                          ? 'w-8 bg-primary' 
+                          : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                      }`}
+                      aria-label={`Gå till slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
             <Card className="overflow-hidden shadow-card">
               <div className="aspect-square relative bg-muted flex items-center justify-center">

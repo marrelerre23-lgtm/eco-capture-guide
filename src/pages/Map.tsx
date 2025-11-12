@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -34,19 +34,24 @@ const Map = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([59.3293, 18.0686]); // Default to Stockholm
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
+  const [loadingLocation, setLoadingLocation] = useState(false);
 
   // Get user location
   useEffect(() => {
     if (navigator.geolocation) {
+      setLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
           setUserLocation(coords);
           setMapCenter(coords);
+          setLoadingLocation(false);
         },
         (error) => {
           console.log('Could not get user location:', error);
-        }
+          setLoadingLocation(false);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 } // Cache for 5 minutes
       );
     }
   }, []);
@@ -128,11 +133,25 @@ const Map = () => {
       }));
   }, [validCaptures]);
 
-  const centerOnUser = () => {
+  const centerOnUser = useCallback(() => {
     if (userLocation) {
       setMapCenter(userLocation);
+    } else if (navigator.geolocation && !loadingLocation) {
+      setLoadingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(coords);
+          setMapCenter(coords);
+          setLoadingLocation(false);
+        },
+        (error) => {
+          console.log('Could not get user location:', error);
+          setLoadingLocation(false);
+        }
+      );
     }
-  };
+  }, [userLocation, loadingLocation]);
 
   const clearFilters = () => {
     setSelectedCategory('all');
@@ -289,31 +308,25 @@ const Map = () => {
 
           return (
             <Marker key={capture.id} position={[lat, lng]}>
-              <Popup maxWidth={200}>
-                <Card className="border-0 shadow-none">
-                  <CardContent className="p-2">
-                    <div className="aspect-square relative mb-2 rounded-lg overflow-hidden">
-                      <img
-                        src={capture.image_url}
-                        alt={species?.commonName || 'Capture'}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <h4 className="font-semibold text-sm">{species?.commonName || 'Okänd art'}</h4>
-                    <p className="text-xs text-muted-foreground italic">{species?.scientificName}</p>
-                    {capture.location_name && (
-                      <p className="text-xs text-muted-foreground mt-1">{capture.location_name}</p>
-                    )}
-                    {capture.gps_accuracy && (
-                      <p className="text-xs text-muted-foreground">
-                        Noggrannhet: ±{Math.round(Number(capture.gps_accuracy))}m
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(capture.captured_at).toLocaleDateString('sv-SE')}
-                    </p>
-                  </CardContent>
-                </Card>
+              <Popup maxWidth={200} minWidth={150}>
+                <div className="p-1">
+                  <div className="aspect-square relative mb-1 rounded overflow-hidden bg-muted">
+                    <img
+                      src={capture.image_url}
+                      alt={species?.commonName || 'Capture'}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <h4 className="font-semibold text-xs leading-tight">{species?.commonName || 'Okänd art'}</h4>
+                  <p className="text-xs text-muted-foreground italic truncate">{species?.scientificName}</p>
+                  {capture.location_name && (
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{capture.location_name}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(capture.captured_at).toLocaleDateString('sv-SE')}
+                  </p>
+                </div>
               </Popup>
             </Marker>
           );

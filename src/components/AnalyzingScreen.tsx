@@ -5,6 +5,16 @@ import { TopNavigation } from "./TopNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 interface AnalyzingScreenProps {
   category: string;
@@ -34,6 +44,7 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingSc
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [user, setUser] = useState<User | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -90,7 +101,7 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingSc
           <Button
             variant="ghost"
             size="icon"
-            onClick={onCancel}
+            onClick={() => setShowCancelDialog(true)}
             className="rounded-full bg-background/80 backdrop-blur-sm hover:bg-background shadow-lg"
             title="Avbryt analys"
           >
@@ -178,6 +189,27 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingSc
         </div>
       </div>
     </div>
+
+    {/* Cancel Confirmation Dialog */}
+    <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Avbryt AI-analys?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Analysen är {Math.round(progress)}% klar. Om du avbryter nu går arbetet förlorat och du måste starta om från början.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Fortsätt analys</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onCancel}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Avbryt analys
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 };
