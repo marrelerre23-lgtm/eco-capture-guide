@@ -1,0 +1,4 @@
+Force rebuild trigger
+Date: 2025-11-12
+Reason: Clear build cache and force fresh dependency installation
+Version: 1.0.7

@@ -3,7 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { logAppDiagnostics } from "./utils/serviceWorkerManager";
 
-const APP_VERSION = '1.0.6';
+const APP_VERSION = '1.0.7';
 
 console.log(`🚀 EcoCapture v${APP_VERSION} starting...`);
 logAppDiagnostics();
