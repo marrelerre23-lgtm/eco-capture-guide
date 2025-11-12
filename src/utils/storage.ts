@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const uploadCaptureImage = async (imageFile: File): Promise<string> => {
-  const user = supabase.auth.getUser();
-  if (!user) {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
     throw new Error("Användaren måste vara inloggad för att ladda upp bilder");
   }
 
