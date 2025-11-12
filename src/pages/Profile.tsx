@@ -33,7 +33,8 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const { subscription, loading: subscriptionLoading } = useSubscription();
+  const [showDebug, setShowDebug] = useState(false);
+  const { subscription, loading: subscriptionLoading, error: subscriptionError } = useSubscription();
 
   useEffect(() => {
     getProfile();
@@ -354,20 +355,48 @@ const Profile = () => {
                 )}
                 Prenumeration
               </div>
-              {subscription?.tier !== 'free' && (
-                <Badge variant="default" className="bg-gradient-to-r from-primary to-accent border-0">
-                  Premium
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {subscription?.tier !== 'free' && (
+                  <Badge variant="default" className="bg-gradient-to-r from-primary to-accent border-0">
+                    Premium
+                  </Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="h-8 px-2 text-xs"
+                >
+                  {showDebug ? 'Dölj' : 'Debug'}
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {subscriptionLoading ? (
-              <div className="flex justify-center py-4">
+              <div className="flex flex-col items-center justify-center py-4 gap-2">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Laddar prenumeration...</p>
+              </div>
+            ) : subscriptionError ? (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive font-medium mb-1">Fel vid laddning</p>
+                <p className="text-xs text-destructive/80">{subscriptionError}</p>
               </div>
             ) : subscription ? (
               <>
+                {showDebug && (
+                  <div className="p-3 bg-muted/50 rounded-lg border border-border mb-4">
+                    <p className="text-xs font-mono mb-2 font-semibold">Debug Info:</p>
+                    <pre className="text-xs font-mono whitespace-pre-wrap break-all">
+                      {JSON.stringify(subscription, null, 2)}
+                    </pre>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Loading: {subscriptionLoading ? 'Ja' : 'Nej'} | Error: {subscriptionError || 'Inget'}
+                    </p>
+                  </div>
+                )}
+                
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2 border-b border-border">
                     <span className="text-sm text-muted-foreground">Plan</span>
@@ -424,9 +453,14 @@ const Profile = () => {
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Kunde inte ladda prenumerationsinformation
-              </p>
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Kunde inte ladda prenumerationsinformation
+                </p>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Standardinställningar används: Gratis plan
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>

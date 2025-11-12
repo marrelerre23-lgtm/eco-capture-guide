@@ -8,11 +8,52 @@ import { useState } from "react";
 import { UpgradeDialog } from "./UpgradeDialog";
 
 export const SubscriptionBanner = () => {
-  const { subscription, loading } = useSubscription();
+  const { subscription, loading, error } = useSubscription();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
 
-  if (loading || !subscription) {
-    return null;
+  if (loading) {
+    return (
+      <Card className="border-border bg-card">
+        <CardContent className="p-4 flex items-center justify-center">
+          <div className="text-sm text-muted-foreground">Laddar prenumeration...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-destructive/50 bg-destructive/5">
+        <CardContent className="p-4">
+          <p className="text-sm text-destructive">
+            Kunde inte ladda prenumeration: {error}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!subscription) {
+    return (
+      <Card className="border-border bg-card">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Gratis Plan (Standard)</h3>
+            </div>
+            <Button 
+              onClick={() => setUpgradeDialogOpen(true)}
+              size="sm"
+              variant="default"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Uppgradera
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Don't show banner for premium users
