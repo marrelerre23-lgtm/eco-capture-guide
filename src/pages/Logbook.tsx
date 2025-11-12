@@ -363,7 +363,7 @@ const Logbook = () => {
       return acc;
     }, {} as Record<string, Species[]>);
 
-    const mainCategories = ['favoriter', ...Object.keys(MAIN_CATEGORY_DISPLAY)] as const;
+    const mainCategories = Object.keys(MAIN_CATEGORY_DISPLAY) as Array<keyof typeof MAIN_CATEGORY_DISPLAY>;
     
     return mainCategories.map(categoryKey => {
       let categorySpecies: Species[];

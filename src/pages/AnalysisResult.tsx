@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AIPhotoTips } from "@/components/AIPhotoTips";
 import { Species, getMainCategory, getCategoryDisplayName, MAIN_CATEGORY_DISPLAY } from "@/types/species";
 import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
+import { useSubscription } from "@/hooks/useSubscription";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +30,7 @@ const AnalysisResult = () => {
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState(0);
   const [reportingError, setReportingError] = useState(false);
   const [imageZoomed, setImageZoomed] = useState(false);
+  const { checkCanCapture } = useSubscription();
 
   // Get alternatives data and location from navigation state
   const alternatives = location.state?.alternatives as Species[] || [];
@@ -101,6 +103,14 @@ const AnalysisResult = () => {
           description: "Du måste vara inloggad för att spara fångster",
           variant: "destructive"
         });
+        setSaving(false);
+        return;
+      }
+
+      // Check capture limits
+      const canCapture = await checkCanCapture();
+      if (!canCapture) {
+        setSaving(false);
         return;
       }
 
