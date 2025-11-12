@@ -427,6 +427,32 @@ const AnalysisResult = () => {
             />
           )}
 
+          {/* GPS Accuracy */}
+          {gpsLocation?.accuracy && (
+            <Card className="border-2 bg-gradient-to-br from-card to-card/50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">GPS-noggrannhet</h4>
+                    <p className="text-sm text-muted-foreground">
+                      ±{Math.round(gpsLocation.accuracy)} meter
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {gpsLocation.accuracy < 50 
+                        ? "Mycket hög noggrannhet 🎯" 
+                        : gpsLocation.accuracy < 500 
+                        ? "God noggrannhet 📍" 
+                        : "Okej noggrannhet 📌"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {selectedSpecies.facts && selectedSpecies.facts.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Fakta & Detaljer</h3>

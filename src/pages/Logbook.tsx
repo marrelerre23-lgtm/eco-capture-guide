@@ -602,6 +602,12 @@ const Logbook = () => {
                               </Tooltip>
                             </TooltipProvider>
                           )}
+                          {category.key === 'växter' && subcategoryFilter[category.key] && (
+                            <Badge variant="outline" className="ml-2 bg-primary/10 text-primary border-primary/20">
+                              <Filter className="h-3 w-3 mr-1" />
+                              {subcategoryFilter[category.key]}
+                            </Badge>
+                          )}
                         </div>
                         {category.subcategories && category.subcategories.length > 0 && (
                           <p className="text-xs text-muted-foreground mt-0.5">
@@ -839,15 +845,24 @@ const Logbook = () => {
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ta bort flera fångster</AlertDialogTitle>
-            <AlertDialogDescription>
-              Är du säker på att du vill ta bort {selectedIds.size} fångster? Detta går inte att ångra.
+            <AlertDialogTitle>Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Du håller på att ta bort <span className="font-semibold">{selectedIds.size}</span> {selectedIds.size === 1 ? 'fångst' : 'fångster'} permanent. 
+                Detta går inte att ångra.
+              </p>
+              {selectedIds.size >= 10 && (
+                <p className="text-destructive font-semibold flex items-center gap-2 mt-3 p-3 bg-destructive/10 rounded-md">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <span>Varning: Du tar bort {selectedIds.size} fångster! Kontrollera att du valt rätt innan du fortsätter.</span>
+                </p>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Ta bort
+              Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

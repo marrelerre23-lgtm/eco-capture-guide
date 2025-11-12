@@ -401,7 +401,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
               disabled={uploading}
             >
               <Settings className="h-4 w-4 mr-2" />
-              Jag vet vad det är...
+              Ge AI:n ett tips om kategori
             </Button>
           )}
 

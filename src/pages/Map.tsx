@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { getMainCategory, MAIN_CATEGORY_DISPLAY } from '@/types/species';
 
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -58,7 +59,16 @@ const Map = () => {
 
   // Get unique categories and locations
   const categories = useMemo(() => {
-    const cats = new Set(validCaptures.map(c => c.ai_analysis?.species?.category).filter(Boolean));
+    const cats = new Set(
+      validCaptures
+        .map(c => {
+          const category = c.ai_analysis?.species?.category;
+          if (!category) return null;
+          // Use getMainCategory to convert to main categories
+          return getMainCategory(category);
+        })
+        .filter(Boolean)
+    );
     return Array.from(cats);
   }, [validCaptures]);
 
@@ -72,7 +82,11 @@ const Map = () => {
     let filtered = validCaptures;
     
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(c => c.ai_analysis?.species?.category === selectedCategory);
+      filtered = filtered.filter(c => {
+        const category = c.ai_analysis?.species?.category;
+        if (!category) return false;
+        return getMainCategory(category) === selectedCategory;
+      });
     }
     
     if (selectedLocation !== 'all') {
@@ -190,9 +204,14 @@ const Map = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Alla kategorier</SelectItem>
-                      {categories.map(cat => (
-                        <SelectItem key={cat} value={cat || ''}>{cat}</SelectItem>
-                      ))}
+                      {categories.map(cat => {
+                        const display = MAIN_CATEGORY_DISPLAY[cat as keyof typeof MAIN_CATEGORY_DISPLAY];
+                        return (
+                          <SelectItem key={cat} value={cat || ''}>
+                            {display ? `${display.icon} ${display.name}` : cat}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
