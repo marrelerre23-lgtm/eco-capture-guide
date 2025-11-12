@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -505,26 +505,40 @@ const Logbook = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              {bulkSelectMode && selectedIds.size > 0 && (
+              {bulkSelectMode && (
+                <>
+                  {selectedIds.size > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => setShowBulkDeleteDialog(true)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Ta bort ({selectedIds.size})
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setBulkSelectMode(false);
+                      setSelectedIds(new Set());
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Avbryt
+                  </Button>
+                </>
+              )}
+              {!bulkSelectMode && (
                 <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => setShowBulkDeleteDialog(true)}
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => setBulkSelectMode(true)}
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Ta bort ({selectedIds.size})
+                  ☐
                 </Button>
               )}
-              <Button 
-                variant={bulkSelectMode ? "default" : "outline"} 
-                size="icon"
-                onClick={() => {
-                  setBulkSelectMode(!bulkSelectMode);
-                  setSelectedIds(new Set());
-                }}
-              >
-                {bulkSelectMode ? "✓" : "☐"}
-              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useSpeciesCaptures } from '@/hooks/useSpeciesCaptures';
+import { MapMarkers } from '@/components/MapMarkers';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Locate, Filter, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -294,37 +295,8 @@ const Map = () => {
           </Marker>
         )}
 
-        {/* Capture markers */}
-        {filteredCaptures.map(capture => {
-          const lat = Number(capture.latitude);
-          const lng = Number(capture.longitude);
-          const species = capture.ai_analysis?.species;
-
-          return (
-            <Marker key={capture.id} position={[lat, lng]}>
-              <Popup maxWidth={200} minWidth={150}>
-                <div className="p-1">
-                  <div className="aspect-square relative mb-1 rounded overflow-hidden bg-muted">
-                    <img
-                      src={capture.image_url}
-                      alt={species?.commonName || 'Capture'}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                  <h4 className="font-semibold text-xs leading-tight">{species?.commonName || 'Okänd art'}</h4>
-                  <p className="text-xs text-muted-foreground italic truncate">{species?.scientificName}</p>
-                  {capture.location_name && (
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{capture.location_name}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(capture.captured_at).toLocaleDateString('sv-SE')}
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
+        {/* Capture markers - Optimized with viewport rendering */}
+        <MapMarkers captures={filteredCaptures} />
 
         {/* Hotspot markers */}
         {hotspots.map((hotspot, index) => (

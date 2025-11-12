@@ -5,6 +5,7 @@ import { TopNavigation } from "./TopNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
+import { MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -158,9 +159,14 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel, isFreeUser = 
 
         {/* Title */}
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            AI analyserar din {category}
-          </h2>
+          <div className="flex items-center justify-center gap-3">
+            <div className="text-4xl">
+              {MAIN_CATEGORY_DISPLAY[category as MainCategoryKey]?.icon || '🔍'}
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Analyserar {MAIN_CATEGORY_DISPLAY[category as MainCategoryKey]?.name.toLowerCase() || category}
+            </h2>
+          </div>
           <p className="text-muted-foreground">
             Beräknad tid: {getEstimatedTime()} sekunder
           </p>

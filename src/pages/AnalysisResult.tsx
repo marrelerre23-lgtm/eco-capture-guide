@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AIPhotoTips } from "@/components/AIPhotoTips";
 import { Species, getMainCategory, getCategoryDisplayName, MAIN_CATEGORY_DISPLAY } from "@/types/species";
 import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
+import { getGpsGuidanceMessage, getGpsAccuracyColorClass } from "@/utils/gpsGuidance";
 import { useSubscription } from "@/hooks/useSubscription";
 import {
   AlertDialog,
@@ -453,26 +454,23 @@ const AnalysisResult = () => {
             />
           )}
 
-          {/* GPS Accuracy */}
-          {gpsLocation?.accuracy && (
-            <Card className="border-2 bg-gradient-to-br from-card to-card/50">
+          {/* GPS Accuracy with Guidance */}
+          {gpsLocation?.accuracy !== undefined && (
+            <Card className={`border-2 ${getGpsAccuracyColorClass(getGpsGuidanceMessage(gpsLocation.accuracy).level)}`}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <MapPin className="w-5 h-5 text-primary" />
+                  <div className="text-2xl">
+                    {getGpsGuidanceMessage(gpsLocation.accuracy).icon}
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">GPS-noggrannhet</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {formatGpsAccuracy(gpsLocation.accuracy)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {gpsLocation.accuracy < 50 
-                        ? "Mycket hög noggrannhet " 
-                        : gpsLocation.accuracy < 500 
-                        ? "God noggrannhet " 
-                        : "Okej noggrannhet "}
-                      {getGpsAccuracyIcon(gpsLocation.accuracy)}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-sm">GPS-noggrannhet</h4>
+                      <Badge variant="outline" className="text-xs">
+                        {formatGpsAccuracy(gpsLocation.accuracy)}
+                      </Badge>
+                    </div>
+                    <p className="text-sm">
+                      {getGpsGuidanceMessage(gpsLocation.accuracy).message}
                     </p>
                   </div>
                 </div>
