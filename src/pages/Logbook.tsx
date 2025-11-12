@@ -355,18 +355,8 @@ const Logbook = () => {
         categorySpecies = speciesByCategory[categoryKey as MainCategoryKey] || [];
       }
 
-      return {
-        key: categoryKey,
-        name: categoryKey === 'favoriter' ? 'Favoriter' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].name,
-        icon: categoryKey === 'favoriter' ? '⭐' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].icon,
-        count: categorySpecies.length,
-        species: categorySpecies,
-        subcategories: categoryKey === 'växter' ? MAIN_CATEGORY_DISPLAY['växter'].subcategories : []
-      };
-    }).filter(cat => cat.count > 0);
-      
       // Apply sorting per category
-      const sortBy = categorySortBy[category.key] || "date";
+      const sortBy = categorySortBy[categoryKey] || "date";
       switch (sortBy) {
         case "name":
           categorySpecies.sort((a, b) => a.name.localeCompare(b.name, 'sv-SE'));
@@ -391,19 +381,19 @@ const Logbook = () => {
       }
 
       return {
-        name: category.name,
-        key: category.key,
+        key: categoryKey,
+        name: categoryKey === 'favoriter' ? 'Favoriter' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].name,
+        icon: categoryKey === 'favoriter' ? '⭐' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].icon,
         count: categorySpecies.length,
-        icon: category.icon,
         species: categorySpecies,
-        // Initialize infinite scroll for each category
+        subcategories: categoryKey === 'växter' ? MAIN_CATEGORY_DISPLAY['växter'].subcategories : [],
         infiniteScroll: {
           displayedItems: categorySpecies.slice(0, 10),
           hasMore: categorySpecies.length > 10,
           totalItems: categorySpecies.length
         }
       };
-    });
+    }).filter(cat => cat.count > 0);
   }, [allSpecies, categorySortBy]);
 
   const toggleCategory = (categoryKey: string) => {
