@@ -2,7 +2,7 @@
  * Cache version management for forcing updates
  */
 
-const CURRENT_VERSION = '1.0.3';
+const CURRENT_VERSION = '1.0.4';
 const VERSION_KEY = 'app_version';
 
 export const checkAndUpdateVersion = () => {

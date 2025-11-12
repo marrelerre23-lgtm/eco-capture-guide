@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 console.log('[Map] Module loaded, Leaflet version:', L.version);
 import { useSpeciesCaptures } from '@/hooks/useSpeciesCaptures';
