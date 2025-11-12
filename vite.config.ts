@@ -19,14 +19,31 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff,woff2}"],
+        // Aggressive precaching for production assets
+        navigateFallback: null,
         runtimeCaching: [
+          // Cache-First for versioned JS/CSS assets (they have content hashes)
+          {
+            urlPattern: /\/assets\/.*\.(?:js|css)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "static-assets-v1",
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year for hashed assets
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           // Network-First for API calls and Supabase
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "supabase-cache",
+              cacheName: "supabase-cache-v1",
               networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 50,
@@ -34,28 +51,39 @@ export default defineConfig(({ mode }) => ({
               },
             },
           },
-          // Network-First for JS/CSS in development to avoid stale code
+          // StaleWhileRevalidate for other JS/CSS
           {
             urlPattern: /\.(?:js|css)$/i,
-            handler: mode === "development" ? "NetworkFirst" : "StaleWhileRevalidate",
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "static-resources",
-              networkTimeoutSeconds: 5,
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-              },
-            },
-          },
-          // Cache-First for images (they don't change often)
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "images-cache",
+              cacheName: "static-resources-v1",
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+          // Cache-First for images
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images-cache-v1",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 90, // 90 days
+              },
+            },
+          },
+          // Cache-First for fonts
+          {
+            urlPattern: /\.(?:woff|woff2|ttf|eot)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "fonts-cache-v1",
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },

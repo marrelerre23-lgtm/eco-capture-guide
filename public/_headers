@@ -1,0 +1,44 @@
+# Cache static assets with content hashes for 1 year
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache other static files for 1 week
+/*.js
+  Cache-Control: public, max-age=604800
+
+/*.css
+  Cache-Control: public, max-age=604800
+
+# Cache images for 90 days
+/*.jpg
+  Cache-Control: public, max-age=7776000
+
+/*.jpeg
+  Cache-Control: public, max-age=7776000
+
+/*.png
+  Cache-Control: public, max-age=7776000
+
+/*.svg
+  Cache-Control: public, max-age=7776000
+
+/*.webp
+  Cache-Control: public, max-age=7776000
+
+# Cache fonts for 1 year
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Don't cache HTML
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Service worker should be revalidated
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/registerSW.js
+  Cache-Control: public, max-age=0, must-revalidate
