@@ -70,6 +70,7 @@ interface Species {
 const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
   const species = capture.ai_analysis?.species;
   const capturedDate = new Date(capture.captured_at);
+  const mainCategory = mapToCategory(species?.category || "annat");
   
   return {
     id: capture.id,
@@ -85,13 +86,18 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
       minute: '2-digit' 
     })}`,
     description: species?.description || "Ingen beskrivning tillgänglig",
-    category: mapToCategory(species?.category || "annat"),
+    category: mainCategory, // Use main category for grouping
     confidence: species?.confidence,
     location: capture.location_name,
     notes: capture.notes,
     capturedAt: capturedDate,
     isFavorite: capture.is_favorite || false,
     facts: [
+      ...(species?.category && mainCategory === 'växter' ? [{
+        icon: "🏷️",
+        title: "Detaljerad kategori",
+        description: getCategoryDisplayName(species.category)
+      }] : []),
       ...(species?.habitat ? [{
         icon: "🏞️",
         title: "Habitat",
@@ -544,6 +550,11 @@ const Logbook = () => {
                       <span className="text-2xl">{category.icon}</span>
                       <div>
                         <h3 className="font-medium text-foreground">{category.name}</h3>
+                        {category.subcategories && category.subcategories.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {category.subcategories.join(' • ')}
+                          </p>
+                        )}
                         {category.count === 0 && (
                           <p className="text-xs text-muted-foreground">Inga fångster än</p>
                         )}
