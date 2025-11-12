@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2 } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { useVibration } from "@/hooks/useVibration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
 import { LogbookSkeleton } from "@/components/LoadingSkeleton";
+import { ShareDialog } from "@/components/ShareDialog";
 import { 
   getMainCategory, 
   getCategoryDisplayName, 
@@ -185,6 +186,7 @@ const Logbook = () => {
   const [categoryPages, setCategoryPages] = useState<Record<string, number>>({});
   const [subcategoryFilter, setSubcategoryFilter] = useState<Record<string, string>>({});
   const [showEmptyCategories, setShowEmptyCategories] = useState(true);
+  const [sharingCapture, setSharingCapture] = useState<{ id: string; image_url: string; species_name: string; scientific_name: string } | null>(null);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -790,6 +792,27 @@ const Logbook = () => {
                                   <Edit2 className="h-4 w-4 text-white" />
                                 </button>
                               )}
+
+                              {/* Share button */}
+                              {!bulkSelectMode && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const capture = captures?.find(c => c.id === species.id);
+                                    if (capture) {
+                                      setSharingCapture({
+                                        id: capture.id,
+                                        image_url: capture.image_url,
+                                        species_name: capture.ai_analysis?.species?.commonName || "Okänd art",
+                                        scientific_name: capture.ai_analysis?.species?.scientificName || "Okänd"
+                                      });
+                                    }
+                                  }}
+                                  className="absolute bottom-12 right-14 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                                >
+                                  <Share2 className="h-4 w-4 text-white" />
+                                </button>
+                              )}
                               
                               {/* Text overlay */}
                               <div 
@@ -904,20 +927,43 @@ const Logbook = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Om kategorin "Annat"</AlertDialogTitle>
-            <AlertDialogDescription className="text-base space-y-2">
+            <AlertDialogDescription className="space-y-3 text-sm">
               <p>
-                "Annat" innehåller allt som inte passar i de andra kategorierna, 
-                till exempel objekt, konstgjorda ting, eller saker AI:n inte kunde identifiera.
+                Kategorin "Annat" används för fynd som AI:n inte kunde identifiera med tillräcklig säkerhet,
+                eller för saker som inte passar in i de andra kategorierna.
+              </p>
+              <p>
+                Det kan vara:
+              </p>
+              <ul className="list-disc list-inside space-y-1 ml-2">
+                <li>Okända arter som behöver verifieras manuellt</li>
+                <li>Föremål eller landskapselement utan artbeskrivning</li>
+                <li>Fynd med låg bildkvalitet eller dåliga ljusförhållanden</li>
+              </ul>
+              <p className="text-muted-foreground">
+                Tips: Om du vet vad något är, kan du lägga till anteckningar genom att klicka på redigeringsikonen.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowAnnatInfoDialog(false)}>
-              OK
-            </AlertDialogAction>
+            <AlertDialogAction>OK</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share Dialog */}
+      {sharingCapture && (
+        <ShareDialog
+          isOpen={!!sharingCapture}
+          onClose={() => setSharingCapture(null)}
+          capture={{
+            id: sharingCapture.id,
+            image_url: sharingCapture.image_url,
+            species_name: sharingCapture.species_name,
+            scientific_name: sharingCapture.scientific_name
+          }}
+        />
+      )}
     </div>
   );
 };

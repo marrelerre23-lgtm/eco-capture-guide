@@ -7,12 +7,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, User, LogOut, Mail, Calendar, Camera, Lock, Sparkles, Crown } from "lucide-react";
+import { Loader2, User, LogOut, Mail, Calendar, Camera, Lock, Sparkles, Crown, Download, Bell, Trophy, FileJson, FileSpreadsheet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { uploadAvatarImage } from "@/utils/storage";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { Badge } from "@/components/ui/badge";
+import { exportToCSV, exportToJSON } from "@/utils/exportData";
+import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useAchievements } from "@/hooks/useAchievements";
+import { AchievementBadge } from "@/components/AchievementBadge";
+import { Switch } from "@/components/ui/switch";
 
 interface Profile {
   display_name: string | null;
@@ -35,6 +41,9 @@ const Profile = () => {
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const { subscription, loading: subscriptionLoading, error: subscriptionError } = useSubscription();
+  const { data: captures, isLoading: capturesLoading } = useSpeciesCaptures();
+  const { permission, requestPermission, hasPermission } = usePushNotifications();
+  const { achievements } = useAchievements();
 
   useEffect(() => {
     getProfile();
@@ -208,6 +217,74 @@ const Profile = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleExportCSV = () => {
+    if (!captures || captures.length === 0) {
+      toast({
+        title: "Ingen data att exportera",
+        description: "Du har inga fångster att exportera ännu.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const exportData = captures.map(capture => ({
+      id: capture.id,
+      name: capture.ai_analysis?.species?.commonName || "Okänd",
+      scientificName: capture.ai_analysis?.species?.scientificName || "Okänd",
+      category: capture.ai_analysis?.species?.category || "annat",
+      capturedAt: new Date(capture.captured_at).toISOString(),
+      location: capture.location_name || "",
+      latitude: capture.latitude,
+      longitude: capture.longitude,
+      description: capture.ai_analysis?.species?.description || "",
+      habitat: capture.ai_analysis?.species?.habitat || "",
+      rarity: capture.ai_analysis?.species?.rarity || "",
+      confidence: capture.ai_analysis?.species?.confidence,
+      notes: capture.notes || "",
+      isFavorite: capture.is_favorite || false,
+    }));
+
+    exportToCSV(exportData);
+    toast({
+      title: "Export klar!",
+      description: `${captures.length} fångster exporterade till CSV.`,
+    });
+  };
+
+  const handleExportJSON = () => {
+    if (!captures || captures.length === 0) {
+      toast({
+        title: "Ingen data att exportera",
+        description: "Du har inga fångster att exportera ännu.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const exportData = captures.map(capture => ({
+      id: capture.id,
+      name: capture.ai_analysis?.species?.commonName || "Okänd",
+      scientificName: capture.ai_analysis?.species?.scientificName || "Okänd",
+      category: capture.ai_analysis?.species?.category || "annat",
+      capturedAt: new Date(capture.captured_at).toISOString(),
+      location: capture.location_name || "",
+      latitude: capture.latitude,
+      longitude: capture.longitude,
+      description: capture.ai_analysis?.species?.description || "",
+      habitat: capture.ai_analysis?.species?.habitat || "",
+      rarity: capture.ai_analysis?.species?.rarity || "",
+      confidence: capture.ai_analysis?.species?.confidence,
+      notes: capture.notes || "",
+      isFavorite: capture.is_favorite || false,
+    }));
+
+    exportToJSON(exportData);
+    toast({
+      title: "Export klar!",
+      description: `${captures.length} fångster exporterade till JSON.`,
+    });
   };
 
   if (loading) {
@@ -461,7 +538,7 @@ const Profile = () => {
                   </div>
                 )}
                 
-                {subscription.tier !== 'free' && (
+                 {subscription.tier !== 'free' && (
                   <div className="pt-2">
                     <Button 
                       onClick={async () => {
@@ -487,57 +564,137 @@ const Profile = () => {
                       className="w-full"
                       size="lg"
                     >
+                      <Crown className="mr-2 h-4 w-4" />
                       Hantera prenumeration
                     </Button>
                   </div>
                 )}
               </>
             ) : (
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Kunde inte ladda prenumerationsinformation
+              <div className="text-center py-4 text-muted-foreground">
+                <p className="text-sm">Ingen prenumerationsinformation tillgänglig</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Data Export */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              Exportera data
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Exportera alla dina fångster till CSV eller JSON-format.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={handleExportCSV}
+                disabled={capturesLoading || !captures || captures.length === 0}
+                className="w-full"
+              >
+                {capturesLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                )}
+                CSV
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleExportJSON}
+                disabled={capturesLoading || !captures || captures.length === 0}
+                className="w-full"
+              >
+                {capturesLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileJson className="mr-2 h-4 w-4" />
+                )}
+                JSON
+              </Button>
+            </div>
+            {captures && captures.length > 0 && (
+              <p className="text-xs text-muted-foreground text-center">
+                {captures.length} fångster att exportera
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Push Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Notifikationer
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="notifications" className="text-base">
+                  Push-notiser
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Få påminnelser om nya arter att upptäcka
                 </p>
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  Standardinställningar används: Gratis plan
+              </div>
+              <Switch
+                id="notifications"
+                checked={hasPermission}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    requestPermission();
+                  }
+                }}
+              />
+            </div>
+            {permission === 'denied' && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-xs text-destructive">
+                  Notiser är blockerade. Aktivera dem i webbläsarens inställningar.
                 </p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Account Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Kontoinformation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                Medlem sedan
+        {/* Achievements */}
+        {achievements && achievements.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                Prestationer
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {achievements.slice(0, 6).map((achievement) => (
+                  <AchievementBadge
+                    key={achievement.id}
+                    achievement={achievement}
+                  />
+                ))}
               </div>
-              <div className="text-sm font-medium">
-                {new Date(user.created_at).toLocaleDateString('sv-SE', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </div>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                E-post
-              </div>
-              <div className="text-sm font-medium">{user.email}</div>
-            </div>
-          </CardContent>
-        </Card>
+              {achievements.length > 6 && (
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  +{achievements.length - 6} fler prestationer
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Sign Out */}
         <Button 
+          variant="destructive" 
           onClick={handleSignOut}
-          variant="destructive"
           className="w-full"
         >
           <LogOut className="mr-2 h-4 w-4" />
@@ -545,8 +702,10 @@ const Profile = () => {
         </Button>
       </div>
 
-      {/* Upgrade Dialog */}
-      <UpgradeDialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen} />
+      <UpgradeDialog 
+        open={upgradeDialogOpen} 
+        onOpenChange={setUpgradeDialogOpen}
+      />
     </div>
   );
 };

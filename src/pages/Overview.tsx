@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 import { OverviewSkeleton } from "@/components/LoadingSkeleton";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
+import { getMainCategory, getCategoryDisplayName } from "@/types/species";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -52,13 +53,21 @@ const Overview = () => {
         .filter(Boolean)
     );
 
+    // Calculate category distribution for chart
+    const categoryStats = captures.reduce((acc, capture) => {
+      const mainCategory = getMainCategory(capture.ai_analysis?.species?.category || "annat");
+      acc[mainCategory] = (acc[mainCategory] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
     return {
       totalCaptures: captures.length,
       uniqueSpecies: uniqueSpeciesNames.size,
       rareFinds: rareFinds.length,
       locations: uniqueLocations.size,
       latestCaptures: sortedCaptures.slice(0, 5), // Get the 5 most recent captures
-      recentActivity: sortedCaptures.slice(0, 3)
+      recentActivity: sortedCaptures.slice(0, 3),
+      categoryStats
     };
   }, [captures]);
 
@@ -304,6 +313,40 @@ const Overview = () => {
             )}
           </div>
         </div>
+
+        {/* Category Distribution */}
+        {statistics.categoryStats && Object.keys(statistics.categoryStats).length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">Kategorifördelning</h2>
+            <Card className="shadow-card">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {Object.entries(statistics.categoryStats)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 5)
+                    .map(([category, count], index) => {
+                      const total = statistics.totalCaptures;
+                      const percentage = Math.round((count / total) * 100);
+                      return (
+                        <div key={category} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium capitalize">{getCategoryDisplayName(category)}</span>
+                            <span className="text-muted-foreground">{count} ({percentage}%)</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary transition-all"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
