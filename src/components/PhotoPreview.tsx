@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope, HelpCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope, HelpCircle, Sparkles, Settings, X, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,19 +9,7 @@ import { AnalyzingScreen } from "./AnalyzingScreen";
 import { TopNavigation } from "./TopNavigation";
 import { PhotoTipsDialog } from "./PhotoTipsDialog";
 import { User } from "@supabase/supabase-js";
-
-interface Species {
-  id: string;
-  name: string;
-  scientificName: string;
-  image: string;
-  dateFound: Date;
-  description: string;
-  category: string;
-  facts: string[];
-  confidence?: number;
-  reasoning?: string;
-}
+import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 
 interface PhotoPreviewProps {
   imageUrl: string;
@@ -30,19 +18,16 @@ interface PhotoPreviewProps {
   location?: { latitude: number; longitude: number; accuracy?: number } | null;
 }
 
-const CATEGORIES = [
-  { value: "blomma", label: "🌸 Blomma" },
-  { value: "buske", label: "🌿 Buske" },
-  { value: "ört", label: "🌾 Ört" },
-  { value: "träd", label: "🌳 Träd" },
-  { value: "svamp", label: "🍄 Svamp" },
-  { value: "mossa", label: "🌱 Mossa" },
-  { value: "sten", label: "💎 Sten" },
-  { value: "insekt", label: "🐛 Insekt" },
-  { value: "fågel", label: "🦅 Fågel" },
-  { value: "däggdjur", label: "🦌 Däggdjur" },
-  { value: "okänt", label: "❓ Vet ej - låt AI:n avgöra" },
-];
+// Simplified main categories for UI
+const SIMPLIFIED_CATEGORIES: Array<{ value: MainCategoryKey; label: string; hint: string }> = [
+  { value: "växter", label: "🌿 Växter", hint: "Blommor, buskar, örter, träd, mossor" },
+  { value: "svamp", label: "🍄 Svampar", hint: "Alla typer av svampar" },
+  { value: "insekter", label: "🦋 Insekter", hint: "Insekter och småkryp" },
+  { value: "fåglar", label: "🦅 Fåglar", hint: "Alla typer av fåglar" },
+  { value: "däggdjur", label: "🦌 Däggdjur", hint: "Däggdjur och större djur" },
+  { value: "stenar", label: "💎 Stenar & Mineraler", hint: "Stenar, mineraler och bergarter" },
+  { value: "annat", label: "❓ Annat", hint: "Allt annat" },
+] as const;
 
 const DETAIL_LEVELS = [
   { 
@@ -71,12 +56,13 @@ const DETAIL_LEVELS = [
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<MainCategoryKey | null>(null);
   const [detailLevel, setDetailLevel] = useState<string>("standard");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -105,7 +91,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       const { data, error } = await supabase.functions.invoke('analyze-species', {
         body: { 
           imageUrl: uploadedImageUrl,
-          category: selectedCategory || "okänt", // "okänt" signalerar till AI:n att välja kategori
+          category: selectedCategory || "okänt", // Pass main category or okänt for auto-detect
           detailLevel: detailLevel
         }
       });
@@ -195,7 +181,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   if (isAnalyzing) {
     return (
       <AnalyzingScreen 
-        category={CATEGORIES.find(c => c.value === selectedCategory)?.label || "fångst"} 
+        category={selectedCategory ? MAIN_CATEGORY_DISPLAY[selectedCategory].name : "fångst"} 
         detailLevel={detailLevel}
         onCancel={() => setIsAnalyzing(false)}
       />
@@ -222,35 +208,31 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           onClick={(e) => e.stopPropagation()}
         >
           <div className="text-center space-y-2 mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Välj kategori</h3>
-            <p className="text-sm text-muted-foreground">Valfritt: Hjälper AI:n fokusera sin analys</p>
-            <p className="text-xs text-muted-foreground bg-primary/5 rounded-lg p-2 mt-2">
-              💡 Om du väljer "Vet ej", kommer AI:n att analysera bilden och välja rätt kategori åt dig
-            </p>
+            <h3 className="text-lg font-semibold text-foreground">Välj kategori-tips till AI:n</h3>
+            <p className="text-sm text-muted-foreground">Detta hjälper AI:n att fokusera analysen och ge snabbare resultat</p>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-4 max-h-[60vh] overflow-y-auto">
-            {CATEGORIES.map((cat) => (
-              <Button
+          <div className="space-y-2">
+            {SIMPLIFIED_CATEGORIES.map((cat) => (
+              <button
                 key={cat.value}
-                variant="outline"
-                className={`h-20 flex flex-col gap-2 border transition-all ${
-                  selectedCategory === cat.value
-                    ? "bg-primary/20 border-primary shadow-md"
-                    : "bg-card border-border hover:border-primary hover:bg-primary/5"
-                }`}
                 onClick={() => {
-                  setSelectedCategory(selectedCategory === cat.value ? null : cat.value);
+                  setSelectedCategory(cat.value);
                   setCategoryDialogOpen(false);
                 }}
+                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                  selectedCategory === cat.value
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50"
+                }`}
               >
-                <span className="text-2xl">{cat.label.split(' ')[0]}</span>
-                <span className="text-xs font-medium">{cat.label.split(' ')[1]}</span>
-              </Button>
+                <div className="font-medium">{cat.label}</div>
+                <div className="text-sm text-muted-foreground mt-1">{cat.hint}</div>
+              </button>
             ))}
           </div>
           <Button 
             variant="ghost" 
-            className="w-full"
+            className="w-full mt-4"
             onClick={() => setCategoryDialogOpen(false)}
           >
             Stäng
@@ -353,59 +335,27 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
               className="w-full h-full object-cover"
             />
             
-            {/* Selection Summary Overlaid on Image */}
-            <div className="absolute bottom-4 left-3 right-3 bg-black/20 border-2 border-primary/30 backdrop-blur-sm rounded-2xl p-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Category Section */}
-                <div className="flex flex-col items-center">
-                  <span className="text-xs text-white/70 mb-2">Kategori</span>
-                  <button
-                    onClick={() => setCategoryDialogOpen(true)}
-                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  >
-                    <span className="text-2xl">
-                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
-                    </span>
-                    <span className="text-base font-semibold text-white">
-                      {selectedCategory ? (
-                        selectedCategory === 'okänt' ? 'Vet ej' : CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ').slice(1).join(' ')
-                      ) : 'Vet ej'}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Detail Level Section */}
-                <div className="flex flex-col items-center">
-                  <span className="text-xs text-white/70 mb-2">Analysnivå</span>
-                  <button
-                    onClick={() => setDetailDialogOpen(true)}
-                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  >
-                    {(() => {
-                      const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
-                      const Icon = level?.icon || Star;
-                      return (
-                        <>
-                          <Icon className="w-5 h-5 text-white" />
-                          <span className="text-base font-semibold text-white">
-                            {level?.label} ({level?.time})
-                          </span>
-                        </>
-                      );
-                    })()}
-                  </button>
+            {/* Category tip hint */}
+            {selectedCategory && (
+              <div className="absolute top-4 left-3 right-3 bg-black/40 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                <div className="flex items-center gap-2 text-white">
+                  <span className="text-lg">{MAIN_CATEGORY_DISPLAY[selectedCategory].icon}</span>
+                  <div className="flex-1">
+                    <p className="text-xs text-white/70">AI:n fokuserar på:</p>
+                    <p className="text-sm font-semibold">{MAIN_CATEGORY_DISPLAY[selectedCategory].name}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Fixed Action Buttons at Bottom */}
         <div className="px-3 py-3 bg-background space-y-3">
-          {/* Analyze Button */}
+          {/* Primary: Analyze directly */}
           <Button 
             size="lg"
-            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-2xl"
+            className="w-full h-14 text-base font-semibold rounded-2xl shadow-lg"
             onClick={handleAnalyze}
             disabled={uploading}
           >
@@ -416,35 +366,96 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
               </>
             ) : (
               <>
-                <CheckCircle className="mr-2 h-5 w-5" />
-                Analysera med AI
+                <Sparkles className="mr-2 h-5 w-5" />
+                Analysera direkt
               </>
             )}
           </Button>
+
+          {/* Secondary: Advanced options toggle */}
+          {!showAdvancedOptions && (
+            <Button
+              onClick={() => setShowAdvancedOptions(true)}
+              variant="outline"
+              size="sm"
+              className="w-full bg-background/95 backdrop-blur-sm"
+              disabled={uploading}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Jag vet vad det är...
+            </Button>
+          )}
+
+          {/* Advanced options */}
+          {showAdvancedOptions && (
+            <div className="space-y-2 bg-card/95 backdrop-blur-sm border border-border rounded-xl p-4 shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium">Avancerade alternativ</span>
+                <Button
+                  onClick={() => setShowAdvancedOptions(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <button
+                onClick={() => setCategoryDialogOpen(true)}
+                className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-between hover:bg-accent transition-colors"
+                disabled={uploading}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-lg">
+                    {selectedCategory ? MAIN_CATEGORY_DISPLAY[selectedCategory].icon : "❓"}
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xs text-muted-foreground">Kategori-tips</div>
+                    <div className="font-medium text-sm">
+                      {selectedCategory ? MAIN_CATEGORY_DISPLAY[selectedCategory].name : "Välj kategori"}
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+
+              <button
+                onClick={() => setDetailDialogOpen(true)}
+                className="w-full bg-background border border-border rounded-lg p-3 flex items-center justify-between hover:bg-accent transition-colors"
+                disabled={uploading}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                    {(() => {
+                      const level = DETAIL_LEVELS.find(l => l.value === detailLevel);
+                      const Icon = level?.icon || Star;
+                      return <Icon className="w-4 h-4" />;
+                    })()}
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xs text-muted-foreground">Detaljnivå</div>
+                    <div className="font-medium text-sm">
+                      {DETAIL_LEVELS.find(l => l.value === detailLevel)?.label}
+                    </div>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+          )}
           
-          {/* Bottom Action Buttons Row */}
-          <div className="grid grid-cols-2 gap-3">
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="h-11 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
-              onClick={() => setCategoryDialogOpen(true)}
-              disabled={uploading}
-            >
-              Ändra kategori
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="h-11 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
-              onClick={onRetake}
-              disabled={uploading}
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Ta om
-            </Button>
-          </div>
+          {/* Retake button */}
+          <Button 
+            variant="outline" 
+            size="lg"
+            className="w-full h-12 rounded-2xl border-2 border-border bg-transparent hover:bg-accent/10 font-medium"
+            onClick={onRetake}
+            disabled={uploading}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Ta om bilden
+          </Button>
         </div>
       </div>
     </>

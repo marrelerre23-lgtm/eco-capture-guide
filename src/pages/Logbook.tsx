@@ -17,6 +17,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { LazyImage } from "@/components/LazyImage";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useVibration } from "@/hooks/useVibration";
+import { 
+  getMainCategory, 
+  getCategoryDisplayName, 
+  MAIN_CATEGORY_DISPLAY, 
+  MainCategoryKey,
+  CATEGORY_TO_MAIN 
+} from "@/types/species";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,46 +41,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Predefined categories that always show
-const PREDEFINED_CATEGORIES = [
-  { name: "Favoriter", icon: "⭐", key: "favoriter" },
-  { name: "Blommor", icon: "🌸", key: "blomma" },
-  { name: "Buskar", icon: "🌱", key: "buske" },
-  { name: "Örter", icon: "🌿", key: "ört" },
-  { name: "Träd", icon: "🌳", key: "träd" },
-  { name: "Svampar", icon: "🍄", key: "svamp" },
-  { name: "Mossa och lavar", icon: "🌾", key: "mossa" },
-  { name: "Stenar och mineraler", icon: "💎", key: "sten" },
-  { name: "Insekter", icon: "🦋", key: "insekt" },
-  { name: "Fåglar", icon: "🦅", key: "fågel" },
-  { name: "Däggdjur", icon: "🦌", key: "däggdjur" },
-  { name: "Annat", icon: "❓", key: "annat" }
-];
-
-// Valid categories constant
-const VALID_CATEGORIES = [
-  'blomma', 'buske', 'ört', 'träd', 'svamp', 
-  'mossa', 'sten', 'insekt', 'fågel', 'däggdjur', 'annat'
-];
-
-// Helper function to map AI category to predefined category with better error handling
-const mapToCategory = (aiCategory: string): string => {
-  const normalized = aiCategory.toLowerCase().trim();
-  
-  // Check if it's a valid category
-  if (VALID_CATEGORIES.includes(normalized)) {
-    return normalized;
-  }
-  
-  // Legacy category mapping
-  if (normalized === 'växt') {
-    console.log('Mappar legacy kategori "växt" till "ört"');
-    return "ört";
-  }
-  
-  // Unknown category - log for debugging and use fallback
-  console.warn(`Okänd kategori: "${aiCategory}" (normalized: "${normalized}"), använder "annat"`);
-  return "annat";
+// Helper function to map AI category to main category
+const mapToCategory = (aiCategory: string): MainCategoryKey => {
+  return getMainCategory(aiCategory);
 };
 
 interface Species {
@@ -373,15 +343,27 @@ const Logbook = () => {
       return acc;
     }, {} as Record<string, Species[]>);
 
-    return PREDEFINED_CATEGORIES.map(category => {
+    const mainCategories = ['favoriter', ...Object.keys(MAIN_CATEGORY_DISPLAY)] as const;
+    
+    return mainCategories.map(categoryKey => {
       let categorySpecies: Species[];
       
       // Special handling for favorites category
-      if (category.key === "favoriter") {
+      if (categoryKey === "favoriter") {
         categorySpecies = allSpecies.filter(s => s.isFavorite);
       } else {
-        categorySpecies = speciesByCategory[category.key] || [];
+        categorySpecies = speciesByCategory[categoryKey as MainCategoryKey] || [];
       }
+
+      return {
+        key: categoryKey,
+        name: categoryKey === 'favoriter' ? 'Favoriter' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].name,
+        icon: categoryKey === 'favoriter' ? '⭐' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].icon,
+        count: categorySpecies.length,
+        species: categorySpecies,
+        subcategories: categoryKey === 'växter' ? MAIN_CATEGORY_DISPLAY['växter'].subcategories : []
+      };
+    }).filter(cat => cat.count > 0);
       
       // Apply sorting per category
       const sortBy = categorySortBy[category.key] || "date";

@@ -11,15 +11,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 import { Slider } from "@/components/ui/slider";
 
-interface Species {
-  id: string;
-  name: string;
-  scientificName: string;
-  image: string;
-  dateFound: Date;
-  description: string;
-  facts: string[];
-}
+import { Species } from "@/types/species";
 
 const Camera = () => {
   const navigate = useNavigate();

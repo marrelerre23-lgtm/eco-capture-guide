@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AIPhotoTips } from "@/components/AIPhotoTips";
+import { Species, getMainCategory, getCategoryDisplayName, MAIN_CATEGORY_DISPLAY } from "@/types/species";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,19 +19,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-interface Species {
-  id: string;
-  name: string;
-  scientificName: string;
-  image: string;
-  dateFound: Date;
-  description: string;
-  category: string;
-  facts: string[];
-  confidence?: number;
-  reasoning?: string;
-}
 
 const AnalysisResult = () => {
   const navigate = useNavigate();
@@ -162,7 +150,9 @@ const AnalysisResult = () => {
         .insert({
           user_id: user.id,
           image_url: selectedSpecies.image,
-          captured_at: selectedSpecies.dateFound.toISOString(),
+          captured_at: selectedSpecies.dateFound instanceof Date 
+            ? selectedSpecies.dateFound.toISOString() 
+            : selectedSpecies.dateFound,
           latitude: gpsLocation?.latitude || null,
           longitude: gpsLocation?.longitude || null,
           gps_accuracy: gpsLocation?.accuracy || null,
@@ -387,9 +377,34 @@ const AnalysisResult = () => {
 
         {/* Species Info */}
         <div className="space-y-4">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-primary">{selectedSpecies.name}</h2>
-            <p className="text-lg italic text-muted-foreground">{selectedSpecies.scientificName}</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-bold">{selectedSpecies.name}</h2>
+              <Badge variant="secondary" className="text-base px-3 py-1">
+                {Math.round((selectedSpecies.confidence || 0) * 100)}% säker
+              </Badge>
+            </div>
+            <p className="text-xl text-muted-foreground italic">
+              {selectedSpecies.scientificName}
+            </p>
+            
+            {/* Category Display */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-2xl">
+                {MAIN_CATEGORY_DISPLAY[getMainCategory(selectedSpecies.category)].icon}
+              </span>
+              <span className="font-medium">
+                {MAIN_CATEGORY_DISPLAY[getMainCategory(selectedSpecies.category)].name}
+              </span>
+              {getMainCategory(selectedSpecies.category) === 'växter' && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    {getCategoryDisplayName(selectedSpecies.category)}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="space-y-3">
