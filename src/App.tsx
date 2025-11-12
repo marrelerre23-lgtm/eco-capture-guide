@@ -8,7 +8,6 @@ import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
 import Auth from "./pages/Auth";
 import Map from "./pages/Map";
-import { MapErrorBoundary } from "./components/MapErrorBoundary";
 import AnalysisResult from "./pages/AnalysisResult";
 import ProfileEnhanced from "./pages/ProfileEnhanced";
 import NotFound from "./pages/NotFound";
@@ -62,9 +61,7 @@ const AppRoutes = () => {
         } />
         <Route path="/map" element={
           <RouteErrorBoundary routeName="Map">
-            <MapErrorBoundary>
-              <Map />
-            </MapErrorBoundary>
+            <Map />
           </RouteErrorBoundary>
         } />
         <Route path="/profile" element={<ProfileEnhanced />} />
