@@ -1,16 +1,8 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
-// Verify Leaflet is loaded properly
-if (typeof L === 'undefined') {
-  console.error('❌ [Map] Leaflet (L) is undefined!');
-} else {
-  console.log(`✅ [Map] Leaflet loaded successfully, version: ${L.version}`);
-}
 import { useSpeciesCaptures } from '@/hooks/useSpeciesCaptures';
-import { MapMarkers } from '@/components/MapMarkers';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle, Locate, Filter, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,50 +20,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Component to handle map centering
-function MapController({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, 13);
-  }, [center, map]);
-  return null;
-}
 
 const Map = () => {
-  console.log('[Map] Component rendering');
-  
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([59.3293, 18.0686]); // Default to Stockholm
+  const [mapCenter, setMapCenter] = useState<[number, number]>([59.3293, 18.0686]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // Debug: Log Leaflet availability
-  useEffect(() => {
-    console.log('[Map] Leaflet available:', !!L);
-    console.log('[Map] MapContainer available:', !!MapContainer);
-  }, []);
-
-  // Get user location
-  useEffect(() => {
-    if (navigator.geolocation) {
-      setLoadingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
-          setUserLocation(coords);
-          setMapCenter(coords);
-          setLoadingLocation(false);
-        },
-        (error) => {
-          console.log('Could not get user location:', error);
-          setLoadingLocation(false);
-        },
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 } // Cache for 5 minutes
-      );
-    }
-  }, []);
+  const mapRef = useRef<L.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  const userMarkerRef = useRef<L.Marker | null>(null);
 
   // Filter captures with valid coordinates
   const validCaptures = useMemo(() => {
@@ -86,7 +47,6 @@ const Map = () => {
         .map(c => {
           const category = c.ai_analysis?.species?.category;
           if (!category) return null;
-          // Use getMainCategory to convert to main categories
           return getMainCategory(category);
         })
         .filter(Boolean)
@@ -118,10 +78,10 @@ const Map = () => {
     return filtered;
   }, [validCaptures, selectedCategory, selectedLocation]);
 
-  // Calculate hotspots (areas with multiple captures nearby)
+  // Calculate hotspots
   const hotspots = useMemo(() => {
     const clusters: { [key: string]: { count: number; lat: number; lng: number; captures: typeof validCaptures } } = {};
-    const gridSize = 0.01; // ~1km
+    const gridSize = 0.01;
 
     validCaptures.forEach(capture => {
       if (!capture.latitude || !capture.longitude) return;
@@ -141,7 +101,7 @@ const Map = () => {
     });
 
     return Object.values(clusters)
-      .filter(c => c.count >= 3) // Only hotspots with 3+ captures
+      .filter(c => c.count >= 3)
       .map(c => ({
         count: c.count,
         lat: c.lat / c.count,
@@ -149,6 +109,136 @@ const Map = () => {
         captures: c.captures
       }));
   }, [validCaptures]);
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const map = L.map(mapContainerRef.current).setView(mapCenter, 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    mapRef.current = map;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  // Update map center
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.setView(mapCenter, 13);
+    }
+  }, [mapCenter]);
+
+  // Get user location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      setLoadingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(coords);
+          setMapCenter(coords);
+          setLoadingLocation(false);
+        },
+        (error) => {
+          console.log('Could not get user location:', error);
+          setLoadingLocation(false);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+      );
+    }
+  }, []);
+
+  // Update user location marker
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+
+    if (userLocation) {
+      const marker = L.marker(userLocation)
+        .bindPopup('<div class="text-center"><strong>Din plats</strong></div>')
+        .addTo(mapRef.current);
+      userMarkerRef.current = marker;
+    }
+  }, [userLocation]);
+
+  // Update capture markers
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Clear old markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add new markers
+    filteredCaptures.forEach(capture => {
+      if (!capture.latitude || !capture.longitude) return;
+
+      const lat = Number(capture.latitude);
+      const lng = Number(capture.longitude);
+
+      const marker = L.marker([lat, lng])
+        .bindPopup(`
+          <div class="space-y-2">
+            <h4 class="font-semibold">${capture.ai_analysis?.species?.commonName || 'Okänd'}</h4>
+            ${capture.ai_analysis?.species?.commonName ? `<p class="text-sm italic">${capture.ai_analysis.species.scientificName}</p>` : ''}
+            ${capture.location_name ? `<p class="text-sm">📍 ${capture.location_name}</p>` : ''}
+            ${capture.captured_at ? `<p class="text-xs text-muted-foreground">${new Date(capture.captured_at).toLocaleDateString('sv-SE')}</p>` : ''}
+          </div>
+        `)
+        .addTo(mapRef.current!);
+
+      markersRef.current.push(marker);
+    });
+
+    // Add hotspot markers
+    hotspots.forEach((hotspot) => {
+      const hotspotMarker = L.marker([hotspot.lat, hotspot.lng], {
+        icon: L.divIcon({
+          className: 'custom-hotspot-marker',
+          html: `<div style="
+            background: hsl(var(--warning));
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          ">${hotspot.count}</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        })
+      })
+        .bindPopup(`
+          <div class="space-y-2">
+            <h4 class="font-semibold">🔥 Hotspot</h4>
+            <p class="text-sm text-muted-foreground">${hotspot.count} fångster i detta område</p>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              ${hotspot.captures.slice(0, 5).map(c => `<p class="text-xs">• ${c.ai_analysis?.species?.commonName || 'Okänd'}</p>`).join('')}
+              ${hotspot.captures.length > 5 ? `<p class="text-xs text-muted-foreground">+${hotspot.captures.length - 5} fler</p>` : ''}
+            </div>
+          </div>
+        `)
+        .addTo(mapRef.current!);
+
+      markersRef.current.push(hotspotMarker);
+    });
+  }, [filteredCaptures, hotspots]);
 
   const centerOnUser = useCallback(() => {
     if (userLocation) {
@@ -197,8 +287,6 @@ const Map = () => {
       </div>
     );
   }
-
-  console.log('[Map] Rendering map with', validCaptures.length, 'valid captures');
 
   if (validCaptures.length === 0) {
     return (
@@ -291,80 +379,7 @@ const Map = () => {
       </div>
 
       {/* Map */}
-      <MapContainer
-        center={mapCenter}
-        zoom={13}
-        className="h-full w-full"
-        style={{ zIndex: 0 }}
-      >
-        <MapController center={mapCenter} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        {/* User location marker */}
-        {userLocation && (
-          <Marker position={userLocation}>
-            <Popup>
-              <div className="text-center">
-                <strong>Din plats</strong>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Capture markers - Optimized with viewport rendering */}
-        <MapMarkers captures={filteredCaptures} />
-
-        {/* Hotspot markers */}
-        {hotspots.map((hotspot, index) => (
-          <Marker
-            key={`hotspot-${index}`}
-            position={[hotspot.lat, hotspot.lng]}
-            icon={L.divIcon({
-              className: 'custom-hotspot-marker',
-              html: `<div style="
-                background: hsl(var(--warning));
-                color: white;
-                border-radius: 50%;
-                width: 32px;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 12px;
-                border: 3px solid white;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-              ">${hotspot.count}</div>`,
-              iconSize: [32, 32],
-              iconAnchor: [16, 16]
-            })}
-          >
-            <Popup maxWidth={250}>
-              <div className="space-y-2">
-                <h4 className="font-semibold">🔥 Hotspot</h4>
-                <p className="text-sm text-muted-foreground">
-                  {hotspot.count} fångster i detta område
-                </p>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {hotspot.captures.slice(0, 5).map(c => (
-                    <p key={c.id} className="text-xs">
-                      • {c.ai_analysis?.species?.commonName || 'Okänd'}
-                    </p>
-                  ))}
-                  {hotspot.captures.length > 5 && (
-                    <p className="text-xs text-muted-foreground">
-                      +{hotspot.captures.length - 5} fler
-                    </p>
-                  )}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      <div ref={mapContainerRef} className="h-full w-full" />
     </div>
   );
 };
