@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+console.log('[Map] Module loaded, Leaflet version:', L.version);
 import { useSpeciesCaptures } from '@/hooks/useSpeciesCaptures';
 import { MapMarkers } from '@/components/MapMarkers';
 import { Button } from '@/components/ui/button';
@@ -31,12 +33,20 @@ function MapController({ center }: { center: [number, number] }) {
 }
 
 const Map = () => {
+  console.log('[Map] Component rendering');
+  
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([59.3293, 18.0686]); // Default to Stockholm
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [loadingLocation, setLoadingLocation] = useState(false);
+
+  // Debug: Log Leaflet availability
+  useEffect(() => {
+    console.log('[Map] Leaflet available:', !!L);
+    console.log('[Map] MapContainer available:', !!MapContainer);
+  }, []);
 
   // Get user location
   useEffect(() => {
@@ -161,10 +171,12 @@ const Map = () => {
   };
 
   if (isLoading) {
+    console.log('[Map] Loading state');
     return <MapSkeleton />;
   }
 
   if (error) {
+    console.error('[Map] Error state:', error);
     return (
       <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
         <div className="text-center space-y-4 p-4">
@@ -180,6 +192,8 @@ const Map = () => {
       </div>
     );
   }
+
+  console.log('[Map] Rendering map with', validCaptures.length, 'valid captures');
 
   if (validCaptures.length === 0) {
     return (

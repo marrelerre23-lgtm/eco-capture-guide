@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -6,8 +6,12 @@ import Layout from "./components/Layout";
 import Overview from "./pages/Overview";
 import Camera from "./pages/Camera";
 import Logbook from "./pages/Logbook";
-import Map from "./pages/Map";
 import Auth from "./pages/Auth";
+import { MapSkeleton } from "./components/LoadingSkeleton";
+import { MapErrorBoundary } from "./components/MapErrorBoundary";
+
+// Lazy load Map component to avoid loading Leaflet until needed
+const Map = lazy(() => import("./pages/Map"));
 import AnalysisResult from "./pages/AnalysisResult";
 import ProfileEnhanced from "./pages/ProfileEnhanced";
 import NotFound from "./pages/NotFound";
@@ -61,7 +65,11 @@ const AppRoutes = () => {
         } />
         <Route path="/map" element={
           <RouteErrorBoundary routeName="Map">
-            <Map />
+            <MapErrorBoundary>
+              <Suspense fallback={<MapSkeleton />}>
+                <Map />
+              </Suspense>
+            </MapErrorBoundary>
           </RouteErrorBoundary>
         } />
         <Route path="/profile" element={<ProfileEnhanced />} />

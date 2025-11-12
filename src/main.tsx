@@ -2,9 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { checkAndUpdateVersion } from "./utils/cacheVersion";
 
-// Version marker for cache busting - forcing rebuild
-console.log("EcoCapture v1.0.2 - Preview cache cleared");
+// Check version and clear cache if needed
+console.log("🚀 EcoCapture starting...");
+checkAndUpdateVersion();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
