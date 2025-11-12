@@ -1,11 +1,42 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // Valid categories - must match frontend
 const VALID_CATEGORIES = [
   'blomma', 'buske', 'ört', 'träd', 'svamp', 
   'mossa', 'sten', 'insekt', 'fågel', 'däggdjur', 'annat'
 ];
+
+const VALID_DETAIL_LEVELS = ['quick', 'standard', 'deep'];
+
+// Input validation schema
+const requestSchema = z.object({
+  imageUrl: z.string()
+    .url({ message: "Ogiltig bild URL" })
+    .min(10, { message: "Bild URL är för kort" })
+    .max(2048, { message: "Bild URL är för lång" })
+    .refine((url) => {
+      const allowedDomains = [
+        'supabase.co',
+        'lovableproject.com', 
+        'lovable.app',
+        'iccxtssdximiuarmnbmx.supabase.co'
+      ];
+      try {
+        const parsed = new URL(url);
+        return allowedDomains.some(domain => parsed.hostname.endsWith(domain));
+      } catch {
+        return false;
+      }
+    }, { message: "Bild URL från otillåten domän" }),
+  category: z.enum(VALID_CATEGORIES as [string, ...string[]])
+    .optional()
+    .nullable(),
+  detailLevel: z.enum(VALID_DETAIL_LEVELS as [string, ...string[]])
+    .optional()
+    .default('standard'),
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,25 +109,23 @@ serve(async (req) => {
       });
     }
 
-    const { imageUrl, category, detailLevel = 'standard' } = await req.json();
-    
-    // Validate image URL exists
-    if (!imageUrl) {
-      throw new Error('Bild URL saknas');
+    // Parse and validate request body
+    const rawBody = await req.json();
+    const validationResult = requestSchema.safeParse(rawBody);
+
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error);
+      return new Response(JSON.stringify({ 
+        error: 'Ogiltig request data',
+        details: validationResult.error.issues.map(i => i.message).join(', '),
+        upgradeRequired: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Validate image URL is a string
-    if (typeof imageUrl !== 'string') {
-      throw new Error('Ogiltig bild URL format');
-    }
-
-    // Validate image URL is a valid URL
-    let parsedUrl;
-    try {
-      parsedUrl = new URL(imageUrl);
-    } catch {
-      throw new Error('Ogiltig bild URL');
-    }
+    const { imageUrl, category, detailLevel } = validationResult.data;
 
     // Validate image URL is from allowed domain
     const ALLOWED_DOMAINS = [

@@ -18,6 +18,9 @@ import Help from "./pages/Help";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
+import { CookieConsent } from "./components/CookieConsent";
+import { EmailVerificationBanner } from "./components/EmailVerificationBanner";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
@@ -37,27 +40,29 @@ const AppRoutes = () => {
   return (
     <>
       <PWAInstallPrompt />
+      <EmailVerificationBanner />
+      <CookieConsent />
       <Routes>
         <Route path="/" element={<Overview />} />
         <Route path="/camera" element={
-          <ErrorBoundary>
+          <RouteErrorBoundary routeName="Camera">
             <Camera />
-          </ErrorBoundary>
+          </RouteErrorBoundary>
         } />
         <Route path="/analysis-result" element={
-          <ErrorBoundary>
+          <RouteErrorBoundary routeName="Analysis Result">
             <AnalysisResult />
-          </ErrorBoundary>
+          </RouteErrorBoundary>
         } />
         <Route path="/logbook" element={
-          <ErrorBoundary>
+          <RouteErrorBoundary routeName="Logbook">
             <Logbook />
-          </ErrorBoundary>
+          </RouteErrorBoundary>
         } />
         <Route path="/map" element={
-          <ErrorBoundary>
+          <RouteErrorBoundary routeName="Map">
             <Map />
-          </ErrorBoundary>
+          </RouteErrorBoundary>
         } />
         <Route path="/profile" element={<ProfileEnhanced />} />
         <Route path="/install" element={<Install />} />
