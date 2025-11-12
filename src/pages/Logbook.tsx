@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Helper function to map AI category to main category
 const mapToCategory = (aiCategory: string): MainCategoryKey => {
@@ -172,6 +178,8 @@ const Logbook = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [categoryPages, setCategoryPages] = useState<Record<string, number>>({});
+  const [subcategoryFilter, setSubcategoryFilter] = useState<Record<string, string>>({});
+  const [showEmptyCategories, setShowEmptyCategories] = useState(true);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -361,6 +369,15 @@ const Logbook = () => {
         categorySpecies = speciesByCategory[categoryKey as MainCategoryKey] || [];
       }
 
+      // Apply subcategory filtering for växter
+      if (categoryKey === 'växter' && subcategoryFilter[categoryKey]) {
+        const filterValue = subcategoryFilter[categoryKey].toLowerCase();
+        categorySpecies = categorySpecies.filter(species => {
+          const detailedCategoryFact = species.facts.find(f => f.title === "Detaljerad kategori");
+          return detailedCategoryFact?.description.toLowerCase() === filterValue;
+        });
+      }
+
       // Apply sorting per category
       const sortBy = categorySortBy[categoryKey] || "date";
       switch (sortBy) {
@@ -393,14 +410,17 @@ const Logbook = () => {
         count: categorySpecies.length,
         species: categorySpecies,
         subcategories: categoryKey === 'växter' ? MAIN_CATEGORY_DISPLAY['växter'].subcategories : [],
+        originalCount: categoryKey === 'växter' && subcategoryFilter[categoryKey] 
+          ? (speciesByCategory[categoryKey as MainCategoryKey] || []).length 
+          : categorySpecies.length,
         infiniteScroll: {
           displayedItems: categorySpecies.slice(0, 10),
           hasMore: categorySpecies.length > 10,
           totalItems: categorySpecies.length
         }
       };
-    }).filter(cat => cat.count > 0);
-  }, [allSpecies, categorySortBy]);
+    }).filter(cat => showEmptyCategories || cat.count > 0);
+  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories]);
 
   const toggleCategory = (categoryKey: string) => {
     setExpandedCategory(expandedCategory === categoryKey ? "" : categoryKey);
@@ -533,6 +553,17 @@ const Logbook = () => {
               className="pl-10"
             />
           </div>
+
+          {/* Show empty categories toggle */}
+          <div className="flex items-center justify-between text-sm">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox 
+                checked={showEmptyCategories}
+                onCheckedChange={(checked) => setShowEmptyCategories(checked as boolean)}
+              />
+              <span className="text-muted-foreground">Visa tomma kategorier</span>
+            </label>
+          </div>
         </div>
 
         {/* Categories */}
@@ -549,7 +580,21 @@ const Logbook = () => {
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{category.icon}</span>
                       <div>
-                        <h3 className="font-medium text-foreground">{category.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-foreground">{category.name}</h3>
+                          {category.key === 'annat' && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Kategorin "Annat" innehåller fångster som inte passar in i de övriga kategorierna, såsom okända arter, ljudinspelningar, eller spår av djur.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                         {category.subcategories && category.subcategories.length > 0 && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {category.subcategories.join(' • ')}
@@ -572,24 +617,59 @@ const Logbook = () => {
                     </div>
                   </div>
                   
-                  {/* Category sorting controls - shown when expanded and has species */}
-                  {expandedCategory === category.key && category.species.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
-                      <Select 
-                        value={categorySortBy[category.key] || "date"} 
-                        onValueChange={(value) => setCategorySortBy(prev => ({...prev, [category.key]: value}))}
-                      >
-                        <SelectTrigger className="w-40">
-                          <SortAsc className="h-4 w-4 mr-2" />
-                          <SelectValue placeholder="Sortera" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="date">Senaste först</SelectItem>
-                          <SelectItem value="name">Artnamn A-Ö</SelectItem>
-                          <SelectItem value="rarity">Sällsynthet</SelectItem>
-                          <SelectItem value="location">Plats</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  {/* Category filters and sorting controls - shown when expanded */}
+                  {expandedCategory === category.key && (
+                    <div className="mt-3 pt-3 border-t border-border space-y-3" onClick={(e) => e.stopPropagation()}>
+                      {/* Subcategory filter for växter */}
+                      {category.key === 'växter' && category.subcategories && category.subcategories.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant={!subcategoryFilter[category.key] ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSubcategoryFilter(prev => ({...prev, [category.key]: ""}))}
+                          >
+                            Alla ({(category as any).originalCount || category.count})
+                          </Button>
+                          {category.subcategories.map(subcat => {
+                            const subcatLower = subcat.toLowerCase();
+                            const subcatCount = allSpecies.filter(s => {
+                              if (s.category !== 'växter') return false;
+                              const detailedCategoryFact = s.facts.find(f => f.title === "Detaljerad kategori");
+                              return detailedCategoryFact?.description.toLowerCase() === subcatLower;
+                            }).length;
+                            
+                            return (
+                              <Button
+                                key={subcat}
+                                variant={subcategoryFilter[category.key] === subcat ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSubcategoryFilter(prev => ({...prev, [category.key]: subcat}))}
+                              >
+                                {subcat} ({subcatCount})
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {/* Sorting controls */}
+                      {category.species.length > 0 && (
+                        <Select 
+                          value={categorySortBy[category.key] || "date"} 
+                          onValueChange={(value) => setCategorySortBy(prev => ({...prev, [category.key]: value}))}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SortAsc className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Sortera" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="date">Senaste först</SelectItem>
+                            <SelectItem value="name">Artnamn A-Ö</SelectItem>
+                            <SelectItem value="rarity">Sällsynthet</SelectItem>
+                            <SelectItem value="location">Plats</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   )}
                 </CardContent>
