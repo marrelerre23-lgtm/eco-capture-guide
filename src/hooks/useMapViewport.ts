@@ -47,15 +47,5 @@ export const useMapViewport = () => {
     };
   }, [map]);
 
-  const isInViewport = (lat: number, lng: number): boolean => {
-    if (!bounds) return true; // Render all if bounds not set
-    return (
-      lat >= bounds.south &&
-      lat <= bounds.north &&
-      lng >= bounds.west &&
-      lng <= bounds.east
-    );
-  };
-
-  return { bounds, isInViewport };
+  return { bounds };
 };

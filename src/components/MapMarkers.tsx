@@ -26,15 +26,34 @@ interface MapMarkersProps {
  * Improves performance for large datasets
  */
 export const MapMarkers = ({ captures }: MapMarkersProps) => {
-  const { isInViewport } = useMapViewport();
+  const { bounds } = useMapViewport();
 
   // Only render markers that are in viewport
   const visibleCaptures = useMemo(() => {
+    if (!bounds) return captures; // Show all if bounds not yet available
+    
     return captures.filter(capture => {
       if (!capture.latitude || !capture.longitude) return false;
-      return isInViewport(Number(capture.latitude), Number(capture.longitude));
+      
+      const lat = Number(capture.latitude);
+      const lng = Number(capture.longitude);
+      
+      // Check latitude
+      const latInRange = lat >= bounds.south && lat <= bounds.north;
+      
+      // Check longitude (handle antimeridian crossing)
+      let lngInRange: boolean;
+      if (bounds.west <= bounds.east) {
+        // Normal case: bounds don't cross antimeridian
+        lngInRange = lng >= bounds.west && lng <= bounds.east;
+      } else {
+        // Special case: bounds cross antimeridian (e.g., west=170, east=-170)
+        lngInRange = lng >= bounds.west || lng <= bounds.east;
+      }
+      
+      return latInRange && lngInRange;
     });
-  }, [captures, isInViewport]);
+  }, [captures, bounds]);
 
   console.log(`[MapMarkers] Rendering ${visibleCaptures.length} of ${captures.length} markers`);
 
