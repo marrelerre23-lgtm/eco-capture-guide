@@ -572,8 +572,12 @@ const Logbook = () => {
             <div key={category.key}>
               {/* Category Header */}
               <Card 
-                className="cursor-pointer shadow-card hover:shadow-eco transition-shadow"
-                onClick={() => toggleCategory(category.key)}
+                className={`shadow-card transition-shadow ${
+                  category.count === 0 
+                    ? 'opacity-60 cursor-not-allowed' 
+                    : 'cursor-pointer hover:shadow-eco'
+                }`}
+                onClick={() => category.count > 0 && toggleCategory(category.key)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">

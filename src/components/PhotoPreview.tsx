@@ -97,6 +97,28 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       // Update last analysis time
       localStorage.setItem(RATE_LIMIT_KEY, now.toString());
 
+      // Mark that user has performed an analysis (for PWA prompt timing)
+      localStorage.setItem('has_analyzed', 'true');
+
+      // Check AI result cache
+      const imageHash = imageUrl.substring(0, 100); // Use first 100 chars as hash
+      const cacheKey = `ai_cache_${btoa(imageHash).substring(0, 50)}`;
+      const cached = localStorage.getItem(cacheKey);
+      
+      if (cached) {
+        try {
+          const cachedResult = JSON.parse(cached);
+          console.log('Using cached AI result');
+          navigate('/analysis-result', { 
+            state: cachedResult
+          });
+          return;
+        } catch (e) {
+          console.log('Cache parse error, will analyze:', e);
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
       setIsAnalyzing(true);
       console.log('Laddar upp bild till Supabase...');
       
@@ -134,30 +156,38 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
       // Check if we have alternatives (new format) or single species (old format)
       if (analysisResult.alternatives && Array.isArray(analysisResult.alternatives)) {
+        const resultState = { 
+          alternatives: analysisResult.alternatives.map((alt: any) => ({
+            id: crypto.randomUUID(),
+            name: alt.species.commonName || "Okänd art",
+            scientificName: alt.species.scientificName || "Okänd",
+            image: uploadedImageUrl,
+            dateFound: new Date(),
+            description: alt.species.description || "Ingen beskrivning tillgänglig",
+            category: alt.species.category || "annat",
+            confidence: alt.species.confidence || 0.5,
+            reasoning: alt.reasoning || "",
+            facts: [
+              alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
+              alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
+              alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
+              alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
+              alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : ""
+            ].filter(Boolean)
+          })),
+          location: location
+        };
+
+        // Cache the result
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(resultState));
+          console.log('AI result cached');
+        } catch (e) {
+          console.log('Failed to cache result:', e);
+        }
+
         // Navigate to analysis result page with all alternatives
-        navigate('/analysis-result', { 
-          state: { 
-            alternatives: analysisResult.alternatives.map((alt: any) => ({
-              id: crypto.randomUUID(),
-              name: alt.species.commonName || "Okänd art",
-              scientificName: alt.species.scientificName || "Okänd",
-              image: uploadedImageUrl,
-              dateFound: new Date(),
-              description: alt.species.description || "Ingen beskrivning tillgänglig",
-              category: alt.species.category || "annat",
-              confidence: alt.species.confidence || 0.5,
-              reasoning: alt.reasoning || "",
-              facts: [
-                alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
-                alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
-                alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
-                alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
-                alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : ""
-              ].filter(Boolean)
-            })),
-            location: location
-          } 
-        });
+        navigate('/analysis-result', { state: resultState });
       } else if (analysisResult.species) {
         // Legacy format - single species
         const species: Species = {
@@ -176,13 +206,21 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : ""
           ].filter(Boolean)
         };
+
+        const resultState = { 
+          alternatives: [species],
+          location: location
+        };
+
+        // Cache the result
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(resultState));
+          console.log('AI result cached');
+        } catch (e) {
+          console.log('Failed to cache result:', e);
+        }
         
-        navigate('/analysis-result', { 
-          state: { 
-            alternatives: [species],
-            location: location
-          } 
-        });
+        navigate('/analysis-result', { state: resultState });
       } else {
         throw new Error('Ingen artidentifiering kunde göras');
       }

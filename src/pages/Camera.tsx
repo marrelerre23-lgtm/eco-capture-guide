@@ -433,6 +433,9 @@ const Camera = () => {
               step={0.1}
               className="flex-1"
             />
+            <span className="text-white text-sm font-medium min-w-[3ch] text-center">
+              {zoom.toFixed(1)}x
+            </span>
             <ZoomIn className="h-5 w-5 text-white flex-shrink-0" />
           </div>
         )}

@@ -39,10 +39,26 @@ const AppRoutes = () => {
       <PWAInstallPrompt />
       <Routes>
         <Route path="/" element={<Overview />} />
-        <Route path="/camera" element={<Camera />} />
-        <Route path="/analysis-result" element={<AnalysisResult />} />
-        <Route path="/logbook" element={<Logbook />} />
-        <Route path="/map" element={<Map />} />
+        <Route path="/camera" element={
+          <ErrorBoundary>
+            <Camera />
+          </ErrorBoundary>
+        } />
+        <Route path="/analysis-result" element={
+          <ErrorBoundary>
+            <AnalysisResult />
+          </ErrorBoundary>
+        } />
+        <Route path="/logbook" element={
+          <ErrorBoundary>
+            <Logbook />
+          </ErrorBoundary>
+        } />
+        <Route path="/map" element={
+          <ErrorBoundary>
+            <Map />
+          </ErrorBoundary>
+        } />
         <Route path="/profile" element={<ProfileEnhanced />} />
         <Route path="/install" element={<Install />} />
         <Route path="/about" element={<About />} />
@@ -60,6 +76,7 @@ const AppRoutes = () => {
 
 const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showPWAPrompt, setShowPWAPrompt] = useState(false);
   const isOnline = useOnlineStatus();
   const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
   const { toast } = useToast();
@@ -70,6 +87,16 @@ const App = () => {
       setShowOnboarding(true);
     }
   }, []);
+
+  // Show PWA install prompt only after first analysis
+  useEffect(() => {
+    const hasAnalyzed = localStorage.getItem('has_analyzed');
+    if (hasAnalyzed && !showOnboarding) {
+      // Wait 2 seconds after first analysis before showing prompt
+      const timer = setTimeout(() => setShowPWAPrompt(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showOnboarding]);
 
   // Auto-sync offline captures when coming online
   useEffect(() => {
@@ -130,6 +157,7 @@ const App = () => {
         >
           <BrowserRouter>
             {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+            {showPWAPrompt && <PWAInstallPrompt />}
             <Layout>
               <AppRoutes />
             </Layout>
