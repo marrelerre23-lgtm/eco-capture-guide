@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
 serve(async (req) => {
@@ -12,6 +12,21 @@ serve(async (req) => {
   }
 
   try {
+    // Security check: Verify cron secret
+    const cronSecret = req.headers.get("x-cron-secret");
+    const expectedSecret = Deno.env.get("CRON_SECRET");
+    
+    if (!cronSecret || !expectedSecret || cronSecret !== expectedSecret) {
+      console.error("[DAILY-RESET] Unauthorized access attempt");
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Unauthorized" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
     console.log("[DAILY-RESET] Function started at", new Date().toISOString());
 
     const supabaseClient = createClient(

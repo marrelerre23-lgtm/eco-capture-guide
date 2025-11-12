@@ -1,28 +1,28 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const uploadCaptureImage = async (imageFile: File): Promise<string> => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
     throw new Error("Användaren måste vara inloggad för att ladda upp bilder");
   }
 
   // Create a unique filename
   const fileExt = imageFile.name.split('.').pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-  const userId = (await user).data.user?.id;
+  const userId = user.id;
   const filePath = `${userId}/${fileName}`;
 
   // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
+  const { data, error: uploadError } = await supabase.storage
     .from('captures')
     .upload(filePath, imageFile, {
       cacheControl: '3600',
       upsert: false
     });
 
-  if (error) {
-    console.error('Error uploading image:', error);
-    throw new Error(`Kunde inte ladda upp bilden: ${error.message}`);
+  if (uploadError) {
+    console.error('Error uploading image:', uploadError);
+    throw new Error(`Kunde inte ladda upp bilden: ${uploadError.message}`);
   }
 
   // Get public URL
@@ -75,16 +75,16 @@ export const uploadAvatarImage = async (imageFile: File): Promise<string> => {
   const filePath = `${userId}/${fileName}`;
 
   // Upload to Supabase Storage (overwrites existing avatar)
-  const { data, error } = await supabase.storage
+  const { data, error: uploadError } = await supabase.storage
     .from('avatars')
     .upload(filePath, imageFile, {
       cacheControl: '3600',
       upsert: true
     });
 
-  if (error) {
-    console.error('Error uploading avatar:', error);
-    throw new Error(`Kunde inte ladda upp profilbilden: ${error.message}`);
+  if (uploadError) {
+    console.error('Error uploading avatar:', uploadError);
+    throw new Error(`Kunde inte ladda upp profilbilden: ${uploadError.message}`);
   }
 
   // Get public URL
