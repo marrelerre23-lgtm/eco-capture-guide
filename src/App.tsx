@@ -104,10 +104,11 @@ const App = () => {
       if (!isOnline || offlineCaptures.length === 0) return;
 
       console.log(`Syncing ${offlineCaptures.length} offline captures...`);
+      const totalCaptures = offlineCaptures.length;
       
       toast({
         title: "Synkroniserar offline-fångster",
-        description: `${offlineCaptures.length} ${offlineCaptures.length === 1 ? 'fångst' : 'fångster'} synkas nu...`
+        description: `${totalCaptures} ${totalCaptures === 1 ? 'fångst' : 'fångster'} synkas nu...`
       });
 
       let syncedCount = 0;
@@ -127,17 +128,18 @@ const App = () => {
         }
       }
 
+      // Show feedback to user
       if (syncedCount > 0) {
         toast({
           title: "Synkning klar!",
-          description: `${syncedCount} ${syncedCount === 1 ? 'fångst' : 'fångster'} synkades framgångsrikt.`
+          description: `${syncedCount} av ${totalCaptures} ${syncedCount === 1 ? 'fångst' : 'fångster'} synkades framgångsrikt.`
         });
       }
 
       if (failedCount > 0) {
         toast({
-          title: "Synkning misslyckades delvis",
-          description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas. De sparas lokalt.`,
+          title: "Synkning misslyckades",
+          description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas. De sparas lokalt och försöker igen senare.`,
           variant: "destructive"
         });
       }

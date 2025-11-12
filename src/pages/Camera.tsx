@@ -32,8 +32,15 @@ const Camera = () => {
   const [zoomSupported, setZoomSupported] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
+  const [isStartingCamera, setIsStartingCamera] = useState(false);
 
   const startCamera = async () => {
+    if (isStartingCamera) {
+      console.log('Camera is already starting, ignoring duplicate call');
+      return;
+    }
+
+    setIsStartingCamera(true);
     setCameraError(null);
     try {
       // Check if mediaDevices is available
@@ -92,6 +99,8 @@ const Camera = () => {
         title: "Kamerafel",
         description: errorMessage,
       });
+    } finally {
+      setIsStartingCamera(false);
     }
   };
 

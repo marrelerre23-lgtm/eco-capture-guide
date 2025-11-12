@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { LazyImage } from "@/components/LazyImage";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useVibration } from "@/hooks/useVibration";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   getMainCategory, 
   getCategoryDisplayName, 
@@ -177,6 +178,8 @@ const Logbook = () => {
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showAnnatInfoDialog, setShowAnnatInfoDialog] = useState(false);
+  const isMobile = useIsMobile();
   const [categoryPages, setCategoryPages] = useState<Record<string, number>>({});
   const [subcategoryFilter, setSubcategoryFilter] = useState<Record<string, string>>({});
   const [showEmptyCategories, setShowEmptyCategories] = useState(true);
@@ -587,24 +590,36 @@ const Logbook = () => {
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-foreground">{category.name}</h3>
                           {category.key === 'annat' && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button 
-                                    className="inline-flex items-center justify-center ml-1" 
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-foreground transition-colors" />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <p className="text-sm">
-                                    "Annat" innehåller allt som inte passar i de andra kategorierna, 
-                                    till exempel objekt, konstgjorda ting, eller saker AI:n inte kunde identifiera.
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            isMobile ? (
+                              <button 
+                                className="inline-flex items-center justify-center ml-1"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowAnnatInfoDialog(true);
+                                }}
+                              >
+                                <Info className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+                              </button>
+                            ) : (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button 
+                                      className="inline-flex items-center justify-center ml-1" 
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-foreground transition-colors" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="text-sm">
+                                      "Annat" innehåller allt som inte passar i de andra kategorierna, 
+                                      till exempel objekt, konstgjorda ting, eller saker AI:n inte kunde identifiera.
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )
                           )}
                           {category.key === 'växter' && subcategoryFilter[category.key] && (
                             <Badge variant="outline" className="ml-2 bg-primary/10 text-primary border-primary/20">
@@ -867,6 +882,26 @@ const Logbook = () => {
             <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Annat Info Dialog */}
+      <AlertDialog open={showAnnatInfoDialog} onOpenChange={setShowAnnatInfoDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Om kategorin "Annat"</AlertDialogTitle>
+            <AlertDialogDescription className="text-base space-y-2">
+              <p>
+                "Annat" innehåller allt som inte passar i de andra kategorierna, 
+                till exempel objekt, konstgjorda ting, eller saker AI:n inte kunde identifiera.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowAnnatInfoDialog(false)}>
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
