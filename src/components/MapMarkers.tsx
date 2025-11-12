@@ -26,7 +26,15 @@ interface MapMarkersProps {
  * Improves performance for large datasets
  */
 export const MapMarkers = ({ captures }: MapMarkersProps) => {
-  const { bounds } = useMapViewport();
+  let bounds = null;
+  
+  try {
+    const viewport = useMapViewport();
+    bounds = viewport.bounds;
+  } catch (error) {
+    console.error('[MapMarkers] Error using useMapViewport:', error);
+    // Continue without viewport optimization
+  }
 
   // Only render markers that are in viewport
   const visibleCaptures = useMemo(() => {

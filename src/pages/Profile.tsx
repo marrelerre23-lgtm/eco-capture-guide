@@ -19,6 +19,8 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useAchievements } from "@/hooks/useAchievements";
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { Switch } from "@/components/ui/switch";
+import { forceAppUpdate, clearAllCaches } from "@/utils/serviceWorkerManager";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 interface Profile {
   display_name: string | null;
@@ -623,6 +625,64 @@ const Profile = () => {
                 {captures.length} fångster att exportera
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* App Reset & Cache */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5" />
+              App-återställning
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Om appen fungerar konstigt eller inte uppdateras korrekt, kan du rensa cacheminnet eller tvinga en fullständig uppdatering.
+            </p>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    await clearAllCaches();
+                    toast({
+                      title: "Cache rensat",
+                      description: "All cachad data har rensats. Laddar om...",
+                    });
+                    setTimeout(() => window.location.reload(), 1000);
+                  } catch (error) {
+                    toast({
+                      variant: "destructive",
+                      title: "Kunde inte rensa cache",
+                      description: error instanceof Error ? error.message : "Ett fel uppstod",
+                    });
+                  }
+                }}
+                className="w-full"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Rensa cache
+              </Button>
+              
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (confirm('Detta kommer att rensa ALL cachad data och ladda om appen. Fortsätt?')) {
+                    await forceAppUpdate();
+                  }
+                }}
+                className="w-full"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Tvinga fullständig uppdatering
+              </Button>
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                💡 Tips: Använd "Tvinga fullständig uppdatering" om kartan eller andra funktioner inte fungerar korrekt.
+              </p>
+            </div>
           </CardContent>
         </Card>
 

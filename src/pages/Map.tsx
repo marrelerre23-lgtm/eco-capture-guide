@@ -1,9 +1,14 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
-console.log('[Map] Module loaded, Leaflet version:', L.version);
+// Verify Leaflet is loaded properly
+if (typeof L === 'undefined') {
+  console.error('❌ [Map] Leaflet (L) is undefined!');
+} else {
+  console.log(`✅ [Map] Leaflet loaded successfully, version: ${L.version}`);
+}
 import { useSpeciesCaptures } from '@/hooks/useSpeciesCaptures';
 import { MapMarkers } from '@/components/MapMarkers';
 import { Button } from '@/components/ui/button';

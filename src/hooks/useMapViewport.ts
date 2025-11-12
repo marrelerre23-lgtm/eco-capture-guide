@@ -17,18 +17,32 @@ export const useMapViewport = () => {
   const [bounds, setBounds] = useState<Bounds | null>(null);
 
   useEffect(() => {
+    if (!map) {
+      console.error('[useMapViewport] Map instance not available');
+      return;
+    }
+
     const updateBounds = () => {
-      const mapBounds = map.getBounds();
-      setBounds({
-        north: mapBounds.getNorth(),
-        south: mapBounds.getSouth(),
-        east: mapBounds.getEast(),
-        west: mapBounds.getWest(),
-      });
+      try {
+        if (!map || !map.getBounds) {
+          console.warn('[useMapViewport] Map or getBounds not available');
+          return;
+        }
+        
+        const mapBounds = map.getBounds();
+        setBounds({
+          north: mapBounds.getNorth(),
+          south: mapBounds.getSouth(),
+          east: mapBounds.getEast(),
+          west: mapBounds.getWest(),
+        });
+      } catch (error) {
+        console.error('[useMapViewport] Error updating bounds:', error);
+      }
     };
 
-    // Initial bounds
-    updateBounds();
+    // Initial bounds with delay to ensure map is ready
+    const initTimeout = setTimeout(updateBounds, 100);
 
     // Update on move/zoom with debouncing
     let timeout: ReturnType<typeof setTimeout>;
@@ -41,9 +55,12 @@ export const useMapViewport = () => {
     map.on('zoomend', debouncedUpdate);
 
     return () => {
-      map.off('moveend', debouncedUpdate);
-      map.off('zoomend', debouncedUpdate);
+      clearTimeout(initTimeout);
       clearTimeout(timeout);
+      if (map && map.off) {
+        map.off('moveend', debouncedUpdate);
+        map.off('zoomend', debouncedUpdate);
+      }
     };
   }, [map]);
 
