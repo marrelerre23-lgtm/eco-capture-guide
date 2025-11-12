@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AIPhotoTips } from "@/components/AIPhotoTips";
 import { Species, getMainCategory, getCategoryDisplayName, MAIN_CATEGORY_DISPLAY } from "@/types/species";
+import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -453,14 +454,15 @@ const AnalysisResult = () => {
                   <div>
                     <h4 className="font-semibold text-sm mb-1">GPS-noggrannhet</h4>
                     <p className="text-sm text-muted-foreground">
-                      ±{Math.round(gpsLocation.accuracy)} meter
+                      {formatGpsAccuracy(gpsLocation.accuracy)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {gpsLocation.accuracy < 50 
-                        ? "Mycket hög noggrannhet 🎯" 
+                        ? "Mycket hög noggrannhet " 
                         : gpsLocation.accuracy < 500 
-                        ? "God noggrannhet 📍" 
-                        : "Okej noggrannhet 📌"}
+                        ? "God noggrannhet " 
+                        : "Okej noggrannhet "}
+                      {getGpsAccuracyIcon(gpsLocation.accuracy)}
                     </p>
                   </div>
                 </div>

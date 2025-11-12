@@ -18,6 +18,7 @@ import { LazyImage } from "@/components/LazyImage";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useVibration } from "@/hooks/useVibration";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
 import { 
   getMainCategory, 
   getCategoryDisplayName, 
@@ -131,9 +132,9 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
         description: `${Math.round(species.confidence * 100)}% säker på identifieringen`
       }] : []),
       ...(capture.gps_accuracy ? [{
-        icon: capture.gps_accuracy < 50 ? "🎯" : capture.gps_accuracy < 500 ? "📍" : "📌",
+        icon: getGpsAccuracyIcon(capture.gps_accuracy),
         title: "GPS-noggrannhet",
-        description: `±${Math.round(capture.gps_accuracy)} meter`
+        description: formatGpsAccuracy(capture.gps_accuracy)
       }] : []),
       ...(capture.location_name ? [{
         icon: "📍",
@@ -345,7 +346,8 @@ const Logbook = () => {
     return converted.filter(species => 
       species.name.toLowerCase().includes(query) ||
       species.scientificName.toLowerCase().includes(query) ||
-      species.description.toLowerCase().includes(query)
+      species.description.toLowerCase().includes(query) ||
+      (species.location && species.location.toLowerCase().includes(query))
     );
   }, [captures, searchQuery]);
 
@@ -420,7 +422,8 @@ const Logbook = () => {
           displayedItems: categorySpecies.slice(0, 10),
           hasMore: categorySpecies.length > 10,
           totalItems: categorySpecies.length
-        }
+        },
+        speciesByCategory // Pass it down for subcategory counting
       };
     }).filter(cat => showEmptyCategories || cat.count > 0);
   }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories]);
@@ -550,7 +553,7 @@ const Logbook = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Sök efter artnamn..."
+              placeholder="Sök efter artnamn, plats..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -665,8 +668,9 @@ const Logbook = () => {
                           </Button>
                           {category.subcategories.map(subcat => {
                             const subcatLower = subcat.toLowerCase();
-                            const subcatCount = allSpecies.filter(s => {
-                              if (s.category !== 'växter') return false;
+                            // Use the original unfiltered category species for accurate counts
+                            const categoryAllSpecies = (category as any).speciesByCategory?.[category.key as MainCategoryKey] || category.species;
+                            const subcatCount = categoryAllSpecies.filter((s: Species) => {
                               const detailedCategoryFact = s.facts.find(f => f.title === "Detaljerad kategori");
                               return detailedCategoryFact?.description.toLowerCase() === subcatLower;
                             }).length;
