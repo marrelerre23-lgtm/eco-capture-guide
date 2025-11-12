@@ -12,6 +12,7 @@ export interface SubscriptionInfo {
   maxCaptures: number | null;
   isAnalysisLimitReached: boolean;
   isCaptureLimitReached: boolean;
+  subscription_end: string | null;
 }
 
 export const useSubscription = () => {
@@ -63,6 +64,7 @@ export const useSubscription = () => {
           maxCaptures: 50,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
+          subscription_end: null,
         });
         setLoading(false);
         return;
@@ -80,6 +82,7 @@ export const useSubscription = () => {
           maxCaptures: 50,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
+          subscription_end: null,
         });
         setLoading(false);
         return;
@@ -109,6 +112,7 @@ export const useSubscription = () => {
         maxCaptures: profile.max_captures,
         isAnalysisLimitReached: analysesRemaining === 0,
         isCaptureLimitReached: capturesRemaining === 0,
+        subscription_end: profile.subscription_expires_at || null,
       };
 
       console.log('✅ [useSubscription] Subscription info:', subscriptionInfo);
@@ -129,6 +133,7 @@ export const useSubscription = () => {
         maxCaptures: 50,
         isAnalysisLimitReached: false,
         isCaptureLimitReached: false,
+        subscription_end: null,
       });
       setLoading(false);
     }
@@ -136,6 +141,13 @@ export const useSubscription = () => {
 
   useEffect(() => {
     fetchSubscriptionInfo();
+    
+    // Auto-refresh subscription status every 30 seconds
+    const interval = setInterval(() => {
+      fetchSubscriptionInfo();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const checkCanAnalyze = async (): Promise<boolean> => {

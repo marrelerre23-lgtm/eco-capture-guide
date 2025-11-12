@@ -423,14 +423,23 @@ const Profile = () => {
                     </>
                   )}
                   
-                  {subscription.tier !== 'free' && (
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-sm text-muted-foreground">Status</span>
-                      <Badge variant="outline" className="border-green-500 text-green-500">
-                        Aktiv
-                      </Badge>
-                    </div>
-                  )}
+                {subscription.tier !== 'free' && (
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge variant="outline" className="border-green-500 text-green-500">
+                      Aktiv
+                    </Badge>
+                  </div>
+                )}
+                
+                {subscription.tier !== 'free' && subscription.subscription_end && (
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <span className="text-sm text-muted-foreground">Nästa faktura</span>
+                    <span className="text-sm font-medium">
+                      {new Date(subscription.subscription_end).toLocaleDateString('sv-SE')}
+                    </span>
+                  </div>
+                )}
                 </div>
 
                 {subscription.tier === 'free' && (
@@ -449,6 +458,37 @@ const Profile = () => {
                         Med Premium får du obegränsade analyser, ingen annonser, och mycket mer!
                       </p>
                     </div>
+                  </div>
+                )}
+                
+                {subscription.tier !== 'free' && (
+                  <div className="pt-2">
+                    <Button 
+                      onClick={async () => {
+                        try {
+                          const { data: { session } } = await supabase.auth.getSession();
+                          if (!session) throw new Error('Not authenticated');
+                          
+                          const { data, error } = await supabase.functions.invoke('customer-portal', {
+                            headers: { Authorization: `Bearer ${session.access_token}` },
+                          });
+                          
+                          if (error) throw error;
+                          if (data?.url) window.open(data.url, '_blank');
+                        } catch (error) {
+                          toast({
+                            variant: 'destructive',
+                            title: 'Kunde inte öppna prenumerationshantering',
+                            description: error instanceof Error ? error.message : 'Ett fel uppstod',
+                          });
+                        }
+                      }} 
+                      variant="outline"
+                      className="w-full"
+                      size="lg"
+                    >
+                      Hantera prenumeration
+                    </Button>
                   </div>
                 )}
               </>
