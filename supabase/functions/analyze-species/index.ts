@@ -127,21 +127,6 @@ serve(async (req) => {
 
     const { imageUrl, category, detailLevel } = validationResult.data;
 
-    // Validate image URL is from allowed domain
-    const ALLOWED_DOMAINS = [
-      'supabase.co',
-      'lovableproject.com',
-      'lovable.app'
-    ];
-
-    const isAllowedDomain = ALLOWED_DOMAINS.some(domain => 
-      parsedUrl.hostname.includes(domain)
-    );
-
-    if (!isAllowedDomain) {
-      throw new Error('Bild URL måste vara från tillåten domän (Supabase eller Lovable)');
-    }
-
     console.log('Validerad bild URL:', imageUrl);
     
     const categoryHint = category && category !== 'okänt' 

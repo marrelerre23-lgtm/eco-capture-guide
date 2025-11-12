@@ -169,7 +169,9 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Lösenord</Label>
+                  <Label htmlFor="signup-password">
+                    Lösenord <span className="text-muted-foreground text-xs">(minst 8 tecken)</span>
+                  </Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -177,7 +179,8 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    minLength={6}
+                    minLength={8}
+                    placeholder="Minst 8 tecken"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
