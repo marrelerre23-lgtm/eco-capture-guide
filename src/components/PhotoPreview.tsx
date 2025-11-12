@@ -78,6 +78,25 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
   const handleAnalyze = async () => {
     try {
+      // Rate limiting check
+      const RATE_LIMIT_KEY = 'last_analysis_time';
+      const MIN_INTERVAL = 5000; // 5 seconds between analyses
+      const lastAnalysisTime = parseInt(localStorage.getItem(RATE_LIMIT_KEY) || '0');
+      const now = Date.now();
+
+      if (now - lastAnalysisTime < MIN_INTERVAL) {
+        const remainingTime = Math.ceil((MIN_INTERVAL - (now - lastAnalysisTime)) / 1000);
+        toast({
+          title: "För snabbt!",
+          description: `Vänta ${remainingTime} sekunder innan nästa analys.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Update last analysis time
+      localStorage.setItem(RATE_LIMIT_KEY, now.toString());
+
       setIsAnalyzing(true);
       console.log('Laddar upp bild till Supabase...');
       

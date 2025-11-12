@@ -21,9 +21,40 @@ serve(async (req) => {
   try {
     const { imageUrl, category, detailLevel = 'standard' } = await req.json();
     
+    // Validate image URL exists
     if (!imageUrl) {
       throw new Error('Bild URL saknas');
     }
+
+    // Validate image URL is a string
+    if (typeof imageUrl !== 'string') {
+      throw new Error('Ogiltig bild URL format');
+    }
+
+    // Validate image URL is a valid URL
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(imageUrl);
+    } catch {
+      throw new Error('Ogiltig bild URL');
+    }
+
+    // Validate image URL is from allowed domain
+    const ALLOWED_DOMAINS = [
+      'supabase.co',
+      'lovableproject.com',
+      'lovable.app'
+    ];
+
+    const isAllowedDomain = ALLOWED_DOMAINS.some(domain => 
+      parsedUrl.hostname.includes(domain)
+    );
+
+    if (!isAllowedDomain) {
+      throw new Error('Bild URL måste vara från tillåten domän (Supabase eller Lovable)');
+    }
+
+    console.log('Validerad bild URL:', imageUrl);
     
     const categoryHint = category && category !== 'okänt' 
       ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${

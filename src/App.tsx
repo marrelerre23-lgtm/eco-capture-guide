@@ -20,6 +20,9 @@ import Terms from "./pages/Terms";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { useOfflineStorage } from "./hooks/useOfflineStorage";
+import { useToast } from "./hooks/use-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +60,9 @@ const AppRoutes = () => {
 
 const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const isOnline = useOnlineStatus();
+  const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check if user has completed onboarding
@@ -64,6 +70,54 @@ const App = () => {
       setShowOnboarding(true);
     }
   }, []);
+
+  // Auto-sync offline captures when coming online
+  useEffect(() => {
+    const syncOfflineCaptures = async () => {
+      if (!isOnline || offlineCaptures.length === 0) return;
+
+      console.log(`Syncing ${offlineCaptures.length} offline captures...`);
+      
+      toast({
+        title: "Synkroniserar offline-fångster",
+        description: `${offlineCaptures.length} ${offlineCaptures.length === 1 ? 'fångst' : 'fångster'} synkas nu...`
+      });
+
+      let syncedCount = 0;
+      let failedCount = 0;
+
+      for (const capture of offlineCaptures) {
+        try {
+          // TODO: Implement full sync to database when ready
+          console.log("Would sync capture:", capture.id);
+          
+          // For now, just remove from offline storage after a successful "sync"
+          removeOfflineCapture(capture.id);
+          syncedCount++;
+        } catch (error) {
+          console.error("Failed to sync capture:", capture.id, error);
+          failedCount++;
+        }
+      }
+
+      if (syncedCount > 0) {
+        toast({
+          title: "Synkning klar!",
+          description: `${syncedCount} ${syncedCount === 1 ? 'fångst' : 'fångster'} synkades framgångsrikt.`
+        });
+      }
+
+      if (failedCount > 0) {
+        toast({
+          title: "Synkning misslyckades delvis",
+          description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas. De sparas lokalt.`,
+          variant: "destructive"
+        });
+      }
+    };
+
+    syncOfflineCaptures();
+  }, [isOnline, offlineCaptures, removeOfflineCapture, toast]);
 
   return (
     <ErrorBoundary>

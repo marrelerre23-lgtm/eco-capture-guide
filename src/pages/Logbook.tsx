@@ -586,10 +586,18 @@ const Logbook = () => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                  <button 
+                                    className="inline-flex items-center justify-center ml-1" 
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <Info className="h-4 w-4 text-muted-foreground cursor-help hover:text-foreground transition-colors" />
+                                  </button>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Kategorin "Annat" innehåller fångster som inte passar in i de övriga kategorierna, såsom okända arter, ljudinspelningar, eller spår av djur.</p>
+                                  <p className="text-sm">
+                                    "Annat" innehåller allt som inte passar i de andra kategorierna, 
+                                    till exempel objekt, konstgjorda ting, eller saker AI:n inte kunde identifiera.
+                                  </p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
