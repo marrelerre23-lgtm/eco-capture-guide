@@ -5,6 +5,7 @@ import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
+import { OverviewSkeleton } from "@/components/LoadingSkeleton";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -75,14 +76,7 @@ const Overview = () => {
   }, [carouselApi]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Laddar översikt...</p>
-        </div>
-      </div>
-    );
+    return <OverviewSkeleton />;
   }
 
   if (error) {

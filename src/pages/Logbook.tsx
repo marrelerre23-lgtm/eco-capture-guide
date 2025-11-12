@@ -19,6 +19,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useVibration } from "@/hooks/useVibration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
+import { LogbookSkeleton } from "@/components/LoadingSkeleton";
 import { 
   getMainCategory, 
   getCategoryDisplayName, 
@@ -471,14 +472,7 @@ const Logbook = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Laddar dina fångster...</p>
-        </div>
-      </div>
-    );
+    return <LogbookSkeleton />;
   }
 
   if (error) {

@@ -10,6 +10,7 @@ import { TopNavigation } from "./TopNavigation";
 import { PhotoTipsDialog } from "./PhotoTipsDialog";
 import { User } from "@supabase/supabase-js";
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
+import { getCachedResult, setCachedResult } from "@/utils/imageCache";
 
 interface PhotoPreviewProps {
   imageUrl: string;
@@ -100,23 +101,16 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       // Mark that user has performed an analysis (for PWA prompt timing)
       localStorage.setItem('has_analyzed', 'true');
 
-      // Check AI result cache
+      // Check AI result cache using new cache utility
       const imageHash = imageUrl.substring(0, 100); // Use first 100 chars as hash
-      const cacheKey = `ai_cache_${btoa(imageHash).substring(0, 50)}`;
-      const cached = localStorage.getItem(cacheKey);
+      const cachedResult = getCachedResult(imageHash);
       
-      if (cached) {
-        try {
-          const cachedResult = JSON.parse(cached);
-          console.log('Using cached AI result');
-          navigate('/analysis-result', { 
-            state: cachedResult
-          });
-          return;
-        } catch (e) {
-          console.log('Cache parse error, will analyze:', e);
-          localStorage.removeItem(cacheKey);
-        }
+      if (cachedResult) {
+        console.log('Using cached AI result');
+        navigate('/analysis-result', { 
+          state: cachedResult
+        });
+        return;
       }
 
       setIsAnalyzing(true);
@@ -178,13 +172,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           location: location
         };
 
-        // Cache the result
-        try {
-          localStorage.setItem(cacheKey, JSON.stringify(resultState));
-          console.log('AI result cached');
-        } catch (e) {
-          console.log('Failed to cache result:', e);
-        }
+        // Cache the result using new cache utility
+        setCachedResult(imageHash, resultState);
+        console.log('AI result cached');
 
         // Navigate to analysis result page with all alternatives
         navigate('/analysis-result', { state: resultState });
@@ -212,13 +202,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           location: location
         };
 
-        // Cache the result
-        try {
-          localStorage.setItem(cacheKey, JSON.stringify(resultState));
-          console.log('AI result cached');
-        } catch (e) {
-          console.log('Failed to cache result:', e);
-        }
+        // Cache the result using new cache utility
+        setCachedResult(imageHash, resultState);
+        console.log('AI result cached');
         
         navigate('/analysis-result', { state: resultState });
       } else {

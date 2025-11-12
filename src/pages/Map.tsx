@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { getMainCategory, MAIN_CATEGORY_DISPLAY } from '@/types/species';
+import { MapSkeleton } from '@/components/LoadingSkeleton';
 
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -159,14 +160,7 @@ const Map = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Laddar karta...</p>
-        </div>
-      </div>
-    );
+    return <MapSkeleton />;
   }
 
   if (error) {

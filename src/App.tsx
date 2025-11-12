@@ -98,11 +98,12 @@ const App = () => {
     }
   }, [showOnboarding]);
 
-  // Auto-sync offline captures when coming online
+  // Auto-sync offline captures when coming online with debouncing
   useEffect(() => {
-    const syncOfflineCaptures = async () => {
-      if (!isOnline || offlineCaptures.length === 0) return;
+    if (!isOnline || offlineCaptures.length === 0) return;
 
+    // Debounce the sync to avoid multiple rapid syncs
+    const syncTimeout = setTimeout(async () => {
       console.log(`Syncing ${offlineCaptures.length} offline captures...`);
       const totalCaptures = offlineCaptures.length;
       
@@ -143,9 +144,9 @@ const App = () => {
           variant: "destructive"
         });
       }
-    };
+    }, 2000); // Debounce for 2 seconds
 
-    syncOfflineCaptures();
+    return () => clearTimeout(syncTimeout);
   }, [isOnline, offlineCaptures, removeOfflineCapture, toast]);
 
   return (
