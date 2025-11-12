@@ -131,10 +131,12 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       console.log('Startar AI-analys av bild...');
       
       // Call the Supabase Edge Function
+      // Pass selected main category (växter, insekter, etc.) or null for auto-detect
+      // Edge function will handle mapping to appropriate subcategories
       const { data, error } = await supabase.functions.invoke('analyze-species', {
         body: { 
           imageUrl: uploadedImageUrl,
-          category: selectedCategory || "okänt", // Pass main category or okänt for auto-detect
+          category: selectedCategory || null, // Pass main category or null for auto-detect
           detailLevel: detailLevel
         }
       });
@@ -144,12 +146,14 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         const errorMsg = error.message || 'Edge Function returnerade ett fel';
         
         // Check if upgrade is required (429 or upgradeRequired flag)
-        if (data?.upgradeRequired) {
+        if (error.message?.includes('429') || data?.upgradeRequired) {
           toast({
             title: "Gräns nådd",
-            description: data.error || "Du har nått din analysgräns. Uppgradera till Premium för obegränsade analyser!",
-            variant: "destructive"
+            description: data?.error || "Du har nått din analysgräns. Uppgradera till Premium för obegränsade analyser!",
+            variant: "destructive",
+            duration: 5000,
           });
+          setIsAnalyzing(false);
           return;
         }
         
@@ -157,17 +161,21 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       }
 
       if (!data) {
+        console.error('Inget data från edge function');
         throw new Error('Inget svar från AI-analysen');
       }
 
       if (data.error) {
+        console.error('AI analysis error:', data.error);
         // Check if upgrade is required
         if (data.upgradeRequired) {
           toast({
             title: "Gräns nådd",
             description: data.error,
-            variant: "destructive"
+            variant: "destructive",
+            duration: 5000,
           });
+          setIsAnalyzing(false);
           return;
         }
         throw new Error(`AI-fel: ${data.error}`);
@@ -241,10 +249,14 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
     } catch (error) {
       console.error('AI-analys misslyckades:', error);
       setIsAnalyzing(false);
+      
+      const errorMessage = error instanceof Error ? error.message : "Kunde inte analysera bilden";
+      
       toast({
         title: "Analys misslyckades", 
-        description: error instanceof Error ? error.message : "Kunde inte analysera bilden",
-        variant: "destructive"
+        description: errorMessage,
+        variant: "destructive",
+        duration: 5000,
       });
     }
   };

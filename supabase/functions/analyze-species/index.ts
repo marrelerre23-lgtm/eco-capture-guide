@@ -2,11 +2,19 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-// Valid categories - must match frontend
-const VALID_CATEGORIES = [
+// Valid subcategories - detailed categories for AI prompt
+const VALID_SUBCATEGORIES = [
   'blomma', 'buske', 'ört', 'träd', 'svamp', 
   'mossa', 'sten', 'insekt', 'fågel', 'däggdjur', 'annat'
 ];
+
+// Main categories that map to subcategories
+const MAIN_CATEGORIES = [
+  'växter', 'insekter', 'fåglar', 'stenar', 'svamp', 'däggdjur', 'annat'
+];
+
+// All valid categories (subcategories + main categories)
+const ALL_VALID_CATEGORIES = [...VALID_SUBCATEGORIES, ...MAIN_CATEGORIES];
 
 const VALID_DETAIL_LEVELS = ['quick', 'standard', 'deep'];
 
@@ -30,7 +38,7 @@ const requestSchema = z.object({
         return false;
       }
     }, { message: "Bild URL från otillåten domän" }),
-  category: z.enum(VALID_CATEGORIES as [string, ...string[]])
+  category: z.enum(ALL_VALID_CATEGORIES as [string, ...string[]])
     .optional()
     .nullable(),
   detailLevel: z.enum(VALID_DETAIL_LEVELS as [string, ...string[]])
@@ -128,22 +136,38 @@ serve(async (req) => {
     const { imageUrl, category, detailLevel } = validationResult.data;
 
     console.log('Validerad bild URL:', imageUrl);
+    console.log('Kategori-tips från användaren:', category);
     
-    const categoryHint = category && category !== 'okänt' 
-      ? `Användaren tror att detta är en ${category}. Fokusera din analys på ${
-          category === 'svamp' ? 'svampar' : 
-          category === 'blomma' ? 'blommor' : 
-          category === 'buske' ? 'buskar' : 
-          category === 'ört' ? 'örter' : 
-          category === 'träd' ? 'träd' : 
-          category === 'mossa' ? 'mossor och lavar' : 
-          category === 'sten' ? 'stenar och mineraler' : 
-          category === 'fågel' ? 'fåglar' : 
-          category === 'insekt' ? 'insekter' : 
-          category === 'däggdjur' ? 'däggdjur' : 
-          'denna kategori'
-        }.`
-      : 'Användaren är osäker på vad detta är. Analysera noggrant och försök identifiera vilken typ av organism eller objekt det är.';
+    // Map main categories to hints for better AI guidance
+    const getCategoryHint = (cat: string | null | undefined): string => {
+      if (!cat) {
+        return 'Användaren är osäker på vad detta är. Analysera noggrant och försök identifiera vilken typ av organism eller objekt det är.';
+      }
+      
+      const hints: Record<string, string> = {
+        // Main categories
+        'växter': 'Användaren tror att detta är en växt. Fokusera din analys på växter (blommor, buskar, örter, träd) och bestäm vilken typ det är.',
+        'insekter': 'Användaren tror att detta är en insekt. Fokusera din analys på insekter och småkryp.',
+        'fåglar': 'Användaren tror att detta är en fågel. Fokusera din analys på fåglar.',
+        'stenar': 'Användaren tror att detta är en sten eller mineral. Fokusera din analys på stenar, mineraler och bergarter.',
+        // Subcategories
+        'svamp': 'Användaren tror att detta är en svamp. Fokusera din analys på svampar.',
+        'blomma': 'Användaren tror att detta är en blomma. Fokusera din analys på blommande växter.',
+        'buske': 'Användaren tror att detta är en buske. Fokusera din analys på buskar och större buskartade växter.',
+        'ört': 'Användaren tror att detta är en ört. Fokusera din analys på örtartade växter och gräs.',
+        'träd': 'Användaren tror att detta är ett träd. Fokusera din analys på träd.',
+        'mossa': 'Användaren tror att detta är en mossa eller lav. Fokusera din analys på mossor och lavar.',
+        'sten': 'Användaren tror att detta är en sten eller mineral. Fokusera din analys på stenar, mineraler och bergarter.',
+        'insekt': 'Användaren tror att detta är en insekt. Fokusera din analys på insekter och småkryp.',
+        'fågel': 'Användaren tror att detta är en fågel. Fokusera din analys på fåglar.',
+        'däggdjur': 'Användaren tror att detta är ett däggdjur. Fokusera din analys på däggdjur.',
+        'annat': 'Användaren är osäker på kategorin. Analysera noggrant och bestäm vad det är.'
+      };
+      
+      return hints[cat] || 'Fokusera din analys baserat på bilden.';
+    };
+    
+    const categoryHint = getCategoryHint(category);
 
     const detailPrompt = detailLevel === 'deep' 
       ? 'Ge en mycket detaljerad och grundlig analys med omfattande beskrivningar.'
@@ -294,10 +318,10 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
         throw new Error('Inga alternativ returnerades från AI');
       }
       
-      // Validate and fix categories
+      // Validate and fix categories - only subcategories are valid in responses
       analysisResult.alternatives = analysisResult.alternatives.map((alt: any) => {
         const category = alt.species?.category?.toLowerCase()?.trim();
-        if (!category || !VALID_CATEGORIES.includes(category)) {
+        if (!category || !VALID_SUBCATEGORIES.includes(category)) {
           console.warn(`Ogiltig kategori från AI: "${category}", använder "annat"`);
           alt.species.category = 'annat';
         } else {
