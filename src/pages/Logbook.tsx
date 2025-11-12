@@ -46,31 +46,34 @@ const PREDEFINED_CATEGORIES = [
   { name: "Stenar och mineraler", icon: "💎", key: "sten" },
   { name: "Insekter", icon: "🦋", key: "insekt" },
   { name: "Fåglar", icon: "🦅", key: "fågel" },
-  { name: "Däggdjur", icon: "🦌", key: "däggdjur" }
+  { name: "Däggdjur", icon: "🦌", key: "däggdjur" },
+  { name: "Annat", icon: "❓", key: "annat" }
 ];
 
-// Helper function to map AI category to predefined category
+// Valid categories constant
+const VALID_CATEGORIES = [
+  'blomma', 'buske', 'ört', 'träd', 'svamp', 
+  'mossa', 'sten', 'insekt', 'fågel', 'däggdjur', 'annat'
+];
+
+// Helper function to map AI category to predefined category with better error handling
 const mapToCategory = (aiCategory: string): string => {
   const normalized = aiCategory.toLowerCase().trim();
   
-  // Return existing categories as-is
-  if (normalized === 'blomma') return "blomma";
-  if (normalized === 'buske') return "buske";
-  if (normalized === 'ört') return "ört";
-  if (normalized === 'träd') return "träd";
-  if (normalized === 'svamp') return "svamp";
-  if (normalized === 'mossa') return "mossa";
-  if (normalized === 'sten') return "sten";
-  if (normalized === 'insekt') return "insekt";
-  if (normalized === 'fågel') return "fågel";
-  if (normalized === 'däggdjur') return "däggdjur";
+  // Check if it's a valid category
+  if (VALID_CATEGORIES.includes(normalized)) {
+    return normalized;
+  }
   
-  // Map old "växt" category to appropriate new categories
-  // Since we can't determine the exact type, default to "ört"
-  if (normalized === 'växt') return "ört";
+  // Legacy category mapping
+  if (normalized === 'växt') {
+    console.log('Mappar legacy kategori "växt" till "ört"');
+    return "ört";
+  }
   
-  // For any unknown category, default to "ört"
-  return "ört";
+  // Unknown category - log for debugging and use fallback
+  console.warn(`Okänd kategori: "${aiCategory}" (normalized: "${normalized}"), använder "annat"`);
+  return "annat";
 };
 
 interface Species {
@@ -112,7 +115,7 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
       minute: '2-digit' 
     })}`,
     description: species?.description || "Ingen beskrivning tillgänglig",
-    category: mapToCategory(species?.category || "ört"),
+    category: mapToCategory(species?.category || "annat"),
     confidence: species?.confidence,
     location: capture.location_name,
     notes: capture.notes,
@@ -143,6 +146,11 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
         icon: "🤖",
         title: "AI-säkerhet",
         description: `${Math.round(species.confidence * 100)}% säker på identifieringen`
+      }] : []),
+      ...(capture.gps_accuracy ? [{
+        icon: capture.gps_accuracy < 50 ? "🎯" : capture.gps_accuracy < 500 ? "📍" : "📌",
+        title: "GPS-noggrannhet",
+        description: `±${Math.round(capture.gps_accuracy)} meter`
       }] : []),
       ...(capture.location_name ? [{
         icon: "📍",

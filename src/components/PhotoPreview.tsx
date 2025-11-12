@@ -17,7 +17,10 @@ interface Species {
   image: string;
   dateFound: Date;
   description: string;
+  category: string;
   facts: string[];
+  confidence?: number;
+  reasoning?: string;
 }
 
 interface PhotoPreviewProps {
@@ -38,7 +41,7 @@ const CATEGORIES = [
   { value: "insekt", label: "🐛 Insekt" },
   { value: "fågel", label: "🦅 Fågel" },
   { value: "däggdjur", label: "🦌 Däggdjur" },
-  { value: "okänt", label: "❓ Okänt" },
+  { value: "okänt", label: "❓ Vet ej - låt AI:n avgöra" },
 ];
 
 const DETAIL_LEVELS = [
@@ -102,7 +105,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       const { data, error } = await supabase.functions.invoke('analyze-species', {
         body: { 
           imageUrl: uploadedImageUrl,
-          category: selectedCategory || "okänt",
+          category: selectedCategory || "okänt", // "okänt" signalerar till AI:n att välja kategori
           detailLevel: detailLevel
         }
       });
@@ -136,6 +139,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
               image: uploadedImageUrl,
               dateFound: new Date(),
               description: alt.species.description || "Ingen beskrivning tillgänglig",
+              category: alt.species.category || "annat",
               confidence: alt.species.confidence || 0.5,
               reasoning: alt.reasoning || "",
               facts: [
@@ -143,8 +147,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                 alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
                 alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
                 alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
-                alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : "",
-                alt.species.category ? `Kategori: ${alt.species.category}` : ""
+                alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : ""
               ].filter(Boolean)
             })),
             location: location
@@ -159,13 +162,13 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           image: uploadedImageUrl,
           dateFound: new Date(),
           description: analysisResult.species.description || "Ingen beskrivning tillgänglig",
+          category: analysisResult.species.category || "annat",
           facts: [
             analysisResult.species.habitat ? `Habitat: ${analysisResult.species.habitat}` : "",
             analysisResult.species.identificationFeatures ? `Kännetecken: ${analysisResult.species.identificationFeatures}` : "",
             analysisResult.species.rarity ? `Sällsynthet: ${analysisResult.species.rarity}` : "",
             analysisResult.species.sizeInfo ? `Storlek: ${analysisResult.species.sizeInfo}` : "",
-            analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : "",
-            analysisResult.species.category ? `Kategori: ${analysisResult.species.category}` : ""
+            analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : ""
           ].filter(Boolean)
         };
         
@@ -220,7 +223,10 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         >
           <div className="text-center space-y-2 mb-4">
             <h3 className="text-lg font-semibold text-foreground">Välj kategori</h3>
-            <p className="text-sm text-muted-foreground">Valfritt: Hjälper AI:n identifiera fångsten</p>
+            <p className="text-sm text-muted-foreground">Valfritt: Hjälper AI:n fokusera sin analys</p>
+            <p className="text-xs text-muted-foreground bg-primary/5 rounded-lg p-2 mt-2">
+              💡 Om du väljer "Vet ej", kommer AI:n att analysera bilden och välja rätt kategori åt dig
+            </p>
           </div>
           <div className="grid grid-cols-3 gap-3 mb-4 max-h-[60vh] overflow-y-auto">
             {CATEGORIES.map((cat) => (
@@ -361,7 +367,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                       {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[0] : '❓'}
                     </span>
                     <span className="text-base font-semibold text-white">
-                      {selectedCategory ? CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ')[1] : 'Okänt'}
+                      {selectedCategory ? (
+                        selectedCategory === 'okänt' ? 'Vet ej' : CATEGORIES.find(c => c.value === selectedCategory)?.label.split(' ').slice(1).join(' ')
+                      ) : 'Vet ej'}
                     </span>
                   </button>
                 </div>

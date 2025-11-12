@@ -26,6 +26,7 @@ interface Species {
   image: string;
   dateFound: Date;
   description: string;
+  category: string;
   facts: string[];
   confidence?: number;
   reasoning?: string;
@@ -123,15 +124,8 @@ const AnalysisResult = () => {
         }
       });
 
-      // Extract category from facts first, then fallback to description
-      let category = factsMap['Kategori']?.toLowerCase() || "växt";
-      if (!factsMap['Kategori']) {
-        const description = selectedSpecies.description.toLowerCase();
-        if (description.includes('svamp')) category = "svamp";
-        else if (description.includes('träd') || description.includes('buske')) category = "träd";
-        else if (description.includes('mossa') || description.includes('lav')) category = "mossa";
-        else if (description.includes('sten') || description.includes('mineral')) category = "sten";
-      }
+      // Use category directly from selectedSpecies
+      const category = selectedSpecies.category || "annat";
 
       // Generate location name from coordinates if available
       let locationName = null;
@@ -413,10 +407,7 @@ const AnalysisResult = () => {
           {/* AI Photo Tips */}
           {selectedSpecies.confidence && (
             <AIPhotoTips 
-              category={
-                selectedSpecies.facts.find(f => f.includes('Kategori:'))?.split(': ')[1] || 
-                selectedSpecies.description
-              }
+              category={selectedSpecies.category}
               confidence={selectedSpecies.confidence}
             />
           )}

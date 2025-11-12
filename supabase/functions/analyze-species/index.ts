@@ -1,6 +1,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// Valid categories - must match frontend
+const VALID_CATEGORIES = [
+  'blomma', 'buske', 'ört', 'träd', 'svamp', 
+  'mossa', 'sten', 'insekt', 'fågel', 'däggdjur', 'annat'
+];
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -48,8 +54,15 @@ serve(async (req) => {
 
     console.log('Analyserar bild med Lovable AI...');
     
-    // Call Lovable AI Gateway with vision capabilities
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Retry logic with exponential backoff
+    const maxRetries = 3;
+    let lastError;
+    let aiResponse;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Call Lovable AI Gateway with vision capabilities
+        aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
@@ -116,21 +129,39 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
           }
         ]
       }),
-    });
+        });
+        
+        // Success - break retry loop
+        break;
+      } catch (error) {
+        lastError = error;
+        console.error(`Försök ${attempt} misslyckades:`, error);
+        
+        if (attempt < maxRetries) {
+          const waitTime = 1000 * attempt; // Exponential backoff
+          console.log(`Väntar ${waitTime}ms innan nytt försök...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+    }
+    
+    if (!aiResponse) {
+      throw new Error(`AI-anrop misslyckades efter ${maxRetries} försök: ${lastError?.message || 'Okänt fel'}`);
+    }
 
     const aiData = await aiResponse.json();
     console.log('Lovable AI svar:', JSON.stringify(aiData, null, 2));
 
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
-        throw new Error('För många förfrågningar. Försök igen om en stund.');
+        throw new Error('För många förfrågningar just nu. Vänta en stund och försök igen. Om problemet kvarstår, kontakta support.');
       }
       if (aiResponse.status === 402) {
-        throw new Error('AI-krediter har tagit slut. Kontakta support.');
+        throw new Error('AI-tjänsten är tillfälligt otillgänglig på grund av användningsgräns. Vänligen kontakta support för att utöka din användning.');
       }
       const errorMessage = aiData.error?.message || JSON.stringify(aiData);
       console.error('Lovable AI fel:', errorMessage);
-      throw new Error(`AI API fel: ${errorMessage}`);
+      throw new Error(`AI-analys misslyckades: ${errorMessage}. Försök igen senare eller kontakta support om problemet kvarstår.`);
     }
 
     const content = aiData.choices?.[0]?.message?.content;
@@ -158,6 +189,18 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
       if (analysisResult.alternatives.length === 0) {
         throw new Error('Inga alternativ returnerades från AI');
       }
+      
+      // Validate and fix categories
+      analysisResult.alternatives = analysisResult.alternatives.map((alt: any) => {
+        const category = alt.species?.category?.toLowerCase()?.trim();
+        if (!category || !VALID_CATEGORIES.includes(category)) {
+          console.warn(`Ogiltig kategori från AI: "${category}", använder "annat"`);
+          alt.species.category = 'annat';
+        } else {
+          alt.species.category = category;
+        }
+        return alt;
+      });
     } catch (parseError) {
       console.error('JSON parse fel:', parseError);
       // Fallback: create structured response with single alternative
@@ -166,7 +209,7 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
           species: {
             commonName: "Okänd art",
             scientificName: "Okänd",
-            category: "ört",
+            category: "annat",
             confidence: 0.3,
             description: content,
             habitat: "Okänd",
@@ -174,7 +217,7 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
             rarity: "okänd",
             sizeInfo: "Okänd"
           },
-          reasoning: "Automatisk analys kunde inte ge en tydlig identifiering"
+          reasoning: "Automatisk analys kunde inte ge en tydlig identifiering. Försök ta en bättre bild med mer ljus och närmare på objektet."
         }]
       };
     }
