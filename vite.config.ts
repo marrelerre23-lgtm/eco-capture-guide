@@ -99,7 +99,7 @@ export default defineConfig(({ mode }) => ({
           supabase: ["@supabase/supabase-js"],
           ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
           charts: ["recharts"],
-          maps: ["leaflet", "react-leaflet"],
+          maps: ["leaflet"],
         },
       },
     },
