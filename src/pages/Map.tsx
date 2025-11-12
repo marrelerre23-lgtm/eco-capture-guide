@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { getMainCategory, MAIN_CATEGORY_DISPLAY } from '@/types/species';
 import { MapSkeleton } from '@/components/LoadingSkeleton';
 
-// Fix for default marker icons in React-Leaflet
+// Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
