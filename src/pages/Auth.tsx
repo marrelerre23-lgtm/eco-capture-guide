@@ -8,6 +8,37 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string()
+    .trim()
+    .email({ message: "Ogiltig e-postadress" })
+    .max(255, { message: "E-postadressen är för lång" }),
+  password: z.string()
+    .min(8, { message: "Lösenordet måste vara minst 8 tecken" })
+    .max(128, { message: "Lösenordet är för långt" }),
+});
+
+const signupSchema = z.object({
+  email: z.string()
+    .trim()
+    .email({ message: "Ogiltig e-postadress" })
+    .max(255, { message: "E-postadressen är för lång" }),
+  password: z.string()
+    .min(8, { message: "Lösenordet måste vara minst 8 tecken" })
+    .max(128, { message: "Lösenordet är för långt" })
+    .regex(/[A-Z]/, { message: "Måste innehålla minst en stor bokstav" })
+    .regex(/[a-z]/, { message: "Måste innehålla minst en liten bokstav" })
+    .regex(/[0-9]/, { message: "Måste innehålla minst en siffra" }),
+  displayName: z.string()
+    .trim()
+    .min(2, { message: "Namnet måste vara minst 2 tecken" })
+    .max(50, { message: "Namnet får vara max 50 tecken" })
+    .regex(/^[a-zA-ZåäöÅÄÖ0-9\s]+$/, { message: "Endast bokstäver, siffror och mellanslag" })
+    .optional()
+    .or(z.literal("")),
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -22,9 +53,23 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validationResult = loginSchema.safeParse({ email, password });
+      
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          variant: "destructive",
+          title: "Valideringsfel",
+          description: firstError.message,
+        });
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: validationResult.data.email,
+        password: validationResult.data.password,
       });
 
       if (error) {
@@ -56,15 +101,33 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validationResult = signupSchema.safeParse({ 
+        email, 
+        password,
+        displayName: displayName || ""
+      });
+      
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          variant: "destructive",
+          title: "Valideringsfel",
+          description: firstError.message,
+        });
+        setLoading(false);
+        return;
+      }
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: validationResult.data.email,
+        password: validationResult.data.password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            display_name: displayName,
+            display_name: validationResult.data.displayName || "",
           },
         },
       });
@@ -170,7 +233,7 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">
-                    Lösenord <span className="text-muted-foreground text-xs">(minst 8 tecken)</span>
+                    Lösenord <span className="text-muted-foreground text-xs">(minst 8 tecken, 1 stor bokstav, 1 siffra)</span>
                   </Label>
                   <Input
                     id="signup-password"
@@ -180,7 +243,7 @@ const Auth = () => {
                     required
                     disabled={loading}
                     minLength={8}
-                    placeholder="Minst 8 tecken"
+                    placeholder="Minst 8 tecken, 1 stor bokstav, 1 siffra"
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>

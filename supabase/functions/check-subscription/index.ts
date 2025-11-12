@@ -126,7 +126,11 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("[CHECK-SUBSCRIPTION] ERROR:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    
+    // Return generic error message to client, log details server-side
+    return new Response(JSON.stringify({ 
+      error: "Ett tekniskt fel uppstod vid kontroll av prenumeration. Försök igen senare." 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -353,8 +353,10 @@ Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäke
 
   } catch (error) {
     console.error('Fel i analyze-species function:', error);
+    
+    // Return generic error message to client, log details server-side
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: 'Ett tekniskt fel uppstod. Försök igen senare.',
       species: null 
     }), {
       status: 500,
