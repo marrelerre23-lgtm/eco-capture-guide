@@ -13,6 +13,8 @@ export interface SpeciesCapture {
   longitude?: number;
   is_favorite?: boolean;
   gps_accuracy?: number;
+  edibility?: string;
+  age_stage?: string;
 }
 
 // Helper type for parsed AI analysis

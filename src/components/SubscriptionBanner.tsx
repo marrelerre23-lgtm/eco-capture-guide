@@ -6,6 +6,12 @@ import { Progress } from "./ui/progress";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useState } from "react";
 import { UpgradeDialog } from "./UpgradeDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 export const SubscriptionBanner = () => {
   const { subscription, loading, error } = useSubscription();
@@ -107,9 +113,32 @@ export const SubscriptionBanner = () => {
           {/* Daily Analyses */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Analyser idag</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-muted-foreground cursor-help">
+                      Analyser idag ℹ️
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p className="text-xs">
+                      {subscription.maxAnalysesPerDay} basanalyser per dag. 
+                      {subscription.rewardedAnalysesToday > 0 && 
+                        ` +${subscription.rewardedAnalysesToday} extra från annonser.`
+                      }
+                      {' '}Titta på annonser för +5 extra analyser!
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <span className="font-medium">
-                {subscription.analysesToday} / {subscription.maxAnalysesPerDay}
+                {subscription.analysesToday}
+                {subscription.rewardedAnalysesToday > 0 && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    ({subscription.analysesToday - subscription.rewardedAnalysesToday} bas + {subscription.rewardedAnalysesToday} bonus)
+                  </span>
+                )}
+                {' / '}{subscription.maxAnalysesPerDay + (subscription.rewardedAnalysesToday || 0)}
               </span>
             </div>
             <Progress value={analysisPercentage} className="h-2" />

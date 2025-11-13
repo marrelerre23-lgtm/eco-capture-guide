@@ -71,6 +71,8 @@ interface Species {
   notes?: string;
   capturedAt: Date;
   isFavorite?: boolean;
+  edibility?: string;
+  ageStage?: string;
   facts: {
     icon: string;
     title: string;
@@ -104,6 +106,8 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
     notes: capture.notes,
     capturedAt: capturedDate,
     isFavorite: capture.is_favorite || false,
+    edibility: capture.edibility,
+    ageStage: capture.age_stage,
     facts: [
       // Show detailed category for all categories with subcategories
       ...(species?.category && MAIN_CATEGORY_DISPLAY[mainCategory]?.subcategories?.length > 0 ? [{
@@ -130,6 +134,16 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
         icon: "📏",
         title: "Storlek",
         description: species.sizeInfo
+      }] : []),
+      ...(capture.edibility ? [{
+        icon: "🍽️",
+        title: "Ätlighet",
+        description: capture.edibility
+      }] : []),
+      ...(capture.age_stage ? [{
+        icon: "🔄",
+        title: "Ålder/Stadium",
+        description: capture.age_stage
       }] : []),
       ...(species?.confidence ? [{
         icon: "🤖",
@@ -822,6 +836,30 @@ const Logbook = () => {
                                 </button>
                               )}
                               
+                              {/* Edibility badge */}
+                              {species.edibility && (
+                                <div className="absolute top-2 left-2 z-10">
+                                  <Badge 
+                                    variant="secondary"
+                                    className={`
+                                      ${species.edibility.toLowerCase().includes('ätlig') || species.edibility.toLowerCase().includes('matsvamp') 
+                                        ? 'bg-green-500/90 text-white border-green-600' 
+                                        : species.edibility.toLowerCase().includes('giftig') || species.edibility.toLowerCase().includes('dödlig')
+                                        ? 'bg-red-500/90 text-white border-red-600'
+                                        : 'bg-yellow-500/90 text-white border-yellow-600'
+                                      }
+                                    `}
+                                  >
+                                    {species.edibility.toLowerCase().includes('ätlig') || species.edibility.toLowerCase().includes('matsvamp') 
+                                      ? '✓ Ätlig' 
+                                      : species.edibility.toLowerCase().includes('giftig') || species.edibility.toLowerCase().includes('dödlig')
+                                      ? '⚠ Giftig'
+                                      : '? Okänd'
+                                    }
+                                  </Badge>
+                                </div>
+                              )}
+
                               {/* Text overlay */}
                               <div 
                                 className="absolute bottom-0 left-0 right-0 p-3 text-white"

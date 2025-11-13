@@ -1,4 +1,9 @@
 project_id = "iccxtssdximiuarmnbmx"
 
+[functions.check-subscription]
+
 [functions.daily-reset]
+verify_jwt = false
+
+[functions.stripe-webhook]
 verify_jwt = false
