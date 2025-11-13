@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 import { OverviewSkeleton } from "@/components/LoadingSkeleton";
 import { SubscriptionBanner } from "@/components/SubscriptionBanner";
+import { BannerAd } from "@/components/BannerAd";
 import { getMainCategory, getCategoryDisplayName } from "@/types/species";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
+  const { subscription } = useSubscription();
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slideCount, setSlideCount] = useState(0);
@@ -111,6 +114,9 @@ const Overview = () => {
       <div className="p-4 space-y-6">
         {/* Subscription Status Banner */}
         <SubscriptionBanner />
+        
+        {/* Banner Ad for Free Users */}
+        {subscription?.tier === 'free' && <BannerAd position="top" />}
 
         {/* Latest Captures Carousel */}
         <div className="space-y-3">

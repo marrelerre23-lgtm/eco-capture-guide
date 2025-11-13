@@ -13,6 +13,8 @@ export interface SubscriptionInfo {
   isAnalysisLimitReached: boolean;
   isCaptureLimitReached: boolean;
   subscription_end: string | null;
+  rewardedAnalysesToday: number;
+  extraCapturesFromAds: number;
 }
 
 export const useSubscription = () => {
@@ -56,15 +58,17 @@ export const useSubscription = () => {
         // Set default free tier if profile doesn't exist
         setSubscription({
           tier: 'free',
-          analysesRemaining: 5,
+          analysesRemaining: 15,
           analysesToday: 0,
-          capturesRemaining: 50,
+          capturesRemaining: 100,
           capturesCount: 0,
-          maxAnalysesPerDay: 5,
-          maxCaptures: 50,
+          maxAnalysesPerDay: 15,
+          maxCaptures: 100,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
           subscription_end: null,
+          rewardedAnalysesToday: 0,
+          extraCapturesFromAds: 0,
         });
         setLoading(false);
         return;
@@ -74,15 +78,17 @@ export const useSubscription = () => {
         console.log('⚠️ [useSubscription] No profile found, using defaults');
         setSubscription({
           tier: 'free',
-          analysesRemaining: 5,
+          analysesRemaining: 15,
           analysesToday: 0,
-          capturesRemaining: 50,
+          capturesRemaining: 100,
           capturesCount: 0,
-          maxAnalysesPerDay: 5,
-          maxCaptures: 50,
+          maxAnalysesPerDay: 15,
+          maxCaptures: 100,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
           subscription_end: null,
+          rewardedAnalysesToday: 0,
+          extraCapturesFromAds: 0,
         });
         setLoading(false);
         return;
@@ -90,12 +96,22 @@ export const useSubscription = () => {
 
       console.log('📊 [useSubscription] Profile data:', profile);
 
+      // Calculate total analyses available (base + rewarded)
+      const baseMaxAnalyses = profile.max_analyses_per_day || 15;
+      const rewardedAnalyses = profile.rewarded_analyses_today || 0;
+      const totalMaxAnalyses = baseMaxAnalyses + rewardedAnalyses;
+      
       const analysesRemaining = profile.max_analyses_per_day 
-        ? Math.max(0, profile.max_analyses_per_day - (profile.analyses_today || 0))
+        ? Math.max(0, totalMaxAnalyses - (profile.analyses_today || 0))
         : Infinity;
 
+      // Calculate total captures available (base + extra from ads)
+      const baseMaxCaptures = profile.max_captures || 100;
+      const extraCaptures = profile.extra_captures_from_ads || 0;
+      const totalMaxCaptures = baseMaxCaptures + extraCaptures;
+      
       const capturesRemaining = profile.max_captures
-        ? Math.max(0, profile.max_captures - (profile.captures_count || 0))
+        ? Math.max(0, totalMaxCaptures - (profile.captures_count || 0))
         : null;
 
       const tier: 'free' | 'premium' | 'pro' = 
@@ -108,11 +124,13 @@ export const useSubscription = () => {
         analysesToday: profile.analyses_today || 0,
         capturesRemaining,
         capturesCount: profile.captures_count || 0,
-        maxAnalysesPerDay: profile.max_analyses_per_day,
-        maxCaptures: profile.max_captures,
+        maxAnalysesPerDay: totalMaxAnalyses,
+        maxCaptures: totalMaxCaptures,
         isAnalysisLimitReached: analysesRemaining === 0,
         isCaptureLimitReached: capturesRemaining === 0,
         subscription_end: profile.subscription_expires_at || null,
+        rewardedAnalysesToday: rewardedAnalyses,
+        extraCapturesFromAds: extraCaptures,
       };
 
       console.log('✅ [useSubscription] Subscription info:', subscriptionInfo);
@@ -125,15 +143,17 @@ export const useSubscription = () => {
       // Set default free tier on unexpected error
       setSubscription({
         tier: 'free',
-        analysesRemaining: 5,
+        analysesRemaining: 15,
         analysesToday: 0,
-        capturesRemaining: 50,
+        capturesRemaining: 100,
         capturesCount: 0,
-        maxAnalysesPerDay: 5,
-        maxCaptures: 50,
+        maxAnalysesPerDay: 15,
+        maxCaptures: 100,
         isAnalysisLimitReached: false,
         isCaptureLimitReached: false,
         subscription_end: null,
+        rewardedAnalysesToday: 0,
+        extraCapturesFromAds: 0,
       });
       setLoading(false);
     }

@@ -55,10 +55,12 @@ export type Database = {
           captures_count: number | null
           created_at: string
           display_name: string | null
+          extra_captures_from_ads: number | null
           id: string
           last_analysis_date: string | null
           max_analyses_per_day: number | null
           max_captures: number | null
+          rewarded_analyses_today: number | null
           subscription_expires_at: string | null
           subscription_tier: string | null
           updated_at: string
@@ -71,10 +73,12 @@ export type Database = {
           captures_count?: number | null
           created_at?: string
           display_name?: string | null
+          extra_captures_from_ads?: number | null
           id?: string
           last_analysis_date?: string | null
           max_analyses_per_day?: number | null
           max_captures?: number | null
+          rewarded_analyses_today?: number | null
           subscription_expires_at?: string | null
           subscription_tier?: string | null
           updated_at?: string
@@ -87,10 +91,12 @@ export type Database = {
           captures_count?: number | null
           created_at?: string
           display_name?: string | null
+          extra_captures_from_ads?: number | null
           id?: string
           last_analysis_date?: string | null
           max_analyses_per_day?: number | null
           max_captures?: number | null
+          rewarded_analyses_today?: number | null
           subscription_expires_at?: string | null
           subscription_tier?: string | null
           updated_at?: string
@@ -239,6 +245,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_rewarded_bonus: {
+        Args: { bonus_type: string; user_id_input: string }
+        Returns: undefined
+      }
       check_user_limits: {
         Args: { action_type: string; user_id_input: string }
         Returns: {

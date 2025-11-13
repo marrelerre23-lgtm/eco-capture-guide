@@ -9,6 +9,7 @@ import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { AnalyzingScreen } from "./AnalyzingScreen";
 import { TopNavigation } from "./TopNavigation";
 import { PhotoTipsDialog } from "./PhotoTipsDialog";
+import { RewardedAdDialog } from "./RewardedAdDialog";
 import { User } from "@supabase/supabase-js";
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 import { getCachedResult, setCachedResult } from "@/utils/imageCache";
@@ -67,8 +68,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [showRewardedAdDialog, setShowRewardedAdDialog] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const { subscription, checkCanAnalyze } = useSubscription();
+  const { subscription, checkCanAnalyze, refetch } = useSubscription();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -86,6 +88,10 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       // Check subscription limits first
       const canAnalyze = await checkCanAnalyze();
       if (!canAnalyze) {
+        // If limit reached and user is free tier, show rewarded ad dialog
+        if (subscription?.tier === 'free' && subscription?.isAnalysisLimitReached) {
+          setShowRewardedAdDialog(true);
+        }
         return;
       }
 
@@ -279,6 +285,19 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         open={tipsDialogOpen} 
         onOpenChange={setTipsDialogOpen}
         category={selectedCategory || undefined}
+      />
+      
+      <RewardedAdDialog 
+        open={showRewardedAdDialog}
+        onOpenChange={setShowRewardedAdDialog}
+        type="analysis"
+        onRewardClaimed={() => {
+          refetch();
+          toast({
+            title: "Belöning mottagen!",
+            description: "Du kan nu göra 5 extra analyser idag. Analysera din bild!",
+          });
+        }}
       />
 
       {/* Category Selection Dialog */}
