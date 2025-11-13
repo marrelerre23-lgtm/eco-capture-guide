@@ -4,6 +4,8 @@ import { Button } from './ui/button';
 import { Sparkles, Play, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
+import { analytics, ANALYTICS_EVENTS } from '@/utils/analytics';
+import { hasRealAdsConfigured } from '@/config/admob';
 
 interface RewardedAdDialogProps {
   open: boolean;
@@ -21,6 +23,7 @@ export const RewardedAdDialog = ({
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [adProgress, setAdProgress] = useState(0);
   const { toast } = useToast();
+  const hasRealAds = hasRealAdsConfigured();
 
   const rewardInfo = type === 'analysis' 
     ? {
@@ -39,10 +42,17 @@ export const RewardedAdDialog = ({
   const Icon = rewardInfo.icon;
 
   const handleWatchAd = () => {
+    // Track rewarded ad shown
+    analytics.trackAd(ANALYTICS_EVENTS.REWARDED_AD_SHOWN, 'rewarded', {
+      rewardType: type,
+      hasRealAds,
+    });
+
     setIsWatchingAd(true);
     setAdProgress(0);
 
     // Simulate ad playback (15 seconds)
+    // TODO: Replace with real AdMob rewarded ad integration
     const interval = setInterval(() => {
       setAdProgress((prev) => {
         if (prev >= 100) {
@@ -57,6 +67,11 @@ export const RewardedAdDialog = ({
 
   const handleAdCompleted = async () => {
     try {
+      // Track rewarded ad completed
+      analytics.trackAd(ANALYTICS_EVENTS.REWARDED_AD_COMPLETED, 'rewarded', {
+        rewardType: type,
+      });
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -80,6 +95,13 @@ export const RewardedAdDialog = ({
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to claim reward:', error);
+      
+      // Track failure
+      analytics.trackAd(ANALYTICS_EVENTS.REWARDED_AD_FAILED, 'rewarded', {
+        rewardType: type,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+
       toast({
         title: "Kunde inte ge belöning",
         description: "Något gick fel. Försök igen.",

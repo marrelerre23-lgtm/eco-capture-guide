@@ -26,6 +26,8 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useOfflineStorage } from "./hooks/useOfflineStorage";
 import { useToast } from "./hooks/use-toast";
+import { supabase } from "./integrations/supabase/client";
+import { analytics, ANALYTICS_EVENTS } from "./utils/analytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,12 +88,30 @@ const App = () => {
   const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
   const { toast } = useToast();
 
+  // Initialize analytics
+  useEffect(() => {
+    analytics.init();
+    
+    // Set user ID when available
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        analytics.setUserId(user.id);
+      }
+    });
+  }, []);
+
   useEffect(() => {
     // Check if user has completed onboarding
     if (!hasCompletedOnboarding()) {
+      analytics.track(ANALYTICS_EVENTS.ONBOARDING_STARTED);
       setShowOnboarding(true);
     }
   }, []);
+
+  const handleOnboardingComplete = () => {
+    analytics.track(ANALYTICS_EVENTS.ONBOARDING_COMPLETED);
+    setShowOnboarding(false);
+  };
 
   // Show PWA install prompt only after first analysis
   useEffect(() => {
@@ -164,7 +184,7 @@ const App = () => {
           disableTransitionOnChange
         >
           <BrowserRouter>
-            {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+            {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
             {showPWAPrompt && <PWAInstallPrompt />}
             <Layout>
               <AppRoutes />
