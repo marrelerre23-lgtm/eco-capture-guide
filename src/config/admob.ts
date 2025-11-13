@@ -1,16 +1,17 @@
 /**
  * Google AdMob Configuration
  * 
- * IMPORTANT: For web applications, use Google AdSense instead of AdMob.
- * AdMob is primarily for mobile apps (iOS/Android).
- * 
- * For future mobile app development, configure these values:
+ * For native mobile app (iOS/Android) with Capacitor.
+ * Configure these values after setting up your AdMob account:
  * - Get your AdMob App ID from: https://apps.admob.com/
  * - Create Ad Units in AdMob console
  * 
- * For current web version:
- * - Use Google AdSense (https://www.google.com/adsense/)
- * - AdSense Publisher ID format: pub-XXXXXXXXXXXXXXXX
+ * SETUP STEPS:
+ * 1. Create AdMob account at https://apps.admob.com/
+ * 2. Register your app (one for iOS, one for Android)
+ * 3. Create ad units (Interstitial, Rewarded, Banner)
+ * 4. Replace test IDs below with your real ad unit IDs
+ * 5. Add ADMOB_APP_ID, ADMOB_INTERSTITIAL_ID, ADMOB_REWARDED_ID, ADMOB_BANNER_ID as secrets
  */
 
 export const ADMOB_CONFIG = {
@@ -30,18 +31,10 @@ export const ADMOB_CONFIG = {
     banner: process.env.ADMOB_BANNER_ID || 'ca-app-pub-3940256099942544/6300978111', // Test ID
   },
   
-  // AdSense Configuration (for current web version)
-  adSense: {
-    // Get from: https://www.google.com/adsense/
-    // Format: pub-XXXXXXXXXXXXXXXX
-    publisherId: process.env.ADSENSE_PUBLISHER_ID || '', // TODO: Add your AdSense Publisher ID
-    
-    // Ad slot IDs (created in AdSense)
-    adSlots: {
-      banner: process.env.ADSENSE_BANNER_SLOT || '', // TODO: Add banner ad slot
-      interstitial: process.env.ADSENSE_INTERSTITIAL_SLOT || '', // TODO: Add interstitial slot
-    },
-  },
+  // Platform detection
+  platform: typeof window !== 'undefined' 
+    ? (window as any).Capacitor?.getPlatform() || 'web'
+    : 'web',
   
   // Test mode flag
   isTestMode: process.env.NODE_ENV === 'development',
@@ -51,41 +44,14 @@ export const ADMOB_CONFIG = {
  * Check if real ads are configured
  */
 export const hasRealAdsConfigured = (): boolean => {
-  return !!(ADMOB_CONFIG.adSense.publisherId && ADMOB_CONFIG.adSense.publisherId !== '');
+  const appId = ADMOB_CONFIG.appId;
+  // Real AdMob app IDs don't start with test ID prefix
+  return !!(appId && !appId.includes('3940256099942544'));
 };
 
 /**
- * Load Google AdSense script
+ * Check if running in native mobile app
  */
-export const loadAdSenseScript = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (!ADMOB_CONFIG.adSense.publisherId) {
-      console.warn('⚠️ AdSense Publisher ID not configured. Using test mode.');
-      resolve();
-      return;
-    }
-
-    // Check if script already loaded
-    if (document.querySelector(`script[src*="adsbygoogle.js"]`)) {
-      resolve();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.async = true;
-    script.crossOrigin = 'anonymous';
-    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADMOB_CONFIG.adSense.publisherId}`;
-    
-    script.onload = () => {
-      console.log('✅ Google AdSense loaded');
-      resolve();
-    };
-    
-    script.onerror = () => {
-      console.error('❌ Failed to load Google AdSense');
-      reject(new Error('Failed to load AdSense'));
-    };
-
-    document.head.appendChild(script);
-  });
+export const isNativeApp = (): boolean => {
+  return ADMOB_CONFIG.platform === 'ios' || ADMOB_CONFIG.platform === 'android';
 };
