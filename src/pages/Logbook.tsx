@@ -203,6 +203,7 @@ const Logbook = () => {
   const [categoryPages, setCategoryPages] = useState<Record<string, number>>({});
   const [subcategoryFilter, setSubcategoryFilter] = useState<Record<string, string>>({});
   const [showEmptyCategories, setShowEmptyCategories] = useState(true);
+  const [edibilityFilter, setEdibilityFilter] = useState<string>("");
   const [sharingCapture, setSharingCapture] = useState<{ id: string; image_url: string; species_name: string; scientific_name: string } | null>(null);
   
   const queryClient = useQueryClient();
@@ -405,6 +406,13 @@ const Logbook = () => {
         });
       }
 
+      // Apply edibility filtering
+      if (edibilityFilter && categoryKey === 'svampar') {
+        categorySpecies = categorySpecies.filter(species => {
+          return species.edibility?.toLowerCase().includes(edibilityFilter.toLowerCase());
+        });
+      }
+
       // Apply sorting per category
       const sortBy = categorySortBy[categoryKey] || "date";
       switch (sortBy) {
@@ -448,7 +456,7 @@ const Logbook = () => {
         speciesByCategory // Pass it down for subcategory counting
       };
     }).filter(cat => showEmptyCategories || cat.count > 0);
-  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories]);
+  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories, edibilityFilter]);
 
   const toggleCategory = (categoryKey: string) => {
     setExpandedCategory(expandedCategory === categoryKey ? "" : categoryKey);
@@ -688,6 +696,43 @@ const Logbook = () => {
                   {/* Category filters and sorting controls - shown when expanded */}
                   {expandedCategory === category.key && (
                     <div className="mt-3 pt-3 border-t border-border space-y-3" onClick={(e) => e.stopPropagation()}>
+                      {/* Edibility filter for mushrooms */}
+                      {category.key === 'svampar' && (
+                        <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
+                          <span className="text-sm text-muted-foreground self-center">Ätlighet:</span>
+                          <Button
+                            variant={!edibilityFilter ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setEdibilityFilter("")}
+                          >
+                            Alla
+                          </Button>
+                          <Button
+                            variant={edibilityFilter === "Ätlig" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setEdibilityFilter("Ätlig")}
+                            className={edibilityFilter === "Ätlig" ? "bg-green-600 hover:bg-green-700" : ""}
+                          >
+                            Ätlig
+                          </Button>
+                          <Button
+                            variant={edibilityFilter === "Giftig" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setEdibilityFilter("Giftig")}
+                            className={edibilityFilter === "Giftig" ? "bg-red-600 hover:bg-red-700" : ""}
+                          >
+                            Giftig
+                          </Button>
+                          <Button
+                            variant={edibilityFilter === "Ej ätlig" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setEdibilityFilter("Ej ätlig")}
+                          >
+                            Ej ätlig
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Subcategory filter for categories with subcategories */}
                       {category.subcategories && category.subcategories.length > 0 && (
                         <div className="flex flex-wrap gap-2">
