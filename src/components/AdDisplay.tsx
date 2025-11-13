@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from './ui/button';
 import { Sparkles, X } from 'lucide-react';
+import { analytics, ANALYTICS_EVENTS } from '@/utils/analytics';
+import { hasRealAdsConfigured } from '@/config/admob';
 
 interface AdDisplayProps {
   onAdComplete?: () => void;
@@ -12,6 +14,7 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
   const { subscription } = useSubscription();
   const [countdown, setCountdown] = useState(5);
   const [canClose, setCanClose] = useState(false);
+  const hasRealAds = hasRealAdsConfigured();
 
   useEffect(() => {
     // Skip ads for premium users
@@ -19,6 +22,12 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
       onAdComplete?.();
       return;
     }
+
+    // Track ad shown
+    analytics.trackAd(ANALYTICS_EVENTS.AD_SHOWN, 'interstitial', {
+      hasRealAds,
+      isTestMode: !hasRealAds,
+    });
 
     // Countdown timer
     const timer = setInterval(() => {
@@ -33,7 +42,7 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [subscription, onAdComplete]);
+  }, [subscription, onAdComplete, hasRealAds]);
 
   // Don't show anything for premium users
   if (subscription?.tier !== 'free') {
@@ -42,6 +51,7 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
 
   const handleClose = () => {
     if (canClose) {
+      analytics.trackAd(ANALYTICS_EVENTS.AD_CLOSED, 'interstitial');
       onAdComplete?.();
     }
   };
@@ -69,24 +79,34 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
 
           <div>
             <h3 className="text-xl font-semibold mb-2">
-              EcoCapture Premium
+              {hasRealAds ? 'Annons' : 'EcoCapture Premium'}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Uppgradera för en annons-fri upplevelse
+              {hasRealAds 
+                ? 'Annons spelas upp...' 
+                : 'Uppgradera för en annons-fri upplevelse'
+              }
             </p>
           </div>
 
-          <div className="bg-muted/50 rounded-lg p-6 space-y-2">
-            <div className="text-sm text-muted-foreground">
-              Med Premium får du:
+          {/* TODO: Insert real AdSense ad unit here when configured */}
+          {hasRealAds ? (
+            <div className="bg-muted rounded-lg p-4 min-h-[250px] flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Annonsyta</p>
             </div>
-            <ul className="text-sm space-y-1 text-left">
-              <li>✓ Obegränsade AI-analyser</li>
-              <li>✓ Ingen annonser</li>
-              <li>✓ Obegränsat antal fångster</li>
-              <li>✓ Avancerad statistik</li>
-            </ul>
-          </div>
+          ) : (
+            <div className="bg-muted/50 rounded-lg p-6 space-y-2">
+              <div className="text-sm text-muted-foreground">
+                Med Premium får du:
+              </div>
+              <ul className="text-sm space-y-1 text-left">
+                <li>✓ Obegränsade AI-analyser</li>
+                <li>✓ Ingen annonser</li>
+                <li>✓ Obegränsat antal fångster</li>
+                <li>✓ Avancerad statistik</li>
+              </ul>
+            </div>
+          )}
 
           {!canClose && (
             <div className="text-sm text-muted-foreground">
@@ -99,17 +119,22 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
               <Button onClick={handleClose} className="w-full">
                 Fortsätt med analys
               </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  // TODO: Implement upgrade flow
-                  console.log('Navigate to upgrade page');
-                }}
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Uppgradera till Premium
-              </Button>
+              {!hasRealAds && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    analytics.track(ANALYTICS_EVENTS.UPGRADE_CLICKED, {
+                      source: 'ad_display',
+                    });
+                    // TODO: Implement upgrade flow
+                    console.log('Navigate to upgrade page');
+                  }}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Uppgradera till Premium
+                </Button>
+              )}
             </div>
           ) : (
             <div className="h-10 flex items-center justify-center">
