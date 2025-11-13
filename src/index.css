@@ -133,6 +133,16 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Optimize font rendering for FCP */
+    font-display: swap;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Optimize image loading */
+  img {
+    content-visibility: auto;
   }
 }
 

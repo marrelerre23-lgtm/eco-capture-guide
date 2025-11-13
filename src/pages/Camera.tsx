@@ -445,20 +445,34 @@ const Camera = () => {
         
         {/* Zoom Controls */}
         {zoomSupported && (
-          <div className="absolute bottom-32 left-4 right-4 flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-4 py-3">
-            <ZoomOut className="h-5 w-5 text-white flex-shrink-0" />
-            <Slider
-              value={[zoom]}
-              onValueChange={(value) => applyZoom(value[0])}
-              min={1}
-              max={5}
-              step={0.1}
-              className="flex-1"
-            />
-            <span className="text-white text-sm font-medium min-w-[3ch] text-center">
+          <div className="absolute bottom-32 left-4 right-4 flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-4 py-3 transition-all">
+            <ZoomOut className="h-5 w-5 text-white flex-shrink-0 transition-transform hover:scale-110" />
+            <div className="flex-1 relative">
+              <Slider
+                value={[zoom]}
+                onValueChange={(value) => applyZoom(value[0])}
+                min={1}
+                max={5}
+                step={0.1}
+                className="flex-1"
+              />
+              {/* Visual zoom indicator */}
+              <div 
+                className="absolute -top-8 left-0 right-0 flex justify-center transition-opacity duration-200"
+                style={{ 
+                  opacity: zoom > 1 ? 1 : 0,
+                  pointerEvents: 'none'
+                }}
+              >
+                <div className="bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-semibold shadow-lg animate-in fade-in zoom-in-95">
+                  {zoom.toFixed(1)}x zoom
+                </div>
+              </div>
+            </div>
+            <span className="text-white text-sm font-medium min-w-[3.5ch] text-center tabular-nums bg-primary/20 px-2 py-0.5 rounded">
               {zoom.toFixed(1)}x
             </span>
-            <ZoomIn className="h-5 w-5 text-white flex-shrink-0" />
+            <ZoomIn className="h-5 w-5 text-white flex-shrink-0 transition-transform hover:scale-110" />
           </div>
         )}
         
