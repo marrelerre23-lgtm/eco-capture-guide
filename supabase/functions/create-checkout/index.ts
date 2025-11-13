@@ -8,9 +8,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Price IDs for monthly and yearly plans
+const PRICE_IDS = {
+  monthly: "price_1SSwmmHzM2jbAiCT5Q5nDDgP",
+  yearly: "price_1SSwr9HzM2jbAiCTd7GsBerN",
+};
+
 // Input validation schema
 const requestSchema = z.object({
-  // No body expected for this endpoint
+  plan: z.enum(['monthly', 'yearly']).optional().default('monthly'),
 });
 
 serve(async (req) => {
@@ -47,6 +53,11 @@ serve(async (req) => {
     const user = data.user;
     console.log("[CREATE-CHECKOUT] User authenticated:", user.email);
 
+    // Parse and validate request body
+    const body = await req.json();
+    const { plan } = requestSchema.parse(body);
+    console.log("[CREATE-CHECKOUT] Selected plan:", plan);
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2025-08-27.basil" 
     });
@@ -69,13 +80,17 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SScmuHzM2jbAiCTLkHaAUOP",
+          price: PRICE_IDS[plan],
           quantity: 1,
         },
       ],
       mode: "subscription",
       success_url: `${origin}/?checkout=success`,
       cancel_url: `${origin}/?checkout=cancelled`,
+      metadata: {
+        user_id: user.id,
+        plan: plan,
+      },
     });
 
     console.log("[CREATE-CHECKOUT] Checkout session created:", session.id);

@@ -11,6 +11,7 @@ import { Species, getMainCategory, getCategoryDisplayName, MAIN_CATEGORY_DISPLAY
 import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
 import { getGpsGuidanceMessage, getGpsAccuracyColorClass } from "@/utils/gpsGuidance";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ const AnalysisResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState(0);
   const [reportingError, setReportingError] = useState(false);
@@ -184,6 +186,8 @@ const AnalysisResult = () => {
           longitude: gpsLocation?.longitude || null,
           gps_accuracy: gpsLocation?.accuracy || null,
           location_name: locationName,
+          edibility: selectedSpecies.edibility || null,
+          age_stage: selectedSpecies.ageStage || null,
           ai_analysis: {
             species: {
               commonName: selectedSpecies.name,
@@ -195,12 +199,18 @@ const AnalysisResult = () => {
               identificationFeatures: factsMap['Kännetecken'] || undefined,
               rarity: factsMap['Sällsynthet'] || undefined,
               sizeInfo: factsMap['Storlek'] || undefined,
+              edibility: selectedSpecies.edibility || undefined,
+              ageStage: selectedSpecies.ageStage || undefined,
             }
           },
           notes: `AI-identifierad som ${selectedSpecies.name} (${selectedSpecies.scientificName})`
         });
 
       if (error) throw error;
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['species-captures'] });
+      await queryClient.invalidateQueries({ queryKey: ['subscription'] });
 
       toast({
         title: "Fångst sparad!",
@@ -433,6 +443,40 @@ const AnalysisResult = () => {
                 </>
               )}
             </div>
+
+            {/* Edibility Badge (for mushrooms and plants) */}
+            {selectedSpecies.edibility && selectedSpecies.edibility !== 'okänd' && (
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant={
+                    selectedSpecies.edibility === 'giftig' ? 'destructive' :
+                    selectedSpecies.edibility === 'ätlig' ? 'default' :
+                    'secondary'
+                  }
+                  className={`text-sm ${
+                    selectedSpecies.edibility === 'giftig' ? 'bg-red-500' :
+                    selectedSpecies.edibility === 'ätlig' ? 'bg-green-500' :
+                    'bg-yellow-500'
+                  }`}
+                >
+                  {selectedSpecies.edibility === 'giftig' && '⚠️ '}
+                  {selectedSpecies.edibility === 'ätlig' && '✓ '}
+                  {selectedSpecies.edibility}
+                </Badge>
+                {selectedSpecies.edibility === 'giftig' && (
+                  <span className="text-xs text-destructive font-semibold">
+                    Rör ej! Potentiellt farlig.
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Age/Stage Badge */}
+            {selectedSpecies.ageStage && (
+              <Badge variant="outline" className="text-sm w-fit">
+                {selectedSpecies.ageStage}
+              </Badge>
+            )}
           </div>
 
           <div className="space-y-3">

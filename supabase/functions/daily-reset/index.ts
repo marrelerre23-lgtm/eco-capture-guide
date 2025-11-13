@@ -35,14 +35,15 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Reset analyses_today to 0 for all users
+    // Reset analyses_today AND rewarded_analyses_today to 0 for all users
     const { data, error } = await supabaseClient
       .from('profiles')
       .update({ 
         analyses_today: 0,
+        rewarded_analyses_today: 0,
         last_analysis_date: new Date().toISOString().split('T')[0] // Today's date
       })
-      .neq('analyses_today', 0); // Only update users who have used analyses
+      .or('analyses_today.neq.0,rewarded_analyses_today.neq.0'); // Only update users who have used analyses or have rewards
 
     if (error) {
       console.error("[DAILY-RESET] Error resetting analyses:", error);

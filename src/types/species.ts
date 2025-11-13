@@ -10,6 +10,8 @@ export interface Species {
   confidence?: number;
   reasoning?: string;
   facts: string[] | Array<{icon: string, title: string, description: string}>;
+  edibility?: 'ätlig' | 'giftig' | 'ätlig med förbehåll' | 'inte ätlig' | 'okänd';
+  ageStage?: string;
 }
 
 // Valid detailed categories for species classification

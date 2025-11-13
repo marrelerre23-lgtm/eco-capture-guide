@@ -106,9 +106,11 @@ export type Database = {
       }
       species_captures: {
         Row: {
+          age_stage: string | null
           ai_analysis: Json | null
           captured_at: string
           created_at: string
+          edibility: string | null
           gps_accuracy: number | null
           id: string
           image_url: string
@@ -123,9 +125,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          age_stage?: string | null
           ai_analysis?: Json | null
           captured_at?: string
           created_at?: string
+          edibility?: string | null
           gps_accuracy?: number | null
           id?: string
           image_url: string
@@ -140,9 +144,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          age_stage?: string | null
           ai_analysis?: Json | null
           captured_at?: string
           created_at?: string
+          edibility?: string | null
           gps_accuracy?: number | null
           id?: string
           image_url?: string

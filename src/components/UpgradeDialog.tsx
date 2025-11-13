@@ -30,6 +30,7 @@ export const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { plan: selectedPlan },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },

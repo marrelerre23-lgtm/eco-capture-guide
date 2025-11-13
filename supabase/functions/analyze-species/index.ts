@@ -169,7 +169,7 @@ serve(async (req) => {
       const hints: Record<string, string> = {
         // Main categories
         'träd-vedartade': 'Fokusera på träd, buskar och klätterväxter. Bestäm om det är barrträd, lövträd, buske eller klätterväxt.',
-        'örter-blommor': 'Fokusera på örter, blommor och gräs. Bestäm vilken typ av blomma, ört eller gräs det är.',
+        'örter-blommor': 'Fokusera på örter, blommor och gräs. OBS: Klätterväxter (murgröna, humle, etc) hör INTE hit - de ska vara "klätterväxt" under träd och vedartade.',
         'mossor-lavar': 'Fokusera på mossor och lavar. Bestäm om det är en mossa eller lav.',
         'svampar': 'Fokusera på svampar. Identifiera svampart och ange om den är ätlig eller giftig.',
         'fåglar': 'Fokusera på fåglar. Identifiera fågelart.',
@@ -261,9 +261,9 @@ TRÄD OCH VEDARTADE:
 - "buske" - för buskar och större buskartade växter
 - "klätterväxt" - för klättrande eller slingrande växter (murgröna, humle, vinranka, etc)
 
-ÖRTER OCH BLOMMOR:
-- "blomma" - för alla blommande örter och prydnadsväxter
-- "ört" - för icke-blommande örtartade växter
+ÖRTER OCH BLOMMOR (INTE klätterväxter - de hör till "klätterväxt"):
+- "blomma" - för alla blommande örter och prydnadsväxter (INTE klättrande)
+- "ört" - för icke-blommande örtartade växter (INTE klättrande)
 - "gräs" - för gräs, vass och gräsliknande växter
 
 MOSSOR OCH LAVAR:
