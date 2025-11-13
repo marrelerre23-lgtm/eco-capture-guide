@@ -15,6 +15,7 @@ import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species
 import { getCachedResult, setCachedResult } from "@/utils/imageCache";
 import { getCachedAnalysis, setCachedAnalysis } from "@/utils/analysisCache";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useRateLimit } from "@/hooks/useRateLimit";
 
 interface PhotoPreviewProps {
   imageUrl: string;
@@ -75,6 +76,13 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [showRewardedAdDialog, setShowRewardedAdDialog] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const { subscription, checkCanAnalyze, refetch } = useSubscription();
+  
+  // Rate limiting for AI analysis
+  const { checkLimit: checkRateLimit } = useRateLimit('ai-analysis', {
+    maxAttempts: 1,
+    windowMs: 2000, // 2 seconds
+    message: 'Vänta lite innan nästa analys för att undvika överbelastning.'
+  });
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -99,24 +107,10 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         return;
       }
 
-      // Rate limiting check
-      const RATE_LIMIT_KEY = 'last_analysis_time';
-      const MIN_INTERVAL = 2000; // 2 seconds between analyses
-      const lastAnalysisTime = parseInt(localStorage.getItem(RATE_LIMIT_KEY) || '0');
-      const now = Date.now();
-
-      if (now - lastAnalysisTime < MIN_INTERVAL) {
-        const remainingTime = Math.ceil((MIN_INTERVAL - (now - lastAnalysisTime)) / 1000);
-        toast({
-          title: "För snabbt!",
-          description: `Vänta ${remainingTime} sekunder innan nästa analys.`,
-          variant: "destructive"
-        });
-        return;
+      // Rate limiting check using hook
+      if (checkRateLimit()) {
+        return; // Hook will show toast
       }
-
-      // Update last analysis time
-      localStorage.setItem(RATE_LIMIT_KEY, now.toString());
 
       // Mark that user has performed an analysis (for PWA prompt timing)
       localStorage.setItem('has_analyzed', 'true');
