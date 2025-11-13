@@ -423,7 +423,8 @@ const AnalysisResult = () => {
               <span className="font-medium">
                 {MAIN_CATEGORY_DISPLAY[getMainCategory(selectedSpecies.category)].name}
               </span>
-              {getMainCategory(selectedSpecies.category) === 'växter' && (
+              {/* Show detailed category if it has subcategories */}
+              {MAIN_CATEGORY_DISPLAY[getMainCategory(selectedSpecies.category)].subcategories.length > 0 && (
                 <>
                   <span className="text-muted-foreground">•</span>
                   <span className="text-muted-foreground">

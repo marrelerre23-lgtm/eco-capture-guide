@@ -4,13 +4,35 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // Valid subcategories - detailed categories for AI prompt
 const VALID_SUBCATEGORIES = [
-  'blomma', 'buske', 'ört', 'träd', 'svamp', 
-  'mossa', 'sten', 'insekt', 'fågel', 'däggdjur', 'annat'
+  // Träd och Vedartade
+  'barrträd', 'lövträd', 'buske', 'klätterväxt',
+  // Örter och Blommor
+  'ört', 'blomma', 'gräs',
+  // Mossor och Lavar
+  'mossa', 'lav',
+  // Svampar
+  'svamp',
+  // Fåglar
+  'fågel',
+  // Däggdjur
+  'däggdjur',
+  // Grod- och Kräldjur
+  'groda', 'salamander', 'ödla', 'orm',
+  // Insekter och Spindeldjur
+  'insekt', 'spindel',
+  // Vatten- och Ryggradslöst Liv
+  'vattenlevande', 'snäcka', 'mask',
+  // Stenar & Mineraler
+  'sten', 'mineral',
+  // Spår och Övrigt
+  'spår', 'annat'
 ];
 
 // Main categories that map to subcategories
 const MAIN_CATEGORIES = [
-  'växter', 'insekter', 'fåglar', 'stenar', 'svamp', 'däggdjur', 'annat'
+  'träd-vedartade', 'örter-blommor', 'mossor-lavar', 'svampar', 
+  'fåglar', 'däggdjur', 'grod-kräldjur', 'insekter-spindeldjur', 
+  'vatten-ryggradslöst', 'stenar-mineraler', 'spår-övrigt'
 ];
 
 // All valid categories (subcategories + main categories)
@@ -146,22 +168,21 @@ serve(async (req) => {
       
       const hints: Record<string, string> = {
         // Main categories
-        'växter': 'Användaren tror att detta är en växt. Fokusera din analys på växter (blommor, buskar, örter, träd) och bestäm vilken typ det är.',
-        'insekter': 'Användaren tror att detta är en insekt. Fokusera din analys på insekter och småkryp.',
-        'fåglar': 'Användaren tror att detta är en fågel. Fokusera din analys på fåglar.',
-        'stenar': 'Användaren tror att detta är en sten eller mineral. Fokusera din analys på stenar, mineraler och bergarter.',
-        // Subcategories
-        'svamp': 'Användaren tror att detta är en svamp. Fokusera din analys på svampar.',
-        'blomma': 'Användaren tror att detta är en blomma. Fokusera din analys på blommande växter.',
-        'buske': 'Användaren tror att detta är en buske. Fokusera din analys på buskar och större buskartade växter.',
-        'ört': 'Användaren tror att detta är en ört. Fokusera din analys på örtartade växter och gräs.',
-        'träd': 'Användaren tror att detta är ett träd. Fokusera din analys på träd.',
-        'mossa': 'Användaren tror att detta är en mossa eller lav. Fokusera din analys på mossor och lavar.',
-        'sten': 'Användaren tror att detta är en sten eller mineral. Fokusera din analys på stenar, mineraler och bergarter.',
-        'insekt': 'Användaren tror att detta är en insekt. Fokusera din analys på insekter och småkryp.',
-        'fågel': 'Användaren tror att detta är en fågel. Fokusera din analys på fåglar.',
-        'däggdjur': 'Användaren tror att detta är ett däggdjur. Fokusera din analys på däggdjur.',
-        'annat': 'Användaren är osäker på kategorin. Analysera noggrant och bestäm vad det är.'
+        'träd-vedartade': 'Fokusera på träd, buskar och klätterväxter. Bestäm om det är barrträd, lövträd, buske eller klätterväxt.',
+        'örter-blommor': 'Fokusera på örter, blommor och gräs. Bestäm vilken typ av blomma, ört eller gräs det är.',
+        'mossor-lavar': 'Fokusera på mossor och lavar. Bestäm om det är en mossa eller lav.',
+        'svampar': 'Fokusera på svampar. Identifiera svampart och ange om den är ätlig eller giftig.',
+        'fåglar': 'Fokusera på fåglar. Identifiera fågelart.',
+        'däggdjur': 'Fokusera på däggdjur. Identifiera däggdjursart.',
+        'grod-kräldjur': 'Fokusera på groddjur och kräldjur (grodor, salamandrar, ödlor, ormar).',
+        'insekter-spindeldjur': 'Fokusera på insekter och spindlar. Bestäm om det är en insekt eller spindel.',
+        'vatten-ryggradslöst': 'Fokusera på vattenlevande organismer och ryggradslösa djur (snäckor, maskar, etc).',
+        'stenar-mineraler': 'Fokusera på stenar, mineraler och bergarter. Bestäm typ av sten eller mineral.',
+        'spår-övrigt': 'Fokusera på spår (fotavtryck, spillning, etc) eller annat som inte passar andra kategorier.',
+        // Legacy support
+        'växter': 'Fokusera på växter. Bestäm om det är träd, buske, blomma, ört eller gräs.',
+        'insekter': 'Fokusera på insekter och spindlar.',
+        'stenar': 'Fokusera på stenar och mineraler.'
       };
       
       return hints[cat] || 'Fokusera din analys baserat på bilden.';
@@ -204,7 +225,7 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Du är en expert på nordisk flora och fauna. Analysera denna bild och identifiera de 3 mest sannolika arterna. 
+                text: `Du är en expert på nordisk natur - flora, fauna, geologi och ekologi. Analysera denna bild och identifiera de 3 mest sannolika alternativen. 
 
 ${categoryHint}
 ${detailPrompt}
@@ -215,37 +236,86 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
   "alternatives": [
     {
       "species": {
-        "commonName": "Svenskt artnamn",
+        "commonName": "Svenskt namn",
         "scientificName": "Vetenskapligt namn",
-        "category": "blomma/buske/ört/träd/svamp/mossa/sten/insekt/fågel/däggdjur",
+        "category": "Välj från listan nedan",
         "confidence": 0.85,
-        "description": "Detaljerad beskrivning av arten på svenska",
-        "habitat": "Var arten normalt förekommer",
+        "description": "Detaljerad beskrivning på svenska",
+        "habitat": "Var arten/objektet normalt förekommer",
         "identificationFeatures": "Kännetecken som hjälper till identifiering",
         "rarity": "vanlig/ovanlig/sällsynt/hotad",
-        "sizeInfo": "Information om storlek"
+        "sizeInfo": "Information om storlek",
+        "edibility": "För svamp och växter: ätlig/giftig/ätlig med förbehåll/inte ätlig/okänd",
+        "ageStage": "Ålder, mognad eller livsstadium (t.ex. ung/mogen, larv/vuxen, etc)"
       },
-      "reasoning": "Förklaring av varför du tror det är denna art"
+      "reasoning": "Förklaring av varför du tror det är detta alternativ"
     }
   ]
 }
 
-VIKTIGT:
-- Returnera EXAKT 3 alternativ, sorterade efter confidence
-- Använd "blomma" för alla blommande växter (vildblommor, prydnadsblommor)
-- Använd "buske" specifikt för buskar och större buskartade växter
-- Använd "ört" för örtartade växter, gräs och icke-blommande växter
-- Använd "träd" specifikt för träd
-- Använd "svamp" för alla svampar
-- Använd "mossa" för mossor och lavar
-- Använd "sten" för stenar, mineraler och bergarter
-- Använd "insekt" för alla insekter (flugor, bin, fjärilar, skalbaggar etc)
-- Använd "fågel" för alla fåglar
-- Använd "däggdjur" för alla däggdjur
-- Du MÅSTE alltid välja en av ovanstående kategorier baserat på bilden, även om användaren valde "okänt"
-- Gör alltid ditt bästa för att identifiera rätt kategori från bilden
+KATEGORIER (välj EXAKT en):
 
-Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland). Om du är osäker, ge lägre confidence-värden.`
+TRÄD OCH VEDARTADE:
+- "barrträd" - för alla barrträd (tall, gran, en, cypress, etc)
+- "lövträd" - för alla lövfällande träd (björk, ek, asp, lönn, etc)
+- "buske" - för buskar och större buskartade växter
+- "klätterväxt" - för klättrande eller slingrande växter (murgröna, humle, vinranka, etc)
+
+ÖRTER OCH BLOMMOR:
+- "blomma" - för alla blommande örter och prydnadsväxter
+- "ört" - för icke-blommande örtartade växter
+- "gräs" - för gräs, vass och gräsliknande växter
+
+MOSSOR OCH LAVAR:
+- "mossa" - för mossor
+- "lav" - för lavar
+
+SVAMPAR:
+- "svamp" - för alla svampar (ange ALLTID om ätlig/giftig i edibility-fältet!)
+
+FÅGLAR:
+- "fågel" - för alla fåglar
+
+DÄGGDJUR:
+- "däggdjur" - för alla däggdjur
+
+GROD- OCH KRÄLDJUR:
+- "groda" - för grodor och paddor
+- "salamander" - för salamandrar och tritoner
+- "ödla" - för ödlor
+- "orm" - för ormar
+
+INSEKTER OCH SPINDELDJUR:
+- "insekt" - för alla insekter (flugor, bin, fjärilar, skalbaggar, myror, etc)
+- "spindel" - för spindlar och andra spindeldjur
+
+VATTEN- OCH RYGGRADSLÖST LIV:
+- "vattenlevande" - för vattenlevande organismer som fiskar, kräftdjur, etc
+- "snäcka" - för snäckor och sniglar
+- "mask" - för maskar
+
+STENAR & MINERALER:
+- "sten" - för bergarter och stenar
+- "mineral" - för mineraler och kristaller
+
+SPÅR OCH ÖVRIGT:
+- "spår" - för fotavtryck, spillning, gnagspår, etc
+- "annat" - för allt som inte passar ovanstående kategorier
+
+PRIORITERINGSREGLER (viktigt vid tveksamhet):
+1. En vattenlevande insekt klassas som "insekt", INTE "vattenlevande"
+2. En klätterväxt klassas som "klätterväxt", INTE "ört" eller "blomma"
+3. Gräs klassas som "gräs", INTE "ört"
+4. Lavar klassas som "lav", INTE "mossa"
+5. Spindlar klassas som "spindel", INTE "insekt"
+
+VIKTIGT:
+- Returnera EXAKT 3 alternativ, sorterade efter confidence (högst först)
+- För svampar och växter: ange ALLTID edibility (ätlig/giftig/etc)
+- För alla organismer: ange ALLTID ageStage (ålder/mognad/livsstadium)
+- Du MÅSTE alltid välja rätt kategori från listan ovan
+- Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland)
+- Om osäker, ge lägre confidence-värden (0.3-0.5)`
               },
               {
                 type: 'image_url',

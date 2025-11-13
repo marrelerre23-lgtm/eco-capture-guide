@@ -25,13 +25,17 @@ interface PhotoPreviewProps {
 
 // Simplified main categories for UI
 const SIMPLIFIED_CATEGORIES: Array<{ value: MainCategoryKey; label: string; hint: string }> = [
-  { value: "växter", label: "🌿 Växter", hint: "Blommor, buskar, örter, träd, mossor" },
-  { value: "svamp", label: "🍄 Svampar", hint: "Alla typer av svampar" },
-  { value: "insekter", label: "🦋 Insekter", hint: "Insekter och småkryp" },
+  { value: "träd-vedartade", label: "🌲 Träd och Vedartade", hint: "Barrträd, lövträd, buskar, klätterväxter" },
+  { value: "örter-blommor", label: "🌸 Örter och Blommor", hint: "Blommor, örter och gräs" },
+  { value: "mossor-lavar", label: "🍃 Mossor och Lavar", hint: "Mossor och lavar" },
+  { value: "svampar", label: "🍄 Svampar", hint: "Alla typer av svampar" },
   { value: "fåglar", label: "🦅 Fåglar", hint: "Alla typer av fåglar" },
   { value: "däggdjur", label: "🦌 Däggdjur", hint: "Däggdjur och större djur" },
-  { value: "stenar", label: "💎 Stenar & Mineraler", hint: "Stenar, mineraler och bergarter" },
-  { value: "annat", label: "❓ Annat", hint: "Allt annat" },
+  { value: "grod-kräldjur", label: "🐸 Grod- och Kräldjur", hint: "Grodor, salamandrar, ödlor, ormar" },
+  { value: "insekter-spindeldjur", label: "🦋 Insekter och Spindeldjur", hint: "Insekter och spindlar" },
+  { value: "vatten-ryggradslöst", label: "🐚 Vatten- och Ryggradslöst", hint: "Vattenlevande och ryggradslösa djur" },
+  { value: "stenar-mineraler", label: "💎 Stenar & Mineraler", hint: "Stenar, mineraler och bergarter" },
+  { value: "spår-övrigt", label: "👣 Spår och Övrigt", hint: "Spår, fotavtryck och annat" },
 ] as const;
 
 const DETAIL_LEVELS = [

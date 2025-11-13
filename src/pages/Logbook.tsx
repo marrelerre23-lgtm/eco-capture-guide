@@ -105,7 +105,8 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
     capturedAt: capturedDate,
     isFavorite: capture.is_favorite || false,
     facts: [
-      ...(species?.category && mainCategory === 'växter' ? [{
+      // Show detailed category for all categories with subcategories
+      ...(species?.category && MAIN_CATEGORY_DISPLAY[mainCategory]?.subcategories?.length > 0 ? [{
         icon: "🏷️",
         title: "Detaljerad kategori",
         description: getCategoryDisplayName(species.category)
@@ -380,8 +381,9 @@ const Logbook = () => {
         categorySpecies = speciesByCategory[categoryKey as MainCategoryKey] || [];
       }
 
-      // Apply subcategory filtering for växter
-      if (categoryKey === 'växter' && subcategoryFilter[categoryKey]) {
+      // Apply subcategory filtering for categories with subcategories
+      const hasSubcategories = categoryKey !== 'favoriter' && MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey]?.subcategories?.length > 0;
+      if (hasSubcategories && subcategoryFilter[categoryKey]) {
         const filterValue = subcategoryFilter[categoryKey].toLowerCase();
         categorySpecies = categorySpecies.filter(species => {
           const detailedCategoryFact = species.facts.find(f => f.title === "Detaljerad kategori");
@@ -420,8 +422,8 @@ const Logbook = () => {
         icon: categoryKey === 'favoriter' ? '⭐' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].icon,
         count: categorySpecies.length,
         species: categorySpecies,
-        subcategories: categoryKey === 'växter' ? MAIN_CATEGORY_DISPLAY['växter'].subcategories : [],
-        originalCount: categoryKey === 'växter' && subcategoryFilter[categoryKey] 
+        subcategories: categoryKey !== 'favoriter' && MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey]?.subcategories || [],
+        originalCount: hasSubcategories && subcategoryFilter[categoryKey]
           ? (speciesByCategory[categoryKey as MainCategoryKey] || []).length 
           : categorySpecies.length,
         infiniteScroll: {
@@ -608,7 +610,7 @@ const Logbook = () => {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-foreground">{category.name}</h3>
-                          {category.key === 'annat' && (
+                          {category.key === 'spår-övrigt' && (
                             isMobile ? (
                               <button 
                                 className="inline-flex items-center justify-center ml-1"
@@ -632,15 +634,15 @@ const Logbook = () => {
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-xs">
                                     <p className="text-sm">
-                                      "Annat" innehåller allt som inte passar i de andra kategorierna, 
-                                      till exempel objekt, konstgjorda ting, eller saker AI:n inte kunde identifiera.
+                                      "Spår och Övrigt" innehåller djurspår (fotavtryck, spillning, gnagspår), 
+                                      samt objekt som inte passar i andra kategorier.
                                     </p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
                             )
                           )}
-                          {category.key === 'växter' && subcategoryFilter[category.key] && (
+                          {category.subcategories && category.subcategories.length > 0 && subcategoryFilter[category.key] && (
                             <Badge variant="outline" className="ml-2 bg-primary/10 text-primary border-primary/20">
                               <Filter className="h-3 w-3 mr-1" />
                               {subcategoryFilter[category.key]}
@@ -672,8 +674,8 @@ const Logbook = () => {
                   {/* Category filters and sorting controls - shown when expanded */}
                   {expandedCategory === category.key && (
                     <div className="mt-3 pt-3 border-t border-border space-y-3" onClick={(e) => e.stopPropagation()}>
-                      {/* Subcategory filter for växter */}
-                      {category.key === 'växter' && category.subcategories && category.subcategories.length > 0 && (
+                      {/* Subcategory filter for categories with subcategories */}
+                      {category.subcategories && category.subcategories.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           <Button
                             variant={!subcategoryFilter[category.key] ? "default" : "outline"}
@@ -928,26 +930,37 @@ const Logbook = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Annat Info Dialog */}
+      {/* Spår och Övrigt Info Dialog */}
       <AlertDialog open={showAnnatInfoDialog} onOpenChange={setShowAnnatInfoDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Om kategorin "Annat"</AlertDialogTitle>
+            <AlertDialogTitle>Om kategorin "Spår och Övrigt"</AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 text-sm">
               <p>
-                Kategorin "Annat" används för fynd som AI:n inte kunde identifiera med tillräcklig säkerhet,
-                eller för saker som inte passar in i de andra kategorierna.
+                Denna kategori innehåller två typer av fynd:
               </p>
-              <p>
-                Det kan vara:
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Okända arter som behöver verifieras manuellt</li>
-                <li>Föremål eller landskapselement utan artbeskrivning</li>
-                <li>Fynd med låg bildkvalitet eller dåliga ljusförhållanden</li>
-              </ul>
-              <p className="text-muted-foreground">
-                Tips: Om du vet vad något är, kan du lägga till anteckningar genom att klicka på redigeringsikonen.
+              <div className="space-y-2">
+                <div>
+                  <p className="font-medium">🐾 Spår</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2 text-muted-foreground">
+                    <li>Fotavtryck och klösmärken</li>
+                    <li>Spillning och fekalier</li>
+                    <li>Gnagspår och bitmärken</li>
+                    <li>Fjädrar och fjällar</li>
+                    <li>Andra tecken på djurens närvaro</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium">❓ Övrigt</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2 text-muted-foreground">
+                    <li>Fynd som AI:n inte kunde identifiera med säkerhet</li>
+                    <li>Objekt som inte passar i andra kategorier</li>
+                    <li>Konstgjorda ting eller landskapselement</li>
+                  </ul>
+                </div>
+              </div>
+              <p className="text-muted-foreground text-xs">
+                Tips: Använd anteckningsfunktionen för att lägga till egna observationer om fynd i denna kategori.
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
