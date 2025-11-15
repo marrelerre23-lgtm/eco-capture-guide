@@ -15,20 +15,20 @@
  */
 
 export const ADMOB_CONFIG = {
-  // AdMob App ID (for future mobile app)
+  // AdMob App ID (test ID for web version - replace in native app)
   // Format: ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
-  appId: process.env.ADMOB_APP_ID || 'ca-app-pub-3940256099942544~3347511713', // Test ID
+  appId: 'ca-app-pub-3940256099942544~3347511713', // Google Test ID
   
-  // Ad Unit IDs (for future mobile app)
+  // Ad Unit IDs (test IDs for web version - replace in native app)
   adUnits: {
     // Interstitial ad (full-screen ad before analysis)
-    interstitial: process.env.ADMOB_INTERSTITIAL_ID || 'ca-app-pub-3940256099942544/1033173712', // Test ID
+    interstitial: 'ca-app-pub-3940256099942544/1033173712', // Google Test ID
     
     // Rewarded ad (video ad for bonuses)
-    rewarded: process.env.ADMOB_REWARDED_ID || 'ca-app-pub-3940256099942544/5224354917', // Test ID
+    rewarded: 'ca-app-pub-3940256099942544/5224354917', // Google Test ID
     
     // Banner ad (bottom banner in logbook/overview)
-    banner: process.env.ADMOB_BANNER_ID || 'ca-app-pub-3940256099942544/6300978111', // Test ID
+    banner: 'ca-app-pub-3940256099942544/6300978111', // Google Test ID
   },
   
   // Platform detection
@@ -36,8 +36,8 @@ export const ADMOB_CONFIG = {
     ? (window as any).Capacitor?.getPlatform() || 'web'
     : 'web',
   
-  // Test mode flag
-  isTestMode: process.env.NODE_ENV === 'development',
+  // Test mode flag (always true in web version)
+  isTestMode: true,
 };
 
 /**
