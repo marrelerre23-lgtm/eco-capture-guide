@@ -121,19 +121,45 @@ export const getMainCategory = (category: string): MainCategoryKey => {
     return CATEGORY_TO_MAIN[normalized as CategoryKey];
   }
   
-  // Legacy mapping for old categories
+  // Comprehensive legacy mapping for old categories
   const legacyMapping: Record<string, MainCategoryKey> = {
+    // Spår (gamla stavfel)
+    'spar': 'spår-övrigt',
+    
+    // Träd och Vedartade (gamla kategorier)
+    'barrtrad': 'träd-vedartade',
+    'lovtrad': 'träd-vedartade',
+    'träd': 'träd-vedartade',
+    
+    // Mossor (gamla detaljerade kategorier)
+    'bladmossor': 'mossor-lavar',
+    'levermossor': 'mossor-lavar',
+    
+    // Örter och Blommor (gamla kategorier)
+    'orkideer': 'örter-blommor',
+    'blommor': 'örter-blommor',
+    'fröväxter': 'örter-blommor',
     'växt': 'örter-blommor',
     'växter': 'örter-blommor',
-    'träd': 'träd-vedartade',
+    
+    // Insekter (gamla kategorier)
     'insekt': 'insekter-spindeldjur',
     'insekter': 'insekter-spindeldjur',
+    
+    // Stenar (gamla kategorier)
     'stenar': 'stenar-mineraler',
+    
+    // Svampar (gamla kategorier)
     'svamp': 'svampar'
   };
   
   if (legacyMapping[normalized]) {
     return legacyMapping[normalized];
+  }
+  
+  // Log unknown categories for future debugging
+  if (normalized && normalized !== '') {
+    console.warn(`Unknown category detected: "${category}" (normalized: "${normalized}"). Defaulting to 'spår-övrigt'.`);
   }
   
   // Default fallback
