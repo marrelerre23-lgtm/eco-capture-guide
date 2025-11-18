@@ -5,7 +5,8 @@ import { Sparkles, Play, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 import { analytics, ANALYTICS_EVENTS } from '@/utils/analytics';
-import { hasRealAdsConfigured } from '@/config/admob';
+import { hasRealAdsConfigured, ADMOB_CONFIG } from '@/config/admob';
+import { isNativeApp, showRewardedAd } from '@/utils/admob-native';
 
 interface RewardedAdDialogProps {
   open: boolean;
@@ -41,18 +42,57 @@ export const RewardedAdDialog = ({
 
   const Icon = rewardInfo.icon;
 
-  const handleWatchAd = () => {
+  const handleWatchAd = async () => {
     // Track rewarded ad shown
     analytics.trackAd(ANALYTICS_EVENTS.REWARDED_AD_SHOWN, 'rewarded', {
       rewardType: type,
       hasRealAds,
+      isNative: isNativeApp(),
     });
 
+    // If running in native app, show native AdMob rewarded ad
+    if (isNativeApp()) {
+      try {
+        const success = await showRewardedAd(
+          ADMOB_CONFIG.adUnits.rewarded,
+          (reward) => {
+            // User earned reward
+            console.log('[RewardedAd] Reward earned:', reward);
+            handleAdCompleted();
+          },
+          () => {
+            // Ad was dismissed without reward
+            console.log('[RewardedAd] Dismissed without reward');
+            setIsWatchingAd(false);
+            onOpenChange(false);
+          }
+        );
+
+        if (!success) {
+          // Failed to show ad
+          toast({
+            title: "Kunde inte visa annons",
+            description: "Försök igen senare.",
+            variant: "destructive",
+          });
+          onOpenChange(false);
+        }
+      } catch (error) {
+        console.error('[RewardedAd] Error:', error);
+        toast({
+          title: "Kunde inte visa annons",
+          description: "Något gick fel.",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+      }
+      return;
+    }
+
+    // Web version: Simulate ad playback (15 seconds)
     setIsWatchingAd(true);
     setAdProgress(0);
 
-    // Simulate ad playback (15 seconds)
-    // TODO: Replace with real AdMob rewarded ad integration
     const interval = setInterval(() => {
       setAdProgress((prev) => {
         if (prev >= 100) {
