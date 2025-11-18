@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 import { analytics, ANALYTICS_EVENTS } from '@/utils/analytics';
-import { hasRealAdsConfigured } from '@/config/admob';
+import { hasRealAdsConfigured, ADMOB_CONFIG } from '@/config/admob';
+import { isNativeApp, showBannerAd, hideBannerAd } from '@/utils/admob-native';
 
 interface BannerAdProps {
   position?: 'top' | 'bottom';
@@ -22,17 +23,52 @@ export const BannerAd = ({ position = 'bottom', onClose }: BannerAdProps) => {
       return;
     }
 
-    // Track banner ad shown
+    // If running in native app, show native AdMob banner
+    if (isNativeApp()) {
+      const showNativeBanner = async () => {
+        try {
+          analytics.trackAd(ANALYTICS_EVENTS.AD_SHOWN, 'banner', {
+            position,
+            isNative: true,
+            platform: ADMOB_CONFIG.platform,
+          });
+
+          await showBannerAd(ADMOB_CONFIG.adUnits.banner);
+        } catch (error) {
+          console.error('[BannerAd] Native banner error:', error);
+        }
+      };
+
+      showNativeBanner();
+      
+      // Cleanup: hide banner when component unmounts
+      return () => {
+        hideBannerAd();
+      };
+    }
+
+    // Web version: Track banner shown
     analytics.trackAd(ANALYTICS_EVENTS.AD_SHOWN, 'banner', {
       position,
       hasRealAds,
     });
   }, [subscription, position, hasRealAds]);
 
+  // Native apps show banner at bottom via AdMob plugin, no UI needed
+  if (isNativeApp()) {
+    return null;
+  }
+
   if (!isVisible || subscription?.tier !== 'free') return null;
 
-  const handleClose = () => {
+  const handleClose = async () => {
     analytics.trackAd(ANALYTICS_EVENTS.AD_CLOSED, 'banner', { position });
+    
+    // Hide native banner if in native app
+    if (isNativeApp()) {
+      await hideBannerAd();
+    }
+    
     setIsVisible(false);
     onClose?.();
   };

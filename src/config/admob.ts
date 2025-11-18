@@ -14,31 +14,63 @@
  * 5. Add ADMOB_APP_ID, ADMOB_INTERSTITIAL_ID, ADMOB_REWARDED_ID, ADMOB_BANNER_ID as secrets
  */
 
-export const ADMOB_CONFIG = {
-  // AdMob App ID (test ID for web version - replace in native app)
-  // Format: ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
-  appId: 'ca-app-pub-3940256099942544~3347511713', // Google Test ID
-  
-  // Ad Unit IDs (test IDs for web version - replace in native app)
-  adUnits: {
-    // Interstitial ad (full-screen ad before analysis)
-    interstitial: 'ca-app-pub-3940256099942544/1033173712', // Google Test ID
-    
-    // Rewarded ad (video ad for bonuses)
-    rewarded: 'ca-app-pub-3940256099942544/5224354917', // Google Test ID
-    
-    // Banner ad (bottom banner in logbook/overview)
-    banner: 'ca-app-pub-3940256099942544/6300978111', // Google Test ID
-  },
-  
-  // Platform detection
-  platform: typeof window !== 'undefined' 
+/**
+ * Get AdMob configuration based on platform
+ * For native apps, these would be fetched from environment/secrets
+ * For web, we use test IDs
+ */
+export const getAdMobConfig = () => {
+  const platform = typeof window !== 'undefined' 
     ? (window as any).Capacitor?.getPlatform() || 'web'
-    : 'web',
+    : 'web';
   
-  // Test mode flag (always true in web version)
-  isTestMode: true,
+  const isNative = platform === 'ios' || platform === 'android';
+
+  // For native Android app, use real Ad Unit IDs
+  // These are stored as Supabase secrets: ADMOB_APP_ID_ANDROID, etc.
+  // In production build, these would be replaced via build process
+  
+  if (isNative && platform === 'android') {
+    return {
+      appId: 'ca-app-pub-3940256099942544~3347511713', // Android test - replace with real
+      adUnits: {
+        interstitial: 'ca-app-pub-3940256099942544/1033173712', // Test - replace with real
+        rewarded: 'ca-app-pub-3940256099942544/5224354917', // Test - replace with real
+        banner: 'ca-app-pub-3940256099942544/6300978111', // Test - replace with real
+      },
+      platform,
+      isTestMode: true, // Set to false when using real IDs
+    };
+  }
+
+  // For iOS, use iOS test IDs
+  if (isNative && platform === 'ios') {
+    return {
+      appId: 'ca-app-pub-3940256099942544~1458002511', // iOS test
+      adUnits: {
+        interstitial: 'ca-app-pub-3940256099942544/4411468910', // iOS test
+        rewarded: 'ca-app-pub-3940256099942544/1712485313', // iOS test
+        banner: 'ca-app-pub-3940256099942544/2934735716', // iOS test
+      },
+      platform,
+      isTestMode: true,
+    };
+  }
+
+  // For web, use Android test IDs (web simulation)
+  return {
+    appId: 'ca-app-pub-3940256099942544~3347511713',
+    adUnits: {
+      interstitial: 'ca-app-pub-3940256099942544/1033173712',
+      rewarded: 'ca-app-pub-3940256099942544/5224354917',
+      banner: 'ca-app-pub-3940256099942544/6300978111',
+    },
+    platform,
+    isTestMode: true,
+  };
 };
+
+export const ADMOB_CONFIG = getAdMobConfig();
 
 /**
  * Check if real ads are configured

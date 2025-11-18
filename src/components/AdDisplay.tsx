@@ -3,7 +3,8 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { Button } from './ui/button';
 import { Sparkles, X } from 'lucide-react';
 import { analytics, ANALYTICS_EVENTS } from '@/utils/analytics';
-import { hasRealAdsConfigured } from '@/config/admob';
+import { hasRealAdsConfigured, ADMOB_CONFIG } from '@/config/admob';
+import { isNativeApp, showInterstitialAd } from '@/utils/admob-native';
 
 interface AdDisplayProps {
   onAdComplete?: () => void;
@@ -23,7 +24,34 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
       return;
     }
 
-    // Track ad shown
+    // If running in native app, show native AdMob interstitial
+    if (isNativeApp()) {
+      const showNativeAd = async () => {
+        try {
+          analytics.trackAd(ANALYTICS_EVENTS.AD_SHOWN, 'interstitial', {
+            isNative: true,
+            platform: ADMOB_CONFIG.platform,
+          });
+
+          const success = await showInterstitialAd(ADMOB_CONFIG.adUnits.interstitial);
+          
+          if (success) {
+            analytics.trackAd(ANALYTICS_EVENTS.AD_CLOSED, 'interstitial');
+          }
+          
+          // Complete regardless of success/failure
+          onAdComplete?.();
+        } catch (error) {
+          console.error('[AdDisplay] Native ad error:', error);
+          onAdComplete?.();
+        }
+      };
+
+      showNativeAd();
+      return;
+    }
+
+    // Web version: Show simulated ad with countdown
     analytics.trackAd(ANALYTICS_EVENTS.AD_SHOWN, 'interstitial', {
       hasRealAds,
       isTestMode: !hasRealAds,
