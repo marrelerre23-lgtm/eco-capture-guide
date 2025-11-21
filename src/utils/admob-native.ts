@@ -18,6 +18,18 @@ import {
 import { Capacitor } from '@capacitor/core';
 
 /**
+ * Standard height for AdMob banner ads (in pixels)
+ */
+export const ADMOB_BANNER_HEIGHT = 50;
+
+/**
+ * Get the height of the AdMob banner ad
+ */
+export const getAdMobBannerHeight = (): number => {
+  return ADMOB_BANNER_HEIGHT;
+};
+
+/**
  * Check if running in native app
  */
 export const isNativeApp = (): boolean => {
