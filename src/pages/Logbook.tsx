@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, AlertTriangle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2 } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -990,24 +990,55 @@ const Logbook = () => {
       <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
+            <AlertDialogTitle>Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
               <p>
                 Du håller på att ta bort <span className="font-semibold">{selectedIds.size}</span> {selectedIds.size === 1 ? 'fångst' : 'fångster'} permanent. 
                 Detta går inte att ångra.
               </p>
+              
+              {/* Warning for 5-9 items */}
+              {selectedIds.size >= 5 && selectedIds.size < 10 && (
+                <div className="flex items-start gap-2 bg-warning/10 p-3 rounded-md border border-warning/20">
+                  <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                  <div className="text-sm space-y-1">
+                    <p className="font-medium text-warning">Varning!</p>
+                    <p className="text-foreground">
+                      Du tar bort {selectedIds.size} fångster. Kontrollera att du valt rätt innan du fortsätter.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Strong warning for 10+ items */}
               {selectedIds.size >= 10 && (
-                <p className="text-destructive font-semibold flex items-center gap-2 mt-3 p-3 bg-destructive/10 rounded-md">
-                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                  <span>Varning: Du tar bort {selectedIds.size} fångster! Kontrollera att du valt rätt innan du fortsätter.</span>
-                </p>
+                <div className="flex items-start gap-2 bg-destructive/10 p-3 rounded-md border-2 border-destructive/30">
+                  <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="text-sm space-y-1">
+                    <p className="font-bold text-destructive text-base">VARNING: Stor radering!</p>
+                    <p className="text-foreground">
+                      Du håller på att ta bort <span className="font-bold">{selectedIds.size}</span> fångster permanent. 
+                      Detta är en stor mängd data som inte kan återställas.
+                    </p>
+                    <p className="text-muted-foreground italic">
+                      Dubbelkolla noga att du verkligen vill ta bort alla dessa fångster.
+                    </p>
+                  </div>
+                </div>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}
+            <AlertDialogAction 
+              onClick={handleBulkDelete} 
+              className={`${
+                selectedIds.size >= 10 
+                  ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold' 
+                  : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              }`}
+            >
+              {selectedIds.size >= 10 ? '⚠️ ' : ''}Ta bort {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
