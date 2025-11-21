@@ -50,8 +50,8 @@ serve(async (req) => {
         .from('profiles')
         .update({ 
           subscription_tier: 'free',
-          max_analyses_per_day: 5,
-          max_captures: 50,
+          max_analyses_per_day: 15,
+          max_captures: 100,
           subscription_expires_at: null
         })
         .eq('user_id', user.id);
@@ -109,8 +109,8 @@ serve(async (req) => {
         .from('profiles')
         .update({ 
           subscription_tier: 'free',
-          max_analyses_per_day: 5,
-          max_captures: 50,
+          max_analyses_per_day: 15,
+          max_captures: 100,
           subscription_expires_at: null
         })
         .eq('user_id', user.id);

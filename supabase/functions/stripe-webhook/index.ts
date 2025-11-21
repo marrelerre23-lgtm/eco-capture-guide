@@ -124,7 +124,7 @@ serve(async (req) => {
             .update({
               subscription_tier: isActive ? 'premium' : 'free',
               max_analyses_per_day: isActive ? null : 15,
-              max_captures: isActive ? null : 50,
+              max_captures: isActive ? null : 100,
               subscription_expires_at: isActive ? subscriptionEnd : null,
             })
             .eq('user_id', profiles[0].user_id);
@@ -167,7 +167,7 @@ serve(async (req) => {
             .update({
               subscription_tier: 'free',
               max_analyses_per_day: 15,
-              max_captures: 50,
+              max_captures: 100,
               subscription_expires_at: null,
             })
             .eq('user_id', profiles[0].user_id);
