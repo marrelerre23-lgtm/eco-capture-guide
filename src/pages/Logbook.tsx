@@ -406,8 +406,8 @@ const Logbook = () => {
         });
       }
 
-      // Apply edibility filtering
-      if (edibilityFilter && categoryKey === 'svampar') {
+      // Apply edibility filtering for relevant categories
+      if (edibilityFilter && ['svampar', 'örter-blommor', 'träd-vedartade'].includes(categoryKey)) {
         categorySpecies = categorySpecies.filter(species => {
           return species.edibility?.toLowerCase().includes(edibilityFilter.toLowerCase());
         });
@@ -697,7 +697,8 @@ const Logbook = () => {
                   {expandedCategory === category.key && (
                     <div className="mt-3 pt-3 border-t border-border space-y-3" onClick={(e) => e.stopPropagation()}>
                       {/* Edibility filter for mushrooms */}
-                      {category.key === 'svampar' && (
+                      {/* Edibility filter for relevant categories */}
+                      {(['svampar', 'örter-blommor', 'träd-vedartade'] as string[]).includes(category.key) && (
                         <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
                           <span className="text-sm text-muted-foreground self-center">Ätlighet:</span>
                           <Button
@@ -713,7 +714,7 @@ const Logbook = () => {
                             onClick={() => setEdibilityFilter("Ätlig")}
                             className={edibilityFilter === "Ätlig" ? "bg-green-600 hover:bg-green-700" : ""}
                           >
-                            Ätlig
+                            ✓ Ätlig
                           </Button>
                           <Button
                             variant={edibilityFilter === "Giftig" ? "default" : "outline"}
@@ -721,14 +722,14 @@ const Logbook = () => {
                             onClick={() => setEdibilityFilter("Giftig")}
                             className={edibilityFilter === "Giftig" ? "bg-red-600 hover:bg-red-700" : ""}
                           >
-                            Giftig
+                            ⚠ Giftig
                           </Button>
                           <Button
                             variant={edibilityFilter === "Ej ätlig" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setEdibilityFilter("Ej ätlig")}
                           >
-                            Ej ätlig
+                            ? Okänd
                           </Button>
                         </div>
                       )}
@@ -881,9 +882,9 @@ const Logbook = () => {
                                 </button>
                               )}
                               
-                              {/* Edibility badge */}
-                              {species.edibility && (
-                                <div className="absolute top-2 left-2 z-10">
+                              {/* Edibility and Age/Stage badges */}
+                              <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                                {species.edibility && (
                                   <Badge 
                                     variant="secondary"
                                     className={`
@@ -902,8 +903,16 @@ const Logbook = () => {
                                       : '? Okänd'
                                     }
                                   </Badge>
-                                </div>
-                              )}
+                                )}
+                                {species.ageStage && (
+                                  <Badge 
+                                    variant="secondary"
+                                    className="bg-blue-500/90 text-white border-blue-600 text-xs"
+                                  >
+                                    {species.ageStage}
+                                  </Badge>
+                                )}
+                              </div>
 
                               {/* Text overlay */}
                               <div 

@@ -83,15 +83,32 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized', upgradeRequired: false }), {
+      console.error('[ANALYZE] Missing authorization header');
+      return new Response(JSON.stringify({ 
+        error: 'Du måste vara inloggad för att använda AI-analys',
+        code: 'AUTH_REQUIRED',
+        upgradeRequired: false 
+      }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('[ANALYZE] Missing Supabase configuration');
+      return new Response(JSON.stringify({ 
+        error: 'Konfigurationsfel på servern. Kontakta support.',
+        code: 'CONFIG_ERROR',
+        upgradeRequired: false 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
@@ -101,8 +118,12 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(JSON.stringify({ error: 'Unauthorized', upgradeRequired: false }), {
+      console.error('[ANALYZE] Authentication failed:', authError?.message);
+      return new Response(JSON.stringify({ 
+        error: 'Du måste vara inloggad för att använda AI-analys',
+        code: 'AUTH_FAILED',
+        upgradeRequired: false 
+      }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -115,9 +136,10 @@ serve(async (req) => {
       .rpc('check_user_limits', { user_id_input: user.id, action_type: 'analysis' });
 
     if (limitError) {
-      console.error('Error checking limits:', limitError);
+      console.error('[ANALYZE] Error checking limits:', limitError.message);
       return new Response(JSON.stringify({ 
-        error: 'Kunde inte kontrollera användargränser',
+        error: 'Ett fel uppstod vid kontroll av gränser. Försök igen.',
+        code: 'LIMIT_CHECK_ERROR',
         upgradeRequired: false 
       }), {
         status: 500,
@@ -446,12 +468,32 @@ VIKTIGT:
     });
 
   } catch (error) {
-    console.error('Fel i analyze-species function:', error);
+    console.error('[ANALYZE] Unexpected error:', error);
     
-    // Return generic error message to client, log details server-side
+    // Categorize error types for better user feedback
+    let errorMessage = 'Ett oväntat fel uppstod vid analys';
+    let errorCode = 'UNKNOWN_ERROR';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        errorMessage = 'Nätverksfel. Kontrollera din internetanslutning och försök igen.';
+        errorCode = 'NETWORK_ERROR';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Analysen tog för lång tid. Försök igen med en mindre bild.';
+        errorCode = 'TIMEOUT_ERROR';
+      } else if (error.message.includes('API') || error.message.includes('key')) {
+        errorMessage = 'AI-tjänsten är tillfälligt otillgänglig. Försök igen om ett ögonblick.';
+        errorCode = 'AI_SERVICE_ERROR';
+      } else {
+        errorMessage = `Analys misslyckades: ${error.message}`;
+        errorCode = 'ANALYSIS_ERROR';
+      }
+    }
+    
     return new Response(JSON.stringify({ 
-      error: 'Ett tekniskt fel uppstod. Försök igen senare.',
-      species: null 
+      error: errorMessage,
+      code: errorCode,
+      upgradeRequired: false 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

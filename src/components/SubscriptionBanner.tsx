@@ -126,25 +126,42 @@ export const SubscriptionBanner = () => {
                       {subscription.rewardedAnalysesToday > 0 && 
                         ` +${subscription.rewardedAnalysesToday} extra från annonser.`
                       }
-                      {' '}Titta på annonser för +5 extra analyser!
+                      {' '}Återställs vid midnatt. Titta på annonser för +5 extra analyser!
                     </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <span className="font-medium">
-                {subscription.analysesToday}
-                {subscription.rewardedAnalysesToday > 0 && (
-                  <span className="text-xs text-muted-foreground ml-1">
-                    ({subscription.analysesToday - subscription.rewardedAnalysesToday} bas + {subscription.rewardedAnalysesToday} bonus)
-                  </span>
-                )}
-                {' / '}{subscription.maxAnalysesPerDay + (subscription.rewardedAnalysesToday || 0)}
-              </span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="font-medium cursor-help">
+                      {subscription.analysesToday}
+                      {' / '}
+                      {subscription.maxAnalysesPerDay + (subscription.rewardedAnalysesToday || 0)}
+                      {subscription.rewardedAnalysesToday > 0 && (
+                        <span className="text-xs text-warning ml-1">★</span>
+                      )}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <div className="text-xs space-y-1">
+                      <p className="font-semibold">Analysfördelning:</p>
+                      <p>• Basanalyser: {subscription.maxAnalysesPerDay}</p>
+                      {subscription.rewardedAnalysesToday > 0 && (
+                        <p className="text-warning">• Bonusanalyser från annonser: +{subscription.rewardedAnalysesToday}</p>
+                      )}
+                      <p className="text-muted-foreground mt-1">
+                        Totalt tillgängliga idag: {subscription.maxAnalysesPerDay + subscription.rewardedAnalysesToday}
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <Progress value={analysisPercentage} className="h-2" />
             {subscription.isAnalysisLimitReached && (
               <p className="text-xs text-destructive">
-                Daglig gräns nådd. Återställs vid midnatt.
+                Daglig gräns nådd. Återställs vid midnatt eller titta på en annons för +5 extra.
               </p>
             )}
           </div>
