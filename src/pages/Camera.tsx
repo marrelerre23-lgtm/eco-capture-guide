@@ -11,6 +11,8 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 import { Slider } from "@/components/ui/slider";
+import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 
 import { Species } from "@/types/species";
 
@@ -249,8 +251,70 @@ const Camera = () => {
     }
   };
 
-  const uploadFromDevice = () => {
-    fileInputRef.current?.click();
+  const uploadFromDevice = async () => {
+    // Use Capacitor Camera plugin for native apps
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const image = await CapacitorCamera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Photos, // Open gallery/photos
+        });
+
+        if (image.dataUrl) {
+          setCompressing(true);
+          try {
+            // Compress uploaded image
+            const compressedImage = await compressImage(image.dataUrl, 1920, 1920, 0.8);
+            
+            // Save offline if not connected
+            if (!isOnline) {
+              saveOfflineCapture({ 
+                imageUrl: compressedImage,
+                location 
+              });
+            }
+            
+            setCapturedImage(compressedImage);
+            
+            // Get location when file is uploaded
+            getLocation();
+            
+            toast({
+              title: 'Bild uppladdad!',
+              description: isOnline 
+                ? 'Bilden är redo för analys.' 
+                : 'Bilden sparad offline.'
+            });
+          } catch (error) {
+            console.error('Error processing image:', error);
+            toast({
+              variant: 'destructive',
+              title: 'Fel',
+              description: 'Kunde inte bearbeta bilden.'
+            });
+          } finally {
+            setCompressing(false);
+          }
+          
+          // Stop camera when uploading
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+          }
+        }
+      } catch (error) {
+        console.error('Error picking image:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Fel',
+          description: 'Kunde inte välja bild.'
+        });
+      }
+    } else {
+      // Fallback to web file input
+      fileInputRef.current?.click();
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
