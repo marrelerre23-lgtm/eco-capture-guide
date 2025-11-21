@@ -75,8 +75,8 @@ export const BannerAd = ({ position = 'bottom', onClose }: BannerAdProps) => {
 
   return (
     <div 
-      className={`w-full bg-gradient-to-r from-muted/50 to-muted/30 border-y border-border/50 backdrop-blur-sm ${
-        position === 'top' ? 'border-t' : 'border-b'
+      className={`fixed left-0 right-0 z-40 w-full bg-gradient-to-r from-muted/50 to-muted/30 border-y border-border/50 backdrop-blur-sm ${
+        position === 'top' ? 'top-0 border-t' : 'bottom-20 border-b'
       }`}
     >
       <div className="relative max-w-4xl mx-auto px-4 py-2">
