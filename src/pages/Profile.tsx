@@ -21,6 +21,7 @@ import { AchievementBadge } from "@/components/AchievementBadge";
 import { Switch } from "@/components/ui/switch";
 import { forceAppUpdate, clearAllCaches } from "@/utils/serviceWorkerManager";
 import { RefreshCw, Trash2 } from "lucide-react";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 interface Profile {
   display_name: string | null;
@@ -770,4 +771,10 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default function ProfileWithErrorBoundary() {
+  return (
+    <RouteErrorBoundary routeName="Profile">
+      <Profile />
+    </RouteErrorBoundary>
+  );
+}

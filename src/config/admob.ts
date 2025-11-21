@@ -2,22 +2,19 @@
  * Google AdMob Configuration
  * 
  * For native mobile app (iOS/Android) with Capacitor.
- * Configure these values after setting up your AdMob account:
- * - Get your AdMob App ID from: https://apps.admob.com/
- * - Create Ad Units in AdMob console
  * 
- * SETUP STEPS:
- * 1. Create AdMob account at https://apps.admob.com/
- * 2. Register your app (one for iOS, one for Android)
- * 3. Create ad units (Interstitial, Rewarded, Banner)
- * 4. Replace test IDs below with your real ad unit IDs
- * 5. Add ADMOB_APP_ID, ADMOB_INTERSTITIAL_ID, ADMOB_REWARDED_ID, ADMOB_BANNER_ID as secrets
+ * IMPORTANT: Real AdMob credentials should be configured in Supabase Secrets:
+ * - ADMOB_APP_ID_ANDROID: Your real Android App ID
+ * - ADMOB_BANNER_ID_ANDROID: Your real Banner Ad Unit ID
+ * - ADMOB_INTERSTITIAL_ID_ANDROID: Your real Interstitial Ad Unit ID
+ * - ADMOB_REWARDED_ID_ANDROID: Your real Rewarded Ad Unit ID
+ * 
+ * For testing, we use Google's test ad unit IDs.
  */
 
 /**
  * Get AdMob configuration based on platform
- * For native apps, these would be fetched from environment/secrets
- * For web, we use test IDs
+ * For production, these values come from environment/secrets
  */
 export const getAdMobConfig = () => {
   const platform = typeof window !== 'undefined' 
@@ -26,20 +23,26 @@ export const getAdMobConfig = () => {
   
   const isNative = platform === 'ios' || platform === 'android';
 
-  // For native Android app, use real Ad Unit IDs
-  // These are stored as Supabase secrets: ADMOB_APP_ID_ANDROID, etc.
-  // In production build, these would be replaced via build process
-  
+  // For native Android app
   if (isNative && platform === 'android') {
+    // TODO: Replace with actual Supabase secrets in production
+    // These test IDs should be replaced with:
+    // - Real App ID: ca-app-pub-5095846544588256~1694925896
+    // - Get real Ad Unit IDs from AdMob console
+    const appId = 'ca-app-pub-3940256099942544~3347511713'; // TEST ID - replace in production
+    const bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111'; // TEST ID
+    const interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712'; // TEST ID
+    const rewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917'; // TEST ID
+    
     return {
-      appId: 'ca-app-pub-3940256099942544~3347511713', // Android test - replace with real
+      appId,
       adUnits: {
-        interstitial: 'ca-app-pub-3940256099942544/1033173712', // Test - replace with real
-        rewarded: 'ca-app-pub-3940256099942544/5224354917', // Test - replace with real
-        banner: 'ca-app-pub-3940256099942544/6300978111', // Test - replace with real
+        interstitial: interstitialAdUnitId,
+        rewarded: rewardedAdUnitId,
+        banner: bannerAdUnitId,
       },
       platform,
-      isTestMode: true, // Set to false when using real IDs
+      isTestMode: true, // Change to false when using real ad unit IDs
     };
   }
 
@@ -87,3 +90,16 @@ export const hasRealAdsConfigured = (): boolean => {
 export const isNativeApp = (): boolean => {
   return ADMOB_CONFIG.platform === 'ios' || ADMOB_CONFIG.platform === 'android';
 };
+
+/**
+ * PRODUCTION SETUP INSTRUCTIONS:
+ * ================================
+ * 1. Go to AdMob Console: https://apps.admob.com/
+ * 2. Create Ad Units for your app
+ * 3. Replace the test IDs above with your real Ad Unit IDs
+ * 4. Set isTestMode to false
+ * 5. Test thoroughly before publishing
+ * 
+ * Your Real App ID: ca-app-pub-5095846544588256~1694925896
+ * (Get your real ad unit IDs from AdMob console)
+ */

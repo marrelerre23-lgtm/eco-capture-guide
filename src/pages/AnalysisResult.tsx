@@ -499,16 +499,20 @@ const AnalysisResult = () => {
             />
           )}
 
-          {/* GPS Accuracy with Guidance */}
+          {/* GPS Accuracy with Guidance and Warning */}
           {gpsLocation?.accuracy !== undefined && (
-            <Card className={`border-2 ${getGpsAccuracyColorClass(getGpsGuidanceMessage(gpsLocation.accuracy).level)}`}>
+            <Card className={`border-2 ${
+              gpsLocation.accuracy > 50 
+                ? 'border-warning/50 bg-warning/5' 
+                : getGpsAccuracyColorClass(getGpsGuidanceMessage(gpsLocation.accuracy).level)
+            }`}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl">
-                    {getGpsGuidanceMessage(gpsLocation.accuracy).icon}
+                    {gpsLocation.accuracy > 50 ? '⚠️' : getGpsGuidanceMessage(gpsLocation.accuracy).icon}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-sm">GPS-noggrannhet</h4>
                       <Badge variant="outline" className="text-xs">
                         {formatGpsAccuracy(gpsLocation.accuracy)}
@@ -517,6 +521,20 @@ const AnalysisResult = () => {
                     <p className="text-sm">
                       {getGpsGuidanceMessage(gpsLocation.accuracy).message}
                     </p>
+                    
+                    {/* Warning for poor GPS accuracy */}
+                    {gpsLocation.accuracy > 50 && (
+                      <div className="mt-2 pt-2 border-t border-warning/20">
+                        <p className="text-xs font-semibold text-warning mb-1">
+                          ⚠️ Dålig GPS-noggrannhet - Platsen kan vara oprecis
+                        </p>
+                        <ul className="text-xs text-muted-foreground space-y-0.5 ml-4 list-disc">
+                          <li>Gå utomhus för bättre satellitmottagning</li>
+                          <li>Vänta några sekunder för bättre signal</li>
+                          <li>Undvik täta skogar eller höga byggnader</li>
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

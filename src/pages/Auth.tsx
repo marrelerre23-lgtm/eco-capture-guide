@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 const loginSchema = z.object({
   email: z.string()
@@ -259,4 +260,10 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export default function AuthWithErrorBoundary() {
+  return (
+    <RouteErrorBoundary routeName="Auth">
+      <Auth />
+    </RouteErrorBoundary>
+  );
+}

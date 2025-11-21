@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Download, Check, Smartphone, Zap, Wifi, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
-export default function Install() {
+function Install() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
@@ -185,5 +186,13 @@ export default function Install() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function InstallWithErrorBoundary() {
+  return (
+    <RouteErrorBoundary routeName="Install">
+      <Install />
+    </RouteErrorBoundary>
   );
 }
