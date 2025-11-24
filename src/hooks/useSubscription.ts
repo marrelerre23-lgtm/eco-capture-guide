@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface SubscriptionInfo {
   tier: 'free' | 'premium' | 'pro';
@@ -162,12 +163,44 @@ export const useSubscription = () => {
   useEffect(() => {
     fetchSubscriptionInfo();
     
-    // Auto-refresh subscription status every 30 seconds
+    // #13: Realtime subscription updates for instant premium upgrade detection
+    let realtimeChannel: RealtimeChannel | null = null;
+    
+    const setupRealtimeListener = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      realtimeChannel = supabase
+        .channel('profile-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('🔄 [useSubscription] Realtime profile update:', payload);
+            fetchSubscriptionInfo();
+          }
+        )
+        .subscribe();
+    };
+
+    setupRealtimeListener();
+    
+    // Fallback polling every 30 seconds
     const interval = setInterval(() => {
       fetchSubscriptionInfo();
     }, 30000);
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+      }
+    };
   }, []);
 
   const checkCanAnalyze = async (): Promise<boolean> => {

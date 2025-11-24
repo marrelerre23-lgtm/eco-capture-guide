@@ -84,6 +84,15 @@ export const hasRealAdsConfigured = (): boolean => {
   return !!(appId && !appId.includes('3940256099942544'));
 };
 
+// #20: Production warning for test ad IDs
+if (typeof window !== 'undefined' && import.meta.env.PROD && !hasRealAdsConfigured()) {
+  console.error(
+    '🚨 PRODUCTION WARNING: AdMob test IDs are still configured!\n' +
+    'Replace test IDs in src/config/admob.ts with real ad unit IDs from AdMob console.\n' +
+    'Your real App ID: ca-app-pub-5095846544588256~1694925896'
+  );
+}
+
 /**
  * Check if running in native mobile app
  */
