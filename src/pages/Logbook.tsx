@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, AlertTriangle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, AlertTriangle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2, Flag } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy";
 import { LogbookSkeleton } from "@/components/LoadingSkeleton";
 import { ShareDialog } from "@/components/ShareDialog";
+import { RecategorizationDialog } from "@/components/RecategorizationDialog";
 import { 
   getMainCategory, 
   getCategoryDisplayName, 
@@ -205,6 +206,7 @@ const Logbook = () => {
   const [showEmptyCategories, setShowEmptyCategories] = useState(true);
   const [edibilityFilter, setEdibilityFilter] = useState<string>("");
   const [sharingCapture, setSharingCapture] = useState<{ id: string; image_url: string; species_name: string; scientific_name: string } | null>(null);
+  const [recategorizingCapture, setRecategorizingCapture] = useState<{ id: string; category: string; name: string } | null>(null);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -551,6 +553,13 @@ const Logbook = () => {
     );
   }
 
+  // Calculate percentage of captures in "Spår och Övrigt"
+  const sparOvrigtCategory = categorizedSpecies.find(cat => cat.key === 'spår-övrigt');
+  const sparOvrigtPercentage = allSpecies.length > 0 
+    ? (sparOvrigtCategory?.count || 0) / allSpecies.length 
+    : 0;
+  const showMiscategorizationWarning = sparOvrigtPercentage > 0.3 && allSpecies.length >= 5;
+
   return (
     <div className="min-h-screen bg-background pb-20 pt-16">
       <div className="p-4 space-y-4">
@@ -658,6 +667,27 @@ const Logbook = () => {
               <span className="text-muted-foreground">Visa tomma kategorier</span>
             </label>
           </div>
+
+          {/* Miscategorization Warning Banner */}
+          {showMiscategorizationWarning && (
+            <Card className="border-orange-500/50 bg-orange-500/10">
+              <CardContent className="p-4">
+                <div className="flex gap-3">
+                  <AlertTriangle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 space-y-2">
+                    <div className="font-medium text-foreground">
+                      Många fångster kategoriserade som "Spår och Övrigt"
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {Math.round(sparOvrigtPercentage * 100)}% av dina fångster ({sparOvrigtCategory?.count} av {allSpecies.length}) 
+                      är kategoriserade som "Spår och Övrigt". Detta kan bero på att AI:n var osäker på identifieringen. 
+                      Du kan omkategorisera felaktiga fångster genom att klicka på flaggikonen på varje fångst.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Categories */}
@@ -932,6 +962,28 @@ const Logbook = () => {
                                   <Share2 className="h-4 w-4 text-white" />
                                 </button>
                               )}
+
+                              {/* Recategorize button - only for "Spår och Övrigt" category */}
+                              {!bulkSelectMode && category.key === 'spår-övrigt' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const capture = captures?.find(c => c.id === species.id);
+                                    if (capture) {
+                                      const detailedCategoryFact = species.facts.find(f => f.title === "Detaljerad kategori");
+                                      setRecategorizingCapture({
+                                        id: capture.id,
+                                        category: detailedCategoryFact?.description || "spår",
+                                        name: species.name
+                                      });
+                                    }
+                                  }}
+                                  className="absolute bottom-12 right-26 z-10 p-2 rounded-full bg-orange-500/80 hover:bg-orange-600/90 backdrop-blur-sm transition-all"
+                                  title="Rapportera felkategorisering"
+                                >
+                                  <Flag className="h-4 w-4 text-white" />
+                                </button>
+                              )}
                               
                               {/* Edibility and Age/Stage badges */}
                               <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
@@ -1168,6 +1220,17 @@ const Logbook = () => {
             species_name: sharingCapture.species_name,
             scientific_name: sharingCapture.scientific_name
           }}
+        />
+      )}
+
+      {/* Recategorization Dialog */}
+      {recategorizingCapture && (
+        <RecategorizationDialog
+          captureId={recategorizingCapture.id}
+          currentCategory={recategorizingCapture.category}
+          speciesName={recategorizingCapture.name}
+          open={!!recategorizingCapture}
+          onOpenChange={(open) => !open && setRecategorizingCapture(null)}
         />
       )}
     </div>
