@@ -26,12 +26,15 @@ const Layout = ({ children }: LayoutProps) => {
   const hideNavigation = location.pathname === "/camera" || location.pathname === "/photo-preview" || location.pathname === "/auth" || location.pathname === "/analysis-result";
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
 
         // Redirect authenticated users away from auth page
         if (session?.user && location.pathname === "/auth") {
@@ -42,12 +45,24 @@ const Layout = ({ children }: LayoutProps) => {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      
+      // Only set loading false after initial session check completes
+      // This ensures queries wait for proper session initialization
+      setTimeout(() => {
+        if (mounted) {
+          setLoading(false);
+        }
+      }, 100);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, location.pathname]);
 
   // Redirect to auth if not authenticated and not on auth page
