@@ -323,6 +323,23 @@ const Logbook = () => {
     });
   };
 
+  // #15: Select/Deselect all in bulk mode
+  const handleSelectAll = () => {
+    if (!allSpecies) return;
+    const allIds = new Set(allSpecies.map(s => s.id));
+    setSelectedIds(allIds);
+    vibrateClick();
+    toast({
+      title: "Alla fångster valda",
+      description: `${allIds.size} fångster markerade`,
+    });
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedIds(new Set());
+    vibrateClick();
+  };
+
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
 
@@ -553,13 +570,31 @@ const Logbook = () => {
               {bulkSelectMode && (
                 <>
                   {selectedIds.size > 0 && (
-                    <Button 
-                      variant="destructive" 
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDeselectAll}
+                      >
+                        Avmarkera alla
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setShowBulkDeleteDialog(true)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Ta bort ({selectedIds.size})
+                      </Button>
+                    </>
+                  )}
+                  {selectedIds.size === 0 && (
+                    <Button
+                      variant="outline"
                       size="sm"
-                      onClick={() => setShowBulkDeleteDialog(true)}
+                      onClick={handleSelectAll}
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Ta bort ({selectedIds.size})
+                      Välj alla
                     </Button>
                   )}
                   <Button 

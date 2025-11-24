@@ -358,58 +358,77 @@ const AnalysisResult = () => {
 
         {/* AI Confidence Indicator - Circular */}
         {selectedSpecies.confidence && (
-          <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-6">
-                {/* Circular Progress */}
-                <div className="relative w-24 h-24 flex-shrink-0">
-                  <svg className="w-24 h-24 transform -rotate-90">
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-muted"
-                    />
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="40"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 40}`}
-                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - selectedSpecies.confidence)}`}
-                      className={`transition-all duration-1000 ${
-                        selectedSpecies.confidence >= 0.8 ? 'text-success' :
-                        selectedSpecies.confidence >= 0.6 ? 'text-warning' :
-                        'text-destructive'
-                      }`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl">
-                      {getConfidenceEmoji(selectedSpecies.confidence)}
-                    </span>
+          <>
+            {/* #14: Low confidence warning */}
+            {selectedSpecies.confidence < 0.5 && (
+              <Card className="border-2 border-warning bg-warning/10">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                    <div className="space-y-1 flex-1">
+                      <h4 className="font-semibold text-warning">Mycket osäker identifiering</h4>
+                      <p className="text-sm text-muted-foreground">
+                        AI:n är mindre än 50% säker på denna identifiering. Överväg att ta en bättre bild med tydligare detaljer, bättre ljus, eller från en annan vinkel för att få mer tillförlitliga resultat.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            <Card className="border-2 bg-gradient-to-br from-primary/5 to-accent/5">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-6">
+                  {/* Circular Progress */}
+                  <div className="relative w-24 h-24 flex-shrink-0">
+                    <svg className="w-24 h-24 transform -rotate-90">
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="40"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="none"
+                        className="text-muted"
+                      />
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="40"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 40}`}
+                        strokeDashoffset={`${2 * Math.PI * 40 * (1 - selectedSpecies.confidence)}`}
+                        className={`transition-all duration-1000 ${
+                          selectedSpecies.confidence >= 0.8 ? 'text-success' :
+                          selectedSpecies.confidence >= 0.6 ? 'text-warning' :
+                          'text-destructive'
+                        }`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl">
+                        {getConfidenceEmoji(selectedSpecies.confidence)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Text Info */}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold mb-1">AI-säkerhet</h3>
+                    <p className={`text-2xl font-bold mb-1 ${getConfidenceColor(selectedSpecies.confidence)}`}>
+                      {Math.round(selectedSpecies.confidence * 100)}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {getConfidenceLabel(selectedSpecies.confidence)}
+                    </p>
                   </div>
                 </div>
-
-                {/* Text Info */}
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold mb-1">AI-säkerhet</h3>
-                  <p className={`text-2xl font-bold mb-1 ${getConfidenceColor(selectedSpecies.confidence)}`}>
-                    {Math.round(selectedSpecies.confidence * 100)}%
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {getConfidenceLabel(selectedSpecies.confidence)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </>
         )}
 
         {/* Species Info */}

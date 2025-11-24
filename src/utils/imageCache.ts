@@ -70,37 +70,50 @@ const saveCache = (cache: ImageCache): void => {
 };
 
 /**
- * Get cached result for an image hash
+ * #12: Generate cache key with GPS location for better cache accuracy
  */
-export const getCachedResult = (imageHash: string): any | null => {
+export const generateCacheKey = (imageHash: string, location?: { latitude: number; longitude: number } | null): string => {
+  if (!location) return imageHash;
+  // Round to 4 decimals (~11m accuracy) to group nearby locations
+  const lat = location.latitude.toFixed(4);
+  const lng = location.longitude.toFixed(4);
+  return `${imageHash}_${lat}_${lng}`;
+};
+
+/**
+ * Get cached result for an image hash (with optional location)
+ */
+export const getCachedResult = (imageHash: string, location?: { latitude: number; longitude: number } | null): any | null => {
   const cache = getCache();
-  const entry = cache.entries[imageHash];
+  const cacheKey = generateCacheKey(imageHash, location);
+  const entry = cache.entries[cacheKey];
   
   if (!entry) return null;
   
   // Update access metadata
   entry.accessCount++;
   entry.lastAccessed = Date.now();
-  cache.entries[imageHash] = entry;
+  cache.entries[cacheKey] = entry;
   saveCache(cache);
   
   return entry.result;
 };
 
 /**
- * Save result to cache
+ * Save result to cache (with optional location)
  */
-export const setCachedResult = (imageHash: string, result: any): void => {
+export const setCachedResult = (imageHash: string, result: any, location?: { latitude: number; longitude: number } | null): void => {
   const cache = getCache();
   const now = Date.now();
+  const cacheKey = generateCacheKey(imageHash, location);
   
   // Check if we need to evict entries
-  if (Object.keys(cache.entries).length >= MAX_CACHE_SIZE && !cache.entries[imageHash]) {
+  if (Object.keys(cache.entries).length >= MAX_CACHE_SIZE && !cache.entries[cacheKey]) {
     evictLRUEntries(cache);
   }
   
-  cache.entries[imageHash] = {
-    imageHash,
+  cache.entries[cacheKey] = {
+    imageHash: cacheKey,
     result,
     timestamp: now,
     accessCount: 1,
