@@ -267,7 +267,7 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
         "identificationFeatures": "Kännetecken som hjälper till identifiering",
         "rarity": "vanlig/ovanlig/sällsynt/hotad",
         "sizeInfo": "Information om storlek",
-        "edibility": "För svamp och växter: ätlig/giftig/ätlig med förbehåll/inte ätlig/okänd",
+        "edibility": "För svamp och växter: EXAKT ett av dessa värden: ätlig | giftig | ätlig-med-förbehåll | inte-ätlig | okänd",
         "ageStage": "Ålder, mognad eller livsstadium (t.ex. ung/mogen, larv/vuxen, etc)"
       },
       "reasoning": "Förklaring av varför du tror det är detta alternativ"
@@ -536,7 +536,23 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
           alt.species.confidence = 0.5;
         }
         
-        // POST-PROCESSING FIX #3: Ensure mushrooms ALWAYS have edibility
+        // POST-PROCESSING FIX #3: Normalize edibility values
+        if (alt.species.edibility) {
+          const edibility = alt.species.edibility.toLowerCase();
+          if (edibility.includes('ätlig') && (edibility.includes('förbehåll') || edibility.includes('försiktig'))) {
+            alt.species.edibility = 'ätlig-med-förbehåll';
+          } else if (edibility.includes('ätlig') || edibility.includes('matsvamp')) {
+            alt.species.edibility = 'ätlig';
+          } else if (edibility.includes('giftig') || edibility.includes('dödlig')) {
+            alt.species.edibility = 'giftig';
+          } else if (edibility.includes('inte') || edibility.includes('ej') || edibility.includes('icke')) {
+            alt.species.edibility = 'inte-ätlig';
+          } else {
+            alt.species.edibility = 'okänd';
+          }
+        }
+        
+        // POST-PROCESSING FIX #4: Ensure mushrooms ALWAYS have edibility
         if (alt.species.category === 'svamp') {
           if (!alt.species.edibility || alt.species.edibility.trim() === '') {
             console.warn(`⚠️ SÄKERHETSVARNING: Svamp "${commonName}" saknar ätlighet, sätter till "okänd"`);
@@ -544,7 +560,7 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
           }
         }
         
-        // POST-PROCESSING FIX #4: Ensure ALL organisms have ageStage
+        // POST-PROCESSING FIX #5: Ensure ALL organisms have ageStage
         if (!alt.species.ageStage || alt.species.ageStage.trim() === '') {
           console.warn(`Organism "${commonName}" saknar ageStage, sätter till "okänd"`);
           alt.species.ageStage = 'okänd';

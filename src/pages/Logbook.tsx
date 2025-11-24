@@ -521,7 +521,16 @@ const Logbook = () => {
       // Apply edibility filtering for relevant categories
       if (edibilityFilter && ['svampar', 'örter-blommor', 'träd-vedartade'].includes(categoryKey)) {
         categorySpecies = categorySpecies.filter(species => {
-          return species.edibility?.toLowerCase().includes(edibilityFilter.toLowerCase());
+          if (!species.edibility) return false; // Filter out NULL values
+          const edibility = species.edibility.toLowerCase();
+          const filter = edibilityFilter.toLowerCase();
+          
+          // Intelligent matching for "ätlig" - includes "ätlig-med-förbehåll"
+          if (filter === 'ätlig') {
+            return edibility === 'ätlig' || edibility === 'ätlig-med-förbehåll';
+          }
+          // Exact or substring match for other filters
+          return edibility === filter || edibility.includes(filter);
         });
       }
 
@@ -886,25 +895,33 @@ const Logbook = () => {
                             Alla
                           </Button>
                           <Button
-                            variant={edibilityFilter === "Ätlig" ? "default" : "outline"}
+                            variant={edibilityFilter === "ätlig" ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setEdibilityFilter("Ätlig")}
-                            className={edibilityFilter === "Ätlig" ? "bg-green-600 hover:bg-green-700" : ""}
+                            onClick={() => setEdibilityFilter("ätlig")}
+                            className={edibilityFilter === "ätlig" ? "bg-green-600 hover:bg-green-700" : ""}
                           >
                             ✓ Ätlig
                           </Button>
                           <Button
-                            variant={edibilityFilter === "Giftig" ? "default" : "outline"}
+                            variant={edibilityFilter === "giftig" ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setEdibilityFilter("Giftig")}
-                            className={edibilityFilter === "Giftig" ? "bg-red-600 hover:bg-red-700" : ""}
+                            onClick={() => setEdibilityFilter("giftig")}
+                            className={edibilityFilter === "giftig" ? "bg-red-600 hover:bg-red-700" : ""}
                           >
                             ⚠ Giftig
                           </Button>
                           <Button
-                            variant={edibilityFilter === "Ej ätlig" ? "default" : "outline"}
+                            variant={edibilityFilter === "inte-ätlig" ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setEdibilityFilter("Ej ätlig")}
+                            onClick={() => setEdibilityFilter("inte-ätlig")}
+                            className={edibilityFilter === "inte-ätlig" ? "bg-gray-600 hover:bg-gray-700" : ""}
+                          >
+                            ⊘ Inte ätlig
+                          </Button>
+                          <Button
+                            variant={edibilityFilter === "okänd" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setEdibilityFilter("okänd")}
                           >
                             ? Okänd
                           </Button>
@@ -1083,22 +1100,30 @@ const Logbook = () => {
                               
                               {/* Edibility and Age/Stage badges */}
                               <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                                {species.edibility && (
+                              {species.edibility && (
                                   <Badge 
-                                    variant="secondary"
+                                    variant="outline"
                                     className={`
-                                      ${species.edibility.toLowerCase().includes('ätlig') || species.edibility.toLowerCase().includes('matsvamp') 
+                                      ${species.edibility === 'ätlig' 
                                         ? 'bg-green-500/90 text-white border-green-600' 
-                                        : species.edibility.toLowerCase().includes('giftig') || species.edibility.toLowerCase().includes('dödlig')
+                                        : species.edibility === 'ätlig-med-förbehåll'
+                                        ? 'bg-yellow-500/90 text-white border-yellow-600'
+                                        : species.edibility === 'giftig'
                                         ? 'bg-red-500/90 text-white border-red-600'
-                                        : 'bg-yellow-500/90 text-white border-yellow-600'
+                                        : species.edibility === 'inte-ätlig'
+                                        ? 'bg-gray-500/90 text-white border-gray-600'
+                                        : 'bg-muted border-muted-foreground/20 text-muted-foreground'
                                       }
                                     `}
                                   >
-                                    {species.edibility.toLowerCase().includes('ätlig') || species.edibility.toLowerCase().includes('matsvamp') 
+                                    {species.edibility === 'ätlig' 
                                       ? '✓ Ätlig' 
-                                      : species.edibility.toLowerCase().includes('giftig') || species.edibility.toLowerCase().includes('dödlig')
-                                      ? '⚠ Giftig'
+                                      : species.edibility === 'ätlig-med-förbehåll'
+                                      ? '⚠ Ätlig m. förbehåll'
+                                      : species.edibility === 'giftig'
+                                      ? '☠ Giftig'
+                                      : species.edibility === 'inte-ätlig'
+                                      ? '⊘ Inte ätlig'
                                       : '? Okänd'
                                     }
                                   </Badge>

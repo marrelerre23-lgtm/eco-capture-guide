@@ -219,11 +219,15 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             category: alt.species.category || "annat",
             confidence: alt.species.confidence || 0.5,
             reasoning: alt.reasoning || "",
+            edibility: alt.species.edibility || null,
+            ageStage: alt.species.ageStage || null,
             facts: [
               alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
               alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
               alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
               alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
+              alt.species.edibility ? `Ätlighet: ${alt.species.edibility}` : "",
+              alt.species.ageStage ? `Ålder/Stadium: ${alt.species.ageStage}` : "",
               alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : ""
             ].filter(Boolean)
           })),
@@ -246,11 +250,15 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           dateFound: new Date(),
           description: analysisResult.species.description || "Ingen beskrivning tillgänglig",
           category: analysisResult.species.category || "annat",
+          edibility: analysisResult.species.edibility || null,
+          ageStage: analysisResult.species.ageStage || null,
           facts: [
             analysisResult.species.habitat ? `Habitat: ${analysisResult.species.habitat}` : "",
             analysisResult.species.identificationFeatures ? `Kännetecken: ${analysisResult.species.identificationFeatures}` : "",
             analysisResult.species.rarity ? `Sällsynthet: ${analysisResult.species.rarity}` : "",
             analysisResult.species.sizeInfo ? `Storlek: ${analysisResult.species.sizeInfo}` : "",
+            analysisResult.species.edibility ? `Ätlighet: ${analysisResult.species.edibility}` : "",
+            analysisResult.species.ageStage ? `Ålder/Stadium: ${analysisResult.species.ageStage}` : "",
             analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : ""
           ].filter(Boolean)
         };
