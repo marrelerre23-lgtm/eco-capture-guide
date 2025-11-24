@@ -365,11 +365,16 @@ const Logbook = () => {
     if (!searchQuery.trim()) return converted;
     
     const query = searchQuery.toLowerCase();
+    // FIX #10: Search in detailed category (from facts array) and all other fields
     return converted.filter(species => 
       species.name.toLowerCase().includes(query) ||
       species.scientificName.toLowerCase().includes(query) ||
       species.description.toLowerCase().includes(query) ||
-      (species.location && species.location.toLowerCase().includes(query))
+      (species.location && species.location.toLowerCase().includes(query)) ||
+      species.facts.some(fact => 
+        fact.title.toLowerCase().includes(query) || 
+        fact.description.toLowerCase().includes(query)
+      )
     );
   }, [captures, searchQuery]);
 
@@ -468,6 +473,7 @@ const Logbook = () => {
   const handleExport = (format: 'csv' | 'json') => {
     if (!captures) return;
     
+    // FIX #9: Include all relevant fields in export
     const exportData = captures.map(capture => {
       const species = capture.ai_analysis?.species;
       return {
@@ -479,12 +485,16 @@ const Logbook = () => {
         location: capture.location_name,
         latitude: capture.latitude ? Number(capture.latitude) : undefined,
         longitude: capture.longitude ? Number(capture.longitude) : undefined,
+        gpsAccuracy: capture.gps_accuracy ? Number(capture.gps_accuracy) : undefined,
         description: species?.description || "",
         habitat: species?.habitat,
         rarity: species?.rarity,
         confidence: species?.confidence,
+        edibility: capture.edibility,
+        ageStage: capture.age_stage,
         notes: capture.notes,
-        isFavorite: capture.is_favorite || false
+        isFavorite: capture.is_favorite || false,
+        imageUrl: capture.image_url
       };
     });
 
@@ -1011,6 +1021,19 @@ const Logbook = () => {
                 Du håller på att ta bort <span className="font-semibold">{selectedIds.size}</span> {selectedIds.size === 1 ? 'fångst' : 'fångster'} permanent. 
                 Detta går inte att ångra.
               </p>
+              
+              {/* FIX #8: Warning from 3+ items with tiered levels */}
+              {selectedIds.size >= 3 && selectedIds.size < 5 && (
+                <div className="flex items-start gap-2 bg-yellow-500/10 p-3 rounded-md border border-yellow-500/20">
+                  <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm space-y-1">
+                    <p className="font-medium text-yellow-600">Bekräfta radering</p>
+                    <p className="text-foreground">
+                      Du tar bort {selectedIds.size} fångster permanent. Denna åtgärd kan inte ångras.
+                    </p>
+                  </div>
+                </div>
+              )}
               
               {/* Warning for 5-9 items */}
               {selectedIds.size >= 5 && selectedIds.size < 10 && (
