@@ -281,11 +281,12 @@ TRÄD OCH VEDARTADE:
 - "barrträd" - för alla barrträd (tall, gran, en, cypress, etc)
 - "lövträd" - för alla lövfällande träd (björk, ek, asp, lönn, etc)
 - "buske" - för buskar och större buskartade växter
-- "klätterväxt" - för klättrande eller slingrande växter (murgröna, humle, vinranka, etc)
+- "klätterväxt" - VIKTIGT! För ALLA klättrande/slingrande växter (MURGRÖNA, humle, vinranka, klängväxter, etc)
 
-ÖRTER OCH BLOMMOR (INTE klätterväxter - de hör till "klätterväxt"):
-- "blomma" - för alla blommande örter och prydnadsväxter (INTE klättrande)
-- "ört" - för icke-blommande örtartade växter (INTE klättrande)
+ÖRTER OCH BLOMMOR:
+⚠️ KRITISKT: KLÄTTERVÄXTER (som murgröna, humle, vinranka) SKA ALDRIG KLASSIFICERAS SOM "blomma" eller "ört"!
+- "blomma" - ENDAST för blommande örter som INTE klättrar (maskros, blåsippa, smörblomma, etc)
+- "ört" - ENDAST för icke-blommande örter som INTE klättrar (gräslök, fräken, brännässla, etc)
 - "gräs" - för gräs, vass och gräsliknande växter
 
 MOSSOR OCH LAVAR:
@@ -293,7 +294,8 @@ MOSSOR OCH LAVAR:
 - "lav" - för lavar
 
 SVAMPAR:
-- "svamp" - för alla svampar (ange ALLTID om ätlig/giftig i edibility-fältet!)
+- "svamp" - för alla svampar
+⚠️ KRITISKT: För ALLA svampar MÅSTE edibility-fältet ALLTID vara ifyllt (ätlig/giftig/ätlig med förbehåll/inte ätlig/okänd)!
 
 FÅGLAR:
 - "fågel" - för alla fåglar
@@ -324,20 +326,26 @@ SPÅR OCH ÖVRIGT:
 - "spår" - för fotavtryck, spillning, gnagspår, etc
 - "annat" - för allt som inte passar ovanstående kategorier
 
-PRIORITERINGSREGLER (viktigt vid tveksamhet):
-1. En vattenlevande insekt klassas som "insekt", INTE "vattenlevande"
-2. En klätterväxt klassas som "klätterväxt", INTE "ört" eller "blomma"
-3. Gräs klassas som "gräs", INTE "ört"
-4. Lavar klassas som "lav", INTE "mossa"
-5. Spindlar klassas som "spindel", INTE "insekt"
+PRIORITERINGSREGLER - FÖLJ DESSA STRIKT:
+1. KLÄTTERVÄXTER (murgröna, humle, vinranka) = "klätterväxt", ALDRIG "blomma" eller "ört"!
+2. En vattenlevande insekt = "insekt", INTE "vattenlevande"
+3. Gräs = "gräs", INTE "ört"
+4. Lavar = "lav", INTE "mossa"
+5. Spindlar = "spindel", INTE "insekt"
 
-VIKTIGT:
+⚠️ OBLIGATORISKA KRAV:
 - Returnera EXAKT 3 alternativ, sorterade efter confidence (högst först)
-- För svampar och växter: ange ALLTID edibility (ätlig/giftig/etc)
-- För alla organismer: ange ALLTID ageStage (ålder/mognad/livsstadium)
+- ALLA svampar MÅSTE ha edibility (ätlig/giftig/ätlig med förbehåll/inte ätlig/okänd)
+- ALLA organismer MÅSTE ha ageStage (ålder/mognad/livsstadium: ung/mogen/gammal, larv/puppa/vuxen, etc)
 - Du MÅSTE alltid välja rätt kategori från listan ovan
 - Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland)
-- Om osäker, ge lägre confidence-värden (0.3-0.5)`
+- Om osäker, ge lägre confidence-värden (0.3-0.5)
+
+EXEMPEL PÅ KORREKT KATEGORISERING:
+✅ Murgröna (Hedera helix) → "klätterväxt" (INTE "blomma")
+✅ Humle (Humulus lupulus) → "klätterväxt" (INTE "ört")
+✅ Flugsvamp (Amanita muscaria) → "svamp" med edibility: "giftig"
+✅ Tallskog (ung gran) → "barrträd" med ageStage: "ung"`
               },
               {
                 type: 'image_url',
@@ -413,7 +421,21 @@ VIKTIGT:
       // Validate and fix categories - only subcategories are valid in responses
       analysisResult.alternatives = analysisResult.alternatives.map((alt: any) => {
         const category = alt.species?.category?.toLowerCase()?.trim();
-        if (!category || !VALID_SUBCATEGORIES.includes(category)) {
+        const commonName = alt.species?.commonName?.toLowerCase() || '';
+        const description = alt.species?.description?.toLowerCase() || '';
+        
+        // POST-PROCESSING FIX #1: Auto-correct climbing plants misclassified as flowers/herbs
+        const isClimbingPlant = commonName.includes('murgröna') || 
+                                commonName.includes('humle') || 
+                                commonName.includes('vinranka') ||
+                                commonName.includes('klätter') ||
+                                description.includes('klättrande') ||
+                                description.includes('slingrande');
+        
+        if (isClimbingPlant && (category === 'blomma' || category === 'ört')) {
+          console.warn(`🔧 AUTO-KORRIGERING: "${commonName}" från "${category}" → "klätterväxt"`);
+          alt.species.category = 'klätterväxt';
+        } else if (!category || !VALID_SUBCATEGORIES.includes(category)) {
           console.warn(`Ogiltig kategori från AI: "${category}", använder "annat"`);
           alt.species.category = 'annat';
         } else {
@@ -424,6 +446,20 @@ VIKTIGT:
         if (typeof alt.species.confidence !== 'number' || isNaN(alt.species.confidence)) {
           console.warn('Confidence saknas eller är ogiltig, använder default 0.5');
           alt.species.confidence = 0.5;
+        }
+        
+        // POST-PROCESSING FIX #3: Ensure mushrooms ALWAYS have edibility
+        if (alt.species.category === 'svamp') {
+          if (!alt.species.edibility || alt.species.edibility.trim() === '') {
+            console.warn(`⚠️ SÄKERHETSVARNING: Svamp "${commonName}" saknar ätlighet, sätter till "okänd"`);
+            alt.species.edibility = 'okänd';
+          }
+        }
+        
+        // POST-PROCESSING FIX #4: Ensure ALL organisms have ageStage
+        if (!alt.species.ageStage || alt.species.ageStage.trim() === '') {
+          console.warn(`Organism "${commonName}" saknar ageStage, sätter till "okänd"`);
+          alt.species.ageStage = 'okänd';
         }
         
         return alt;
