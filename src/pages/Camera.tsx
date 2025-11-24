@@ -167,14 +167,31 @@ const Camera = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          const accuracy = position.coords.accuracy; // GPS accuracy in meters
           setLocation({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy // GPS accuracy in meters
+            accuracy
           });
+          
+          // FIX #5: Show GPS accuracy warning if poor quality
+          if (accuracy > 50) {
+            const accuracyLevel = accuracy > 100 ? 'mycket dålig' : 'låg';
+            toast({
+              variant: "destructive",
+              title: `GPS-noggrannhet ${accuracyLevel} (±${Math.round(accuracy)}m)`,
+              description: "För bästa resultat, gå ut till en öppen plats med fri sikt mot himlen.",
+              duration: 6000,
+            });
+          }
         },
         (error) => {
           console.log('Kunde inte hämta plats:', error);
+          toast({
+            title: "GPS-position ej tillgänglig",
+            description: "Platsinformation kommer inte att sparas med denna fångst.",
+            duration: 4000,
+          });
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
