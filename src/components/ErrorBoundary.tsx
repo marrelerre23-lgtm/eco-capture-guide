@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCcw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCcw, Home, Mail } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -35,6 +35,18 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.href = '/';
   };
 
+  // #22: Report error via email
+  private handleReportError = () => {
+    const errorDetails = encodeURIComponent(
+      `Felmeddelande: ${this.state.error?.message || 'Okänt fel'}\n\n` +
+      `Stack: ${this.state.error?.stack || 'Ingen stack tillgänglig'}\n\n` +
+      `URL: ${window.location.href}\n` +
+      `User Agent: ${navigator.userAgent}\n` +
+      `Tidpunkt: ${new Date().toISOString()}`
+    );
+    window.location.href = `mailto:support@example.com?subject=Felrapport från EcoCapture&body=${errorDetails}`;
+  };
+
   public render() {
     if (this.state.hasError) {
       return (
@@ -59,21 +71,31 @@ export class ErrorBoundary extends Component<Props, State> {
                   </p>
                 </div>
               )}
-              <div className="flex gap-2">
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={this.handleReset}
+                    className="flex-1"
+                    variant="outline"
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    Försök igen
+                  </Button>
+                  <Button
+                    onClick={this.handleGoHome}
+                    className="flex-1"
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    Hem
+                  </Button>
+                </div>
                 <Button
-                  onClick={this.handleReset}
-                  className="flex-1"
-                  variant="outline"
+                  onClick={this.handleReportError}
+                  className="w-full"
+                  variant="secondary"
                 >
-                  <RefreshCcw className="mr-2 h-4 w-4" />
-                  Försök igen
-                </Button>
-                <Button
-                  onClick={this.handleGoHome}
-                  className="flex-1"
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  Hem
+                  <Mail className="mr-2 h-4 w-4" />
+                  Rapportera fel
                 </Button>
               </div>
             </CardContent>

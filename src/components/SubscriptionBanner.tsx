@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UpgradeDialog } from "./UpgradeDialog";
 import {
   Tooltip,
@@ -12,6 +12,38 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+
+// #23: Animated counter component
+const AnimatedCounter = ({ value, duration = 500 }: { value: number; duration?: number }) => {
+  const [displayValue, setDisplayValue] = useState(value);
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    const prevValue = prevValueRef.current;
+    if (prevValue === value) return;
+
+    const diff = value - prevValue;
+    const steps = 20;
+    const stepValue = diff / steps;
+    const stepDuration = duration / steps;
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+      if (currentStep >= steps) {
+        setDisplayValue(value);
+        clearInterval(timer);
+      } else {
+        setDisplayValue(Math.round(prevValue + stepValue * currentStep));
+      }
+    }, stepDuration);
+
+    prevValueRef.current = value;
+    return () => clearInterval(timer);
+  }, [value, duration]);
+
+  return <span className="tabular-nums">{displayValue}</span>;
+};
 
 export const SubscriptionBanner = () => {
   const { subscription, loading, error } = useSubscription();
@@ -115,13 +147,14 @@ export const SubscriptionBanner = () => {
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Analyser idag</span>
               {/* FIX #7: Show breakdown directly for users with rewarded bonuses */}
+              {/* #23: Animated counter for real-time updates */}
               <span className="font-medium">
-                {subscription.analysesToday}
+                <AnimatedCounter value={subscription.analysesToday} />
                 {' / '}
-                {subscription.maxAnalysesPerDay + (subscription.rewardedAnalysesToday || 0)}
+                <AnimatedCounter value={subscription.maxAnalysesPerDay + (subscription.rewardedAnalysesToday || 0)} />
                 {subscription.rewardedAnalysesToday > 0 && (
                   <span className="text-xs text-warning ml-1">
-                    ({subscription.maxAnalysesPerDay} + {subscription.rewardedAnalysesToday} ★)
+                    ({subscription.maxAnalysesPerDay} + <AnimatedCounter value={subscription.rewardedAnalysesToday} /> ★)
                   </span>
                 )}
               </span>
@@ -138,8 +171,9 @@ export const SubscriptionBanner = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Sparade fångster</span>
+              {/* #23: Animated counter */}
               <span className="font-medium">
-                {subscription.capturesCount} / {subscription.maxCaptures}
+                <AnimatedCounter value={subscription.capturesCount} /> / <AnimatedCounter value={subscription.maxCaptures || 0} />
               </span>
             </div>
             <Progress value={capturesPercentage} className="h-2" />

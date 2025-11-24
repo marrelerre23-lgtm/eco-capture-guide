@@ -15,6 +15,7 @@ import { AchievementBadge } from "@/components/AchievementBadge";
 import { StatsChart } from "@/components/StatsChart";
 import { Badge } from "@/components/ui/badge";
 import { ShareDialog } from "@/components/ShareDialog";
+import { ProfileSkeleton } from "@/components/LoadingSkeleton";
 
 interface Profile {
   display_name: string | null;
@@ -224,11 +225,7 @@ const ProfileEnhanced = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
