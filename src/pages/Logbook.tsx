@@ -74,6 +74,7 @@ interface Species {
   isFavorite?: boolean;
   edibility?: string;
   ageStage?: string;
+  gpsAccuracy?: number;
   facts: {
     icon: string;
     title: string;
@@ -109,6 +110,7 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
     isFavorite: capture.is_favorite || false,
     edibility: capture.edibility,
     ageStage: capture.age_stage,
+    gpsAccuracy: capture.gps_accuracy,
     facts: [
       // Show detailed category for all categories with subcategories
       ...(species?.category && MAIN_CATEGORY_DISPLAY[mainCategory]?.subcategories?.length > 0 ? [{
@@ -205,6 +207,7 @@ const Logbook = () => {
   const [subcategoryFilter, setSubcategoryFilter] = useState<Record<string, string>>({});
   const [showEmptyCategories, setShowEmptyCategories] = useState(true);
   const [edibilityFilter, setEdibilityFilter] = useState<string>("");
+  const [gpsAccuracyFilter, setGpsAccuracyFilter] = useState<string>("");
   const [sharingCapture, setSharingCapture] = useState<{ id: string; image_url: string; species_name: string; scientific_name: string } | null>(null);
   const [recategorizingCapture, setRecategorizingCapture] = useState<{ id: string; category: string; name: string } | null>(null);
   const [showBulkRecategorizeDialog, setShowBulkRecategorizeDialog] = useState(false);
@@ -534,6 +537,22 @@ const Logbook = () => {
         });
       }
 
+      // Apply GPS accuracy filter
+      if (gpsAccuracyFilter) {
+        categorySpecies = categorySpecies.filter(species => {
+          if (!species.gpsAccuracy) return false; // Filter out captures without GPS data
+          
+          if (gpsAccuracyFilter === 'high') {
+            return species.gpsAccuracy <= 50; // High accuracy: ≤50m
+          } else if (gpsAccuracyFilter === 'medium') {
+            return species.gpsAccuracy > 50 && species.gpsAccuracy <= 100; // Medium: 50-100m
+          } else if (gpsAccuracyFilter === 'low') {
+            return species.gpsAccuracy > 100; // Low: >100m
+          }
+          return true;
+        });
+      }
+
       // Apply sorting per category
       const sortBy = categorySortBy[categoryKey] || "date";
       switch (sortBy) {
@@ -541,13 +560,23 @@ const Logbook = () => {
           categorySpecies.sort((a, b) => a.name.localeCompare(b.name, 'sv-SE'));
           break;
         case "rarity":
-          const rarityOrder = { "hotad": 0, "sällsynt": 1, "ovanlig": 2, "vanlig": 3 };
+          // Fuzzy matching for rarity values
+          const getRarityScore = (rarity: string): number => {
+            const r = rarity.toLowerCase();
+            if (r.includes('hotad') || r.includes('critically')) return 0;
+            if (r.includes('mycket sällsynt') || r.includes('extremely rare')) return 1;
+            if (r.includes('sällsynt') || r.includes('rare')) return 2;
+            if (r.includes('ovanlig') || r.includes('uncommon')) return 3;
+            if (r.includes('relativt vanlig') || r.includes('fairly common')) return 4;
+            if (r.includes('vanlig') || r.includes('common')) return 5;
+            return 5; // Default to common
+          };
           categorySpecies.sort((a, b) => {
             const rarityFactA = a.facts.find(f => f.title === "Sällsynthet");
             const rarityFactB = b.facts.find(f => f.title === "Sällsynthet");
-            const rarityA = rarityFactA?.description?.toLowerCase() || "vanlig";
-            const rarityB = rarityFactB?.description?.toLowerCase() || "vanlig";
-            return (rarityOrder[rarityA as keyof typeof rarityOrder] || 3) - (rarityOrder[rarityB as keyof typeof rarityOrder] || 3);
+            const rarityA = rarityFactA?.description || "vanlig";
+            const rarityB = rarityFactB?.description || "vanlig";
+            return getRarityScore(rarityA) - getRarityScore(rarityB);
           });
           break;
         case "location":
@@ -926,7 +955,43 @@ const Logbook = () => {
                             ? Okänd
                           </Button>
                         </div>
-                      )}
+                       )}
+
+                      {/* GPS Accuracy filter - available for all categories */}
+                      <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
+                        <span className="text-sm text-muted-foreground self-center">GPS-noggrannhet:</span>
+                        <Button
+                          variant={!gpsAccuracyFilter ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setGpsAccuracyFilter("")}
+                        >
+                          Alla
+                        </Button>
+                        <Button
+                          variant={gpsAccuracyFilter === "high" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setGpsAccuracyFilter("high")}
+                          className={gpsAccuracyFilter === "high" ? "bg-green-600 hover:bg-green-700" : ""}
+                        >
+                          📍 Hög (≤50m)
+                        </Button>
+                        <Button
+                          variant={gpsAccuracyFilter === "medium" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setGpsAccuracyFilter("medium")}
+                          className={gpsAccuracyFilter === "medium" ? "bg-yellow-600 hover:bg-yellow-700" : ""}
+                        >
+                          📌 Medel (50-100m)
+                        </Button>
+                        <Button
+                          variant={gpsAccuracyFilter === "low" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setGpsAccuracyFilter("low")}
+                          className={gpsAccuracyFilter === "low" ? "bg-red-600 hover:bg-red-700" : ""}
+                        >
+                          📍 Låg (&gt;100m)
+                        </Button>
+                      </div>
 
                       {/* Subcategory filter for categories with subcategories */}
                       {category.subcategories && category.subcategories.length > 0 && (
@@ -995,6 +1060,32 @@ const Logbook = () => {
                     </div>
                   ) : (
                     <>
+                      {/* Empty results feedback when filters are active but no results */}
+                      {category.species.length === 0 && (edibilityFilter || subcategoryFilter[category.key] || gpsAccuracyFilter) && (
+                        <div className="py-8 text-center space-y-2 bg-muted/30 rounded-lg border border-dashed border-muted-foreground/20 mb-4">
+                          <Filter className="h-8 w-8 text-muted-foreground mx-auto opacity-50" />
+                          <p className="text-sm font-medium text-muted-foreground">Inga fångster matchar filtret</p>
+                          <p className="text-xs text-muted-foreground/70">
+                            {edibilityFilter && `Ätlighet: ${edibilityFilter}`}
+                            {subcategoryFilter[category.key] && ` • ${subcategoryFilter[category.key]}`}
+                            {gpsAccuracyFilter && ` • GPS: ${gpsAccuracyFilter === 'high' ? 'Hög' : gpsAccuracyFilter === 'medium' ? 'Medel' : 'Låg'} noggrannhet`}
+                          </p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => {
+                              setEdibilityFilter("");
+                              setSubcategoryFilter(prev => ({...prev, [category.key]: ""}));
+                              setGpsAccuracyFilter("");
+                            }}
+                            className="mt-2"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Rensa filter
+                          </Button>
+                        </div>
+                      )}
+                      
                       <div className="grid grid-cols-2 gap-3">
                         {category.species.slice(0, (categoryPages[category.key] || 1) * 10).map((species) => (
                         <Card 
