@@ -207,6 +207,8 @@ const Logbook = () => {
   const [edibilityFilter, setEdibilityFilter] = useState<string>("");
   const [sharingCapture, setSharingCapture] = useState<{ id: string; image_url: string; species_name: string; scientific_name: string } | null>(null);
   const [recategorizingCapture, setRecategorizingCapture] = useState<{ id: string; category: string; name: string } | null>(null);
+  const [showBulkRecategorizeDialog, setShowBulkRecategorizeDialog] = useState(false);
+  const [bulkRecategoryTarget, setBulkRecategoryTarget] = useState<string>("");
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -285,31 +287,117 @@ const Logbook = () => {
     }
   };
 
-  const handleEditNotes = async (notes: string) => {
+  const handleEditNotes = async (notes: string, newCategory?: string) => {
     if (!editingCapture) return;
 
     try {
-      const { error } = await supabase
-        .from('species_captures')
-        .update({ notes })
-        .eq('id', editingCapture.id);
+      // If category is being changed, update ai_analysis
+      if (newCategory) {
+        const { data: capture, error: fetchError } = await supabase
+          .from('species_captures')
+          .select('ai_analysis')
+          .eq('id', editingCapture.id)
+          .single();
 
-      if (error) throw error;
+        if (fetchError) throw fetchError;
+
+        const currentAnalysis = (capture.ai_analysis || {}) as Record<string, any>;
+        const currentSpecies = (currentAnalysis.species || {}) as Record<string, any>;
+        
+        const updatedAnalysis = {
+          ...currentAnalysis,
+          species: {
+            ...currentSpecies,
+            category: newCategory
+          }
+        };
+
+        const { error } = await supabase
+          .from('species_captures')
+          .update({ notes, ai_analysis: updatedAnalysis })
+          .eq('id', editingCapture.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('species_captures')
+          .update({ notes })
+          .eq('id', editingCapture.id);
+
+        if (error) throw error;
+      }
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       toast({
-        title: "Anteckningar uppdaterade",
-        description: "Dina ändringar har sparats.",
+        title: newCategory ? "Fångst uppdaterad" : "Anteckningar uppdaterade",
+        description: newCategory ? "Kategori och anteckningar har sparats." : "Dina ändringar har sparats.",
       });
     } catch (err) {
-      console.error('Error updating notes:', err);
+      console.error('Error updating capture:', err);
       toast({
-        title: "Kunde inte uppdatera anteckningar",
+        title: "Kunde inte uppdatera",
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
         variant: "destructive",
       });
       throw err;
+    }
+  };
+
+  const handleBulkRecategorize = async () => {
+    if (selectedIds.size === 0 || !bulkRecategoryTarget) return;
+
+    vibrateClick();
+    try {
+      // Update all selected captures
+      const captureIds = Array.from(selectedIds);
+      
+      for (const captureId of captureIds) {
+        const { data: capture, error: fetchError } = await supabase
+          .from('species_captures')
+          .select('ai_analysis')
+          .eq('id', captureId)
+          .single();
+
+        if (fetchError) continue;
+
+        const currentAnalysis = (capture.ai_analysis || {}) as Record<string, any>;
+        const currentSpecies = (currentAnalysis.species || {}) as Record<string, any>;
+        
+        const updatedAnalysis = {
+          ...currentAnalysis,
+          species: {
+            ...currentSpecies,
+            category: bulkRecategoryTarget
+          }
+        };
+
+        await supabase
+          .from('species_captures')
+          .update({ ai_analysis: updatedAnalysis })
+          .eq('id', captureId);
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
+      vibrateSuccess();
+      toast({
+        title: "Fångster omkategoriserade",
+        description: `${selectedIds.size} fångster har flyttats till ny kategori.`,
+      });
+
+      setSelectedIds(new Set());
+      setBulkSelectMode(false);
+      setShowBulkRecategorizeDialog(false);
+      setBulkRecategoryTarget("");
+    } catch (err) {
+      vibrateError();
+      console.error('Error bulk recategorizing:', err);
+      toast({
+        title: "Kunde inte omkategorisera fångster",
+        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+        variant: "destructive",
+      });
     }
   };
 
@@ -586,6 +674,14 @@ const Logbook = () => {
                         onClick={handleDeselectAll}
                       >
                         Avmarkera alla
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowBulkRecategorizeDialog(true)}
+                      >
+                        <Edit2 className="h-4 w-4 mr-1" />
+                        Byt kategori
                       </Button>
                       <Button 
                         variant="destructive" 
@@ -1094,6 +1190,7 @@ const Logbook = () => {
           open={!!editingCapture}
           onOpenChange={(open) => !open && setEditingCapture(null)}
           currentNotes={editingCapture.notes}
+          currentCategory={allSpecies.find(s => s.id === editingCapture.id)?.category}
           onSave={handleEditNotes}
         />
       )}
@@ -1233,6 +1330,55 @@ const Logbook = () => {
           onOpenChange={(open) => !open && setRecategorizingCapture(null)}
         />
       )}
+
+      {/* Bulk Recategorization Dialog */}
+      <AlertDialog open={showBulkRecategorizeDialog} onOpenChange={setShowBulkRecategorizeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ändra kategori för flera fångster</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>
+                Välj ny kategori för <span className="font-semibold">{selectedIds.size}</span> markerade {selectedIds.size === 1 ? 'fångst' : 'fångster'}.
+              </p>
+              <div className="py-2">
+                <Select value={bulkRecategoryTarget} onValueChange={setBulkRecategoryTarget}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Välj kategori..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(MAIN_CATEGORY_DISPLAY) as MainCategoryKey[])
+                      .filter(key => !['favoriter' as MainCategoryKey].includes(key))
+                      .map(key => {
+                        const cat = MAIN_CATEGORY_DISPLAY[key];
+                        if (cat.subcategories && cat.subcategories.length > 0) {
+                          return cat.subcategories.map(sub => (
+                            <SelectItem key={sub} value={sub}>
+                              {cat.icon} {cat.name} → {sub.charAt(0).toUpperCase() + sub.slice(1)}
+                            </SelectItem>
+                          ));
+                        }
+                        return (
+                          <SelectItem key={key} value={key}>
+                            {cat.icon} {cat.name}
+                          </SelectItem>
+                        );
+                      })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setBulkRecategoryTarget("")}>Avbryt</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBulkRecategorize}
+              disabled={!bulkRecategoryTarget}
+            >
+              Uppdatera {selectedIds.size} {selectedIds.size === 1 ? 'fångst' : 'fångster'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
