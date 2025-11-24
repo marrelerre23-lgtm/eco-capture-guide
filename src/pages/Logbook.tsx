@@ -438,6 +438,10 @@ const Logbook = () => {
           break;
       }
 
+      // FIX #2: Calculate original count correctly for subcategory filtering
+      const originalCategoryCount = (speciesByCategory[categoryKey as MainCategoryKey] || []).length;
+      const isSubcategoryActive = hasSubcategories && subcategoryFilter[categoryKey];
+      
       return {
         key: categoryKey,
         name: categoryKey === 'favoriter' ? 'Favoriter' : MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey].name,
@@ -445,9 +449,8 @@ const Logbook = () => {
         count: categorySpecies.length,
         species: categorySpecies,
         subcategories: categoryKey !== 'favoriter' && MAIN_CATEGORY_DISPLAY[categoryKey as MainCategoryKey]?.subcategories || [],
-        originalCount: hasSubcategories && subcategoryFilter[categoryKey]
-          ? (speciesByCategory[categoryKey as MainCategoryKey] || []).length 
-          : categorySpecies.length,
+        originalCount: isSubcategoryActive ? originalCategoryCount : categorySpecies.length,
+        isSubcategoryFiltered: isSubcategoryActive,
         infiniteScroll: {
           displayedItems: categorySpecies.slice(0, 10),
           hasMore: categorySpecies.length > 10,
@@ -683,7 +686,10 @@ const Logbook = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        {category.count}
+                        {category.isSubcategoryFiltered 
+                          ? `${category.count} av ${category.originalCount}`
+                          : category.count
+                        }
                       </Badge>
                       {expandedCategory === category.key ? (
                         <ChevronUp className="h-5 w-5 text-muted-foreground" />
