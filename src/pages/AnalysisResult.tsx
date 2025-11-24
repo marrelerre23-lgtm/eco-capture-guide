@@ -12,6 +12,7 @@ import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy
 import { getGpsGuidanceMessage, getGpsAccuracyColorClass } from "@/utils/gpsGuidance";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
+import { AnalysisResultSkeleton } from "@/components/LoadingSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,12 +40,23 @@ const AnalysisResult = () => {
   const alternatives = location.state?.alternatives as Species[] || [];
   const gpsLocation = location.state?.location as { latitude: number; longitude: number; accuracy?: number } | null;
 
+  // #21: Show skeleton while checking for alternatives
+  const [isInitializing, setIsInitializing] = useState(true);
+
   useEffect(() => {
-    // Redirect to camera if no alternatives data
-    if (!alternatives || alternatives.length === 0) {
-      navigate('/camera');
-    }
+    // Small delay to show skeleton, then check for alternatives
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+      if (!alternatives || alternatives.length === 0) {
+        navigate('/camera');
+      }
+    }, 300);
+    return () => clearTimeout(timer);
   }, [alternatives, navigate]);
+
+  if (isInitializing) {
+    return <AnalysisResultSkeleton />;
+  }
 
   if (!alternatives || alternatives.length === 0) return null;
 
