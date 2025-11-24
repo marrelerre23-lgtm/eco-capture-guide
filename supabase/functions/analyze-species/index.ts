@@ -322,9 +322,23 @@ STENAR & MINERALER:
 - "sten" - för bergarter och stenar
 - "mineral" - för mineraler och kristaller
 
+⚠️⚠️⚠️ KRITISKT VIKTIGT - "SPÅR" KATEGORIN ⚠️⚠️⚠️
 SPÅR OCH ÖVRIGT:
-- "spår" - för fotavtryck, spillning, gnagspår, etc
-- "annat" - för allt som inte passar ovanstående kategorier
+- "spår" - SKA ENDAST användas för:
+  * Fotavtryck i snö, sand, lera (t.ex. älgspår, rävsår)
+  * Djurspillning (t.ex. älgskit, harspillning)
+  * Gnagmärken på träd, grenar, kottar
+  * Bon, ide, bopålar, fågelnästen
+  * Fjädrar, horn, skinn som hittats på marken
+  
+  ❌ ANVÄND ALDRIG "spår" FÖR:
+  * Levande växter (använd rätt växtunderkategori: barrträd, lövträd, buske, klätterväxt, blomma, ört, gräs, mossa, lav)
+  * Levande djur (använd rätt djurkategori: fågel, däggdjur, insekt, etc)
+  * Dött organiskt material som är själva organismen (t.ex. död svamp = "svamp", torrt löv = "lövträd")
+  * Stenar, mineraler eller geologiska formationer
+  * OM OSÄKER: använd "annat", ALDRIG "spår"!
+
+- "annat" - för allt som inte passar ovanstående kategorier (t.ex. okända objekt, konstgjorda föremål, etc)
 
 PRIORITERINGSREGLER - FÖLJ DESSA STRIKT:
 1. KLÄTTERVÄXTER (murgröna, humle, vinranka) = "klätterväxt", ALDRIG "blomma" eller "ört"!
@@ -423,6 +437,7 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
         const category = alt.species?.category?.toLowerCase()?.trim();
         const commonName = alt.species?.commonName?.toLowerCase() || '';
         const description = alt.species?.description?.toLowerCase() || '';
+        const scientificName = alt.species?.scientificName?.toLowerCase() || '';
         
         // POST-PROCESSING FIX #1: Auto-correct climbing plants misclassified as flowers/herbs
         const isClimbingPlant = commonName.includes('murgröna') || 
@@ -435,11 +450,84 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
         if (isClimbingPlant && (category === 'blomma' || category === 'ört')) {
           console.warn(`🔧 AUTO-KORRIGERING: "${commonName}" från "${category}" → "klätterväxt"`);
           alt.species.category = 'klätterväxt';
-        } else if (!category || !VALID_SUBCATEGORIES.includes(category)) {
+        }
+        
+        // POST-PROCESSING FIX #2: Auto-correct known species misclassified as "spår"
+        // This prevents common plants/trees from being incorrectly categorized as traces
+        if (category === 'spår') {
+          const knownSpecies: Record<string, string> = {
+            // Barrträd
+            'picea abies': 'barrträd',
+            'picea': 'barrträd',
+            'pinus sylvestris': 'barrträd',
+            'pinus': 'barrträd',
+            'tall': 'barrträd',
+            'gran': 'barrträd',
+            
+            // Lövträd
+            'betula pendula': 'lövträd',
+            'betula pubescens': 'lövträd',
+            'betula': 'lövträd',
+            'björk': 'lövträd',
+            'aesculus hippocastanum': 'lövträd',
+            'kastanj': 'lövträd',
+            'acer': 'lövträd',
+            'lönn': 'lövträd',
+            'quercus': 'lövträd',
+            'ek': 'lövträd',
+            
+            // Buskar
+            'calluna vulgaris': 'buske',
+            'calluna': 'buske',
+            'ljung': 'buske',
+            'vaccinium myrtillus': 'buske',
+            'blåbär': 'buske',
+            'symphoricarpos albus': 'buske',
+            'snöbär': 'buske',
+            'chamaedorea': 'buske',
+            'rosa': 'buske',
+            'ros': 'buske',
+            
+            // Blommor/Örter
+            'taraxacum': 'blomma',
+            'maskros': 'blomma',
+            'plantago major': 'ört',
+            'groblad': 'ört',
+            'artemisia vulgaris': 'ört',
+            'gråbo': 'ört',
+            'hylotelephium spectabile': 'blomma',
+            'kärleksört': 'blomma',
+            'trifolium': 'blomma',
+            'klöver': 'blomma',
+            'ranunculus': 'blomma',
+            'smörblomma': 'blomma',
+            
+            // Gräs
+            'dactylis glomerata': 'gräs',
+            'hundäxing': 'gräs',
+            'poa': 'gräs',
+            'gröe': 'gräs'
+          };
+          
+          // Check both scientific and common name
+          let correctedCategory: string | null = null;
+          for (const [species, correctCat] of Object.entries(knownSpecies)) {
+            if (scientificName.includes(species) || commonName.includes(species)) {
+              correctedCategory = correctCat;
+              console.warn(`🔧 AUTO-KORRIGERING: "${alt.species.commonName}" från "spår" → "${correctCat}" (matchade: ${species})`);
+              break;
+            }
+          }
+          
+          if (correctedCategory) {
+            alt.species.category = correctedCategory;
+          }
+        }
+        
+        // Final validation: if still invalid category, use "annat"
+        if (!category || !VALID_SUBCATEGORIES.includes(alt.species.category)) {
           console.warn(`Ogiltig kategori från AI: "${category}", använder "annat"`);
           alt.species.category = 'annat';
-        } else {
-          alt.species.category = category;
         }
         
         // Set default confidence if missing or invalid
