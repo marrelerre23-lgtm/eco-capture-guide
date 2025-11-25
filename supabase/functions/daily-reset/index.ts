@@ -35,13 +35,15 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Reset analyses_today AND rewarded_analyses_today to 0 for all users
+    // FIX #13: Reset based on UTC date, but check_user_limits handles timezone-aware resets
+    // This cron runs at midnight UTC as a cleanup, but the actual daily reset logic 
+    // happens in check_user_limits when comparing last_analysis_date with CURRENT_DATE
     const { data, error } = await supabaseClient
       .from('profiles')
       .update({ 
         analyses_today: 0,
         rewarded_analyses_today: 0,
-        last_analysis_date: new Date().toISOString().split('T')[0] // Today's date
+        last_analysis_date: new Date().toISOString().split('T')[0] // Today's date in UTC
       })
       .or('analyses_today.neq.0,rewarded_analyses_today.neq.0'); // Only update users who have used analyses or have rewards
 
