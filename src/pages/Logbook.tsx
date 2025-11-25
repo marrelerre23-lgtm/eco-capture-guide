@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Loader2, AlertCircle, AlertTriangle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2, Flag } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, AlertCircle, AlertTriangle, SortAsc, Star, Search, Download, Edit2, Trash2, Info, Filter, X, Share2, Flag, MoreVertical } from "lucide-react";
 import { SpeciesModal } from "@/components/SpeciesModal";
 import { useSpeciesCaptures, type ParsedSpeciesCapture } from "@/hooks/useSpeciesCaptures";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy
 import { LogbookSkeleton } from "@/components/LoadingSkeleton";
 import { ShareDialog } from "@/components/ShareDialog";
 import { RecategorizationDialog } from "@/components/RecategorizationDialog";
+import { FilterDrawer } from "@/components/FilterDrawer";
 import { 
   getMainCategory, 
   getCategoryDisplayName, 
@@ -212,6 +213,7 @@ const Logbook = () => {
   const [recategorizingCapture, setRecategorizingCapture] = useState<{ id: string; category: string; name: string } | null>(null);
   const [showBulkRecategorizeDialog, setShowBulkRecategorizeDialog] = useState(false);
   const [bulkRecategoryTarget, setBulkRecategoryTarget] = useState<string>("");
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -686,6 +688,51 @@ const Logbook = () => {
     : 0;
   const showMiscategorizationWarning = sparOvrigtPercentage > 0.3 && allSpecies.length >= 5;
 
+  // Count active filters
+  const activeFilterCount = [
+    edibilityFilter,
+    gpsAccuracyFilter,
+    ...Object.values(subcategoryFilter).filter(v => v)
+  ].filter(Boolean).length;
+
+  // Get active filter chips data
+  const activeFilters = [
+    ...(edibilityFilter ? [{ label: `Ätlighet: ${edibilityFilter}`, onRemove: () => setEdibilityFilter("") }] : []),
+    ...(gpsAccuracyFilter ? [{ 
+      label: `GPS: ${gpsAccuracyFilter === 'high' ? 'Hög' : gpsAccuracyFilter === 'medium' ? 'Medel' : 'Låg'}`, 
+      onRemove: () => setGpsAccuracyFilter("") 
+    }] : []),
+    ...Object.entries(subcategoryFilter).filter(([_, v]) => v).map(([cat, val]) => ({
+      label: `${cat}: ${val}`,
+      onRemove: () => setSubcategoryFilter(prev => ({...prev, [cat]: ""}))
+    }))
+  ];
+
+  const handleClearAllFilters = () => {
+    setEdibilityFilter("");
+    setGpsAccuracyFilter("");
+    setSubcategoryFilter({});
+  };
+
+  // Get available subcategories for FilterDrawer
+  const availableSubcategories = categorizedSpecies
+    .filter(cat => cat.subcategories && cat.subcategories.length > 0)
+    .map(cat => ({
+      category: cat.name,
+      subcategories: cat.subcategories || [],
+      counts: (cat.subcategories || []).reduce((acc, subcat) => {
+        const subcatLower = subcat.toLowerCase();
+        const count = allSpecies.filter(s => {
+          const mainCat = mapToCategory(s.category);
+          if (mainCat !== cat.key) return false;
+          const detailedCategoryFact = s.facts.find(f => f.title === "Detaljerad kategori");
+          return detailedCategoryFact?.description.toLowerCase() === subcatLower;
+        }).length;
+        acc[subcat] = count;
+        return acc;
+      }, {} as Record<string, number>)
+    }));
+
   return (
     <div className="min-h-screen bg-background pb-20 pt-16">
       <div className="p-4 space-y-4">
@@ -702,6 +749,24 @@ const Logbook = () => {
               </p>
             </div>
             <div className="flex gap-2">
+              {/* Filter button with badge */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFilterDrawerOpen(true)}
+                className="relative"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+                {activeFilterCount > 0 && (
+                  <Badge 
+                    variant="default" 
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                  >
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
               {bulkSelectMode && (
                 <>
                   {selectedIds.size > 0 && (
@@ -791,6 +856,35 @@ const Logbook = () => {
             />
           </div>
 
+          {/* Active Filter Chips */}
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2 items-center">
+              {activeFilters.map((filter, index) => (
+                <Badge 
+                  key={index}
+                  variant="secondary"
+                  className="gap-1 pr-1"
+                >
+                  {filter.label}
+                  <button
+                    onClick={filter.onRemove}
+                    className="ml-1 rounded-full hover:bg-muted p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAllFilters}
+                className="h-6 text-xs"
+              >
+                Rensa alla
+              </Button>
+            </div>
+          )}
+
           {/* Show empty categories toggle */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -827,13 +921,13 @@ const Logbook = () => {
         {/* Categories */}
         <div className="space-y-3">
           {categorizedSpecies.map((category) => (
-            <div key={category.key}>
+            <div key={category.key} className="transition-all duration-300 ease-in-out">
               {/* Category Header */}
               <Card 
-                className={`shadow-card transition-shadow ${
+                className={`shadow-card transition-all duration-200 ${
                   category.count === 0 
                     ? 'opacity-60 cursor-not-allowed' 
-                    : 'cursor-pointer hover:shadow-eco'
+                    : 'cursor-pointer hover:shadow-eco hover:scale-[1.01]'
                 }`}
                 onClick={() => category.count > 0 && toggleCategory(category.key)}
               >
@@ -908,142 +1002,24 @@ const Logbook = () => {
                     </div>
                   </div>
                   
-                  {/* Category filters and sorting controls - shown when expanded */}
-                  {expandedCategory === category.key && (
-                    <div className="mt-3 pt-3 border-t border-border space-y-3" onClick={(e) => e.stopPropagation()}>
-                      {/* Edibility filter for mushrooms */}
-                      {/* Edibility filter for relevant categories */}
-                      {(['svampar', 'örter-blommor', 'träd-vedartade'] as string[]).includes(category.key) && (
-                        <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
-                          <span className="text-sm text-muted-foreground self-center">Ätlighet:</span>
-                          <Button
-                            variant={!edibilityFilter ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setEdibilityFilter("")}
-                          >
-                            Alla
-                          </Button>
-                          <Button
-                            variant={edibilityFilter === "ätlig" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setEdibilityFilter("ätlig")}
-                            className={edibilityFilter === "ätlig" ? "bg-green-600 hover:bg-green-700" : ""}
-                          >
-                            ✓ Ätlig
-                          </Button>
-                          <Button
-                            variant={edibilityFilter === "giftig" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setEdibilityFilter("giftig")}
-                            className={edibilityFilter === "giftig" ? "bg-red-600 hover:bg-red-700" : ""}
-                          >
-                            ⚠ Giftig
-                          </Button>
-                          <Button
-                            variant={edibilityFilter === "inte-ätlig" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setEdibilityFilter("inte-ätlig")}
-                            className={edibilityFilter === "inte-ätlig" ? "bg-gray-600 hover:bg-gray-700" : ""}
-                          >
-                            ⊘ Inte ätlig
-                          </Button>
-                          <Button
-                            variant={edibilityFilter === "okänd" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setEdibilityFilter("okänd")}
-                          >
-                            ? Okänd
-                          </Button>
-                        </div>
-                       )}
-
-                      {/* GPS Accuracy filter - available for all categories */}
-                      <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
-                        <span className="text-sm text-muted-foreground self-center">GPS-noggrannhet:</span>
-                        <Button
-                          variant={!gpsAccuracyFilter ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setGpsAccuracyFilter("")}
-                        >
-                          Alla
-                        </Button>
-                        <Button
-                          variant={gpsAccuracyFilter === "high" ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setGpsAccuracyFilter("high")}
-                          className={gpsAccuracyFilter === "high" ? "bg-green-600 hover:bg-green-700" : ""}
-                        >
-                          📍 Hög (≤50m)
-                        </Button>
-                        <Button
-                          variant={gpsAccuracyFilter === "medium" ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setGpsAccuracyFilter("medium")}
-                          className={gpsAccuracyFilter === "medium" ? "bg-yellow-600 hover:bg-yellow-700" : ""}
-                        >
-                          📌 Medel (50-100m)
-                        </Button>
-                        <Button
-                          variant={gpsAccuracyFilter === "low" ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setGpsAccuracyFilter("low")}
-                          className={gpsAccuracyFilter === "low" ? "bg-red-600 hover:bg-red-700" : ""}
-                        >
-                          📍 Låg (&gt;100m)
-                        </Button>
-                      </div>
-
-                      {/* Subcategory filter for categories with subcategories */}
-                      {category.subcategories && category.subcategories.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant={!subcategoryFilter[category.key] ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSubcategoryFilter(prev => ({...prev, [category.key]: ""}))}
-                          >
-                            Alla ({(category as any).originalCount || category.count})
-                          </Button>
-                          {category.subcategories.map(subcat => {
-                            const subcatLower = subcat.toLowerCase();
-                            // Use the original unfiltered category species for accurate counts
-                            const categoryAllSpecies = (category as any).speciesByCategory?.[category.key as MainCategoryKey] || category.species;
-                            const subcatCount = categoryAllSpecies.filter((s: Species) => {
-                              const detailedCategoryFact = s.facts.find(f => f.title === "Detaljerad kategori");
-                              return detailedCategoryFact?.description.toLowerCase() === subcatLower;
-                            }).length;
-                            
-                            return (
-                              <Button
-                                key={subcat}
-                                variant={subcategoryFilter[category.key] === subcat ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSubcategoryFilter(prev => ({...prev, [category.key]: subcat}))}
-                              >
-                                {subcat} ({subcatCount})
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      )}
-                      
-                      {/* Sorting controls */}
-                      {category.species.length > 0 && (
-                        <Select 
-                          value={categorySortBy[category.key] || "date"} 
-                          onValueChange={(value) => setCategorySortBy(prev => ({...prev, [category.key]: value}))}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SortAsc className="h-4 w-4 mr-2" />
-                            <SelectValue placeholder="Sortera" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="date">Senaste först</SelectItem>
-                            <SelectItem value="name">Artnamn A-Ö</SelectItem>
-                            <SelectItem value="rarity">Sällsynthet</SelectItem>
-                            <SelectItem value="location">Plats</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
+                  {/* Sorting controls - shown when expanded */}
+                  {expandedCategory === category.key && category.species.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
+                      <Select 
+                        value={categorySortBy[category.key] || "date"} 
+                        onValueChange={(value) => setCategorySortBy(prev => ({...prev, [category.key]: value}))}
+                      >
+                        <SelectTrigger className="w-40">
+                          <SortAsc className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Sortera" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="date">Senaste först</SelectItem>
+                          <SelectItem value="name">Artnamn A-Ö</SelectItem>
+                          <SelectItem value="rarity">Sällsynthet</SelectItem>
+                          <SelectItem value="location">Plats</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                 </CardContent>
@@ -1051,7 +1027,7 @@ const Logbook = () => {
 
               {/* Species Grid */}
               {expandedCategory === category.key && (
-                <div className="mt-3">
+                <div className="mt-3 animate-fade-in">
                   {category.species.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <div className="text-3xl mb-2">{category.icon}</div>
@@ -1090,7 +1066,7 @@ const Logbook = () => {
                         {category.species.slice(0, (categoryPages[category.key] || 1) * 10).map((species) => (
                         <Card 
                           key={species.id}
-                          className="shadow-card hover:shadow-eco transition-all overflow-hidden group"
+                          className="shadow-card hover:shadow-eco transition-all overflow-hidden"
                         >
                           <CardContent className="p-0">
                              <div 
@@ -1100,10 +1076,8 @@ const Logbook = () => {
                               <LazyImage 
                                 src={species.image}
                                 alt={species.name}
-                                className="w-full h-full"
+                                className="w-full h-full object-cover"
                               />
-                              {/* Gradient overlay */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               
                               {/* Bulk select checkbox */}
                               {bulkSelectMode && (
@@ -1132,69 +1106,76 @@ const Logbook = () => {
                                   />
                                 </button>
                               )}
-                              
-                              {/* Edit button */}
-                              {!bulkSelectMode && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingCapture({ id: species.id, notes: species.notes || "" });
-                                  }}
-                                  className="absolute bottom-12 right-2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
-                                >
-                                  <Edit2 className="h-4 w-4 text-white" />
-                                </button>
-                              )}
 
-                              {/* Share button */}
+                              {/* Actions dropdown menu */}
                               {!bulkSelectMode && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const capture = captures?.find(c => c.id === species.id);
-                                    if (capture) {
-                                      setSharingCapture({
-                                        id: capture.id,
-                                        image_url: capture.image_url,
-                                        species_name: capture.ai_analysis?.species?.commonName || "Okänd art",
-                                        scientific_name: capture.ai_analysis?.species?.scientificName || "Okänd"
-                                      });
-                                    }
-                                  }}
-                                  className="absolute bottom-12 right-14 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
-                                >
-                                  <Share2 className="h-4 w-4 text-white" />
-                                </button>
-                              )}
-
-                              {/* Recategorize button - only for "Spår och Övrigt" category */}
-                              {!bulkSelectMode && category.key === 'spår-övrigt' && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const capture = captures?.find(c => c.id === species.id);
-                                    if (capture) {
-                                      const detailedCategoryFact = species.facts.find(f => f.title === "Detaljerad kategori");
-                                      setRecategorizingCapture({
-                                        id: capture.id,
-                                        category: detailedCategoryFact?.description || "spår",
-                                        name: species.name
-                                      });
-                                    }
-                                  }}
-                                  className="absolute bottom-12 right-26 z-10 p-2 rounded-full bg-orange-500/80 hover:bg-orange-600/90 backdrop-blur-sm transition-all"
-                                  title="Rapportera felkategorisering"
-                                >
-                                  <Flag className="h-4 w-4 text-white" />
-                                </button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                      className="absolute bottom-2 right-2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm transition-all"
+                                    >
+                                      <MoreVertical className="h-4 w-4 text-white" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingCapture({ id: species.id, notes: species.notes || "" });
+                                      }}
+                                    >
+                                      <Edit2 className="h-4 w-4 mr-2" />
+                                      Redigera anteckningar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const capture = captures?.find(c => c.id === species.id);
+                                        if (capture) {
+                                          setSharingCapture({
+                                            id: capture.id,
+                                            image_url: capture.image_url,
+                                            species_name: capture.ai_analysis?.species?.commonName || "Okänd art",
+                                            scientific_name: capture.ai_analysis?.species?.scientificName || "Okänd"
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <Share2 className="h-4 w-4 mr-2" />
+                                      Dela
+                                    </DropdownMenuItem>
+                                    {category.key === 'spår-övrigt' && (
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const capture = captures?.find(c => c.id === species.id);
+                                          if (capture) {
+                                            const detailedCategoryFact = species.facts.find(f => f.title === "Detaljerad kategori");
+                                            setRecategorizingCapture({
+                                              id: capture.id,
+                                              category: detailedCategoryFact?.description || "spår",
+                                              name: species.name
+                                            });
+                                          }
+                                        }}
+                                      >
+                                        <Flag className="h-4 w-4 mr-2" />
+                                        Rapportera felkategorisering
+                                      </DropdownMenuItem>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               )}
                               
                               {/* Edibility and Age/Stage badges */}
                               <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                              {species.edibility && (
+                                {species.edibility && (
                                   <Badge 
                                     variant="outline"
-                                    className={`
+                                    className={`text-xs
                                       ${species.edibility === 'ätlig' 
                                         ? 'bg-green-500/90 text-white border-green-600' 
                                         : species.edibility === 'ätlig-med-förbehåll'
@@ -1210,11 +1191,11 @@ const Logbook = () => {
                                     {species.edibility === 'ätlig' 
                                       ? '✓ Ätlig' 
                                       : species.edibility === 'ätlig-med-förbehåll'
-                                      ? '⚠ Ätlig m. förbehåll'
+                                      ? '⚠ Förbehåll'
                                       : species.edibility === 'giftig'
                                       ? '☠ Giftig'
                                       : species.edibility === 'inte-ätlig'
-                                      ? '⊘ Inte ätlig'
+                                      ? '⊘ Ej ätlig'
                                       : '? Okänd'
                                     }
                                   </Badge>
@@ -1228,18 +1209,22 @@ const Logbook = () => {
                                   </Badge>
                                 )}
                               </div>
+                            </div>
 
-                              {/* Text overlay */}
-                              <div 
-                                className="absolute bottom-0 left-0 right-0 p-3 text-white"
-                              >
-                                <h4 className="font-semibold text-sm leading-tight mb-0.5">
-                                  {species.name}
-                                </h4>
-                                <p className="text-xs italic opacity-90">
-                                  {species.scientificName}
+                            {/* Species info below image */}
+                            <div className="p-3 space-y-1">
+                              <h4 className="font-semibold text-sm leading-tight line-clamp-1">
+                                {species.name}
+                              </h4>
+                              <p className="text-xs italic text-muted-foreground line-clamp-1">
+                                {species.scientificName}
+                              </p>
+                              {species.location && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <span>📍</span>
+                                  <span className="line-clamp-1">{species.location}</span>
                                 </p>
-                              </div>
+                              )}
                             </div>
                           </CardContent>
                         </Card>
@@ -1495,6 +1480,25 @@ const Logbook = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Filter Drawer */}
+      <FilterDrawer
+        open={filterDrawerOpen}
+        onOpenChange={setFilterDrawerOpen}
+        edibilityFilter={edibilityFilter}
+        onEdibilityChange={setEdibilityFilter}
+        showEdibilityFilter={categorizedSpecies.some(cat => 
+          ['svampar', 'örter-blommor', 'träd-vedartade'].includes(cat.key)
+        )}
+        gpsAccuracyFilter={gpsAccuracyFilter}
+        onGpsAccuracyChange={setGpsAccuracyFilter}
+        subcategoryFilter={subcategoryFilter}
+        onSubcategoryChange={(cat, val) => {
+          setSubcategoryFilter(prev => ({...prev, [cat]: val}));
+        }}
+        availableSubcategories={availableSubcategories}
+        onClearAll={handleClearAllFilters}
+      />
     </div>
   );
 };
