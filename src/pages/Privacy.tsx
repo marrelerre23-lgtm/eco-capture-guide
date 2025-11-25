@@ -53,7 +53,7 @@ const Privacy = () => {
             <p className="text-sm">
               Kontaktuppgifter:<br />
               E-post: info@svampjakten.se<br />
-              Organisationsnummer: [Lägg till organisationsnummer]
+              Organisationsnummer: Privatperson - enskild firma
             </p>
           </CardContent>
         </Card>
