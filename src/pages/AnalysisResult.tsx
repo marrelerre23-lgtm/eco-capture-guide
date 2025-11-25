@@ -13,6 +13,8 @@ import { getGpsGuidanceMessage, getGpsAccuracyColorClass } from "@/utils/gpsGuid
 import { useSubscription } from "@/hooks/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnalysisResultSkeleton } from "@/components/LoadingSkeleton";
+import { useAchievements } from "@/hooks/useAchievements";
+import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +37,8 @@ const AnalysisResult = () => {
   const [reportingError, setReportingError] = useState(false);
   const [imageZoomed, setImageZoomed] = useState(false);
   const { checkCanCapture } = useSubscription();
+  const { checkAndUnlockAchievements } = useAchievements();
+  const { data: allCaptures } = useSpeciesCaptures();
 
   // Get alternatives data and location from navigation state
   const alternatives = location.state?.alternatives as Species[] || [];
@@ -223,6 +227,46 @@ const AnalysisResult = () => {
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['species-captures'] });
       await queryClient.invalidateQueries({ queryKey: ['subscription'] });
+
+      // Check and unlock achievements
+      const updatedCaptures = [...(allCaptures || [])];
+      const uniqueSpecies = new Set(updatedCaptures.map(c => c.ai_analysis?.species?.commonName).filter(Boolean)).size;
+      const rareFinds = updatedCaptures.filter(c => {
+        const rarity = c.ai_analysis?.species?.rarity?.toLowerCase();
+        return rarity && (rarity.includes('sällsynt') || rarity.includes('ovanlig') || rarity.includes('rare'));
+      }).length;
+      const uniqueLocations = new Set(
+        updatedCaptures.map(c => {
+          if (c.latitude && c.longitude) {
+            return `${Math.round(c.latitude * 1000) / 1000},${Math.round(c.longitude * 1000) / 1000}`;
+          }
+          return c.location_name;
+        }).filter(Boolean)
+      ).size;
+      const favoriteCount = updatedCaptures.filter(c => c.is_favorite).length;
+      const mushroomCount = updatedCaptures.filter(c => {
+        const cat = c.ai_analysis?.species?.category?.toLowerCase();
+        return cat?.includes('svamp');
+      }).length;
+      const treeCount = updatedCaptures.filter(c => {
+        const cat = c.ai_analysis?.species?.category?.toLowerCase();
+        return cat?.includes('träd') || cat?.includes('buske');
+      }).length;
+      const plantCount = updatedCaptures.filter(c => {
+        const cat = c.ai_analysis?.species?.category?.toLowerCase();
+        return cat?.includes('ört') || cat?.includes('blomm') || cat?.includes('växt');
+      }).length;
+
+      await checkAndUnlockAchievements({
+        totalCaptures: updatedCaptures.length,
+        uniqueSpecies,
+        rareFinds,
+        uniqueLocations,
+        favoriteCount,
+        mushroomCount,
+        treeCount,
+        plantCount,
+      });
 
       toast({
         title: "Fångst sparad!",

@@ -356,7 +356,23 @@ const ProfileEnhanced = () => {
                 const userAchievement = userAchievements.find(
                   ua => (ua.achievement as any)?.id === achievement.id
                 );
-                const progress = getProgress(achievement.key, stats.total);
+                
+                // Map achievement key to correct stat
+                let currentValue = 0;
+                if (achievement.key.includes('capture')) {
+                  currentValue = stats.total;
+                } else if (achievement.key === 'first_rare') {
+                  currentValue = stats.rare;
+                } else if (achievement.key === 'favorite_collector') {
+                  currentValue = stats.favorites;
+                } else if (achievement.key === 'explorer') {
+                  // This would need location count - using total as fallback
+                  currentValue = stats.total;
+                } else {
+                  currentValue = stats.total;
+                }
+                
+                const progress = getProgress(achievement.key, currentValue);
 
                 return (
                   <AchievementBadge

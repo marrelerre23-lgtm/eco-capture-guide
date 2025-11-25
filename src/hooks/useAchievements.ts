@@ -111,10 +111,52 @@ export const useAchievements = () => {
     return Math.min(100, (currentValue / achievement.requirement_value) * 100);
   };
 
+  // Check and unlock achievements based on user stats
+  const checkAndUnlockAchievements = async (stats: {
+    totalCaptures: number;
+    uniqueSpecies: number;
+    rareFinds: number;
+    uniqueLocations: number;
+    favoriteCount: number;
+    mushroomCount: number;
+    treeCount: number;
+    plantCount: number;
+  }) => {
+    if (!achievements || !userAchievements) return;
+
+    const achievementChecks = [
+      { key: 'first_capture', value: stats.totalCaptures, min: 1 },
+      { key: '10_captures', value: stats.totalCaptures, min: 10 },
+      { key: '25_captures', value: stats.totalCaptures, min: 25 },
+      { key: '50_captures', value: stats.totalCaptures, min: 50 },
+      { key: '100_captures', value: stats.totalCaptures, min: 100 },
+      { key: 'first_rare', value: stats.rareFinds, min: 1 },
+      { key: 'explorer', value: stats.uniqueLocations, min: 5 },
+      { key: 'favorite_collector', value: stats.favoriteCount, min: 10 },
+      { key: 'mushroom_hunter', value: stats.mushroomCount, min: 5 },
+      { key: 'tree_hugger', value: stats.treeCount, min: 5 },
+      { key: 'botanist', value: stats.plantCount, min: 10 },
+    ];
+
+    for (const check of achievementChecks) {
+      const achievement = achievements.find(a => a.key === check.key);
+      if (!achievement) continue;
+
+      const alreadyUnlocked = userAchievements.some(
+        ua => (ua.achievement as any)?.key === check.key
+      );
+
+      if (!alreadyUnlocked && check.value >= check.min) {
+        unlockMutation.mutate(achievement.id);
+      }
+    }
+  };
+
   return {
     achievements: achievements || [],
     userAchievements: userAchievements || [],
     unlockAchievement: unlockMutation.mutate,
+    checkAndUnlockAchievements,
     hasAchievement,
     getProgress,
     unlockedCount: userAchievements?.length || 0,
