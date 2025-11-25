@@ -100,6 +100,27 @@ const App = () => {
     });
   }, []);
 
+  // Auth state listener - refetch data on login/logout
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[App] Auth state changed:', event);
+      
+      if (event === 'SIGNED_IN') {
+        console.log('[App] User signed in, invalidating queries');
+        // Invalidate all queries to force refetch
+        queryClient.invalidateQueries();
+      } else if (event === 'SIGNED_OUT') {
+        console.log('[App] User signed out, clearing queries');
+        // Clear all queries
+        queryClient.clear();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   useEffect(() => {
     // Check if user has completed onboarding
     if (!hasCompletedOnboarding()) {
