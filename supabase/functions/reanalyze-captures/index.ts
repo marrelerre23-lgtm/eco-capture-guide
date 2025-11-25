@@ -7,11 +7,17 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🚀 [Reanalyze] Edge function invoked!');
+  console.log('📋 [Reanalyze] Request method:', req.method);
+  console.log('📋 [Reanalyze] Request headers:', Object.fromEntries(req.headers.entries()));
+
   if (req.method === 'OPTIONS') {
+    console.log('✅ [Reanalyze] Handling CORS preflight');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('🔐 [Reanalyze] Creating Supabase admin client...');
     // Create admin Supabase client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -20,7 +26,10 @@ serve(async (req) => {
 
     // Get user from auth header
     const authHeader = req.headers.get('Authorization');
+    console.log('🔐 [Reanalyze] Auth header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.error('❌ [Reanalyze] No authorization header');
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -28,18 +37,22 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('🔐 [Reanalyze] Validating user token...');
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('❌ [Reanalyze] Invalid token:', userError);
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Starting re-analysis for user ${user.id}`);
+    console.log(`✅ [Reanalyze] User authenticated: ${user.id}`);
+    console.log(`📊 [Reanalyze] Starting re-analysis for user ${user.id}`);
 
     // Get all captures for this user that are missing edibility or age_stage
+    console.log('🔍 [Reanalyze] Fetching captures with missing data...');
     const { data: captures, error: capturesError } = await supabaseAdmin
       .from('species_captures')
       .select('id, image_url, ai_analysis, edibility, age_stage')
@@ -47,7 +60,7 @@ serve(async (req) => {
       .or('edibility.is.null,age_stage.is.null,edibility.eq.okänd,age_stage.eq.okänd');
 
     if (capturesError) {
-      console.error('Error fetching captures:', capturesError);
+      console.error('❌ [Reanalyze] Error fetching captures:', capturesError);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch captures' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -55,6 +68,7 @@ serve(async (req) => {
     }
 
     if (!captures || captures.length === 0) {
+      console.log('ℹ️ [Reanalyze] No captures need re-analysis');
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -65,7 +79,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Found ${captures.length} captures to re-analyze`);
+    console.log(`📊 [Reanalyze] Found ${captures.length} captures to re-analyze`);
 
     let updated = 0;
     let failed = 0;
@@ -74,7 +88,7 @@ serve(async (req) => {
     // Re-analyze each capture using SERVICE_ROLE for auth
     for (const capture of captures) {
       try {
-        console.log(`Re-analyzing capture ${capture.id}...`);
+        console.log(`🔄 [Reanalyze] Processing capture ${capture.id}...`);
         
         // Call analyze-species with SERVICE_ROLE auth
         const analyzeResponse = await fetch(
@@ -91,19 +105,19 @@ serve(async (req) => {
 
         if (!analyzeResponse.ok) {
           const errorText = await analyzeResponse.text();
-          console.error(`Failed to analyze capture ${capture.id}:`, errorText);
+          console.error(`❌ [Reanalyze] Failed to analyze capture ${capture.id}:`, errorText);
           errors.push(`${capture.id}: ${errorText}`);
           failed++;
           continue;
         }
 
         const analysisData = await analyzeResponse.json();
-        console.log(`Analysis result for ${capture.id}:`, JSON.stringify(analysisData, null, 2));
+        console.log(`📊 [Reanalyze] Analysis result for ${capture.id}:`, JSON.stringify(analysisData, null, 2));
         
         // Extract edibility and age_stage from the first alternative
         const species = analysisData?.alternatives?.[0]?.species;
         if (!species) {
-          console.error(`No species data in analysis for ${capture.id}`);
+          console.error(`❌ [Reanalyze] No species data in analysis for ${capture.id}`);
           failed++;
           continue;
         }
@@ -111,7 +125,7 @@ serve(async (req) => {
         const edibility = species.edibility || 'okänd';
         const ageStage = species.ageStage || 'okänd';
 
-        console.log(`Updating ${capture.id} with edibility: ${edibility}, ageStage: ${ageStage}`);
+        console.log(`💾 [Reanalyze] Updating ${capture.id} with edibility: ${edibility}, ageStage: ${ageStage}`);
 
         // Update the capture with new data
         const { error: updateError } = await supabaseAdmin
@@ -125,26 +139,26 @@ serve(async (req) => {
           .eq('id', capture.id);
 
         if (updateError) {
-          console.error(`Failed to update capture ${capture.id}:`, updateError);
+          console.error(`❌ [Reanalyze] Failed to update capture ${capture.id}:`, updateError);
           errors.push(`${capture.id}: ${updateError.message}`);
           failed++;
         } else {
           updated++;
-          console.log(`✅ Successfully updated capture ${capture.id}`);
+          console.log(`✅ [Reanalyze] Successfully updated capture ${capture.id}`);
         }
 
         // Add delay to avoid rate limiting (2 seconds between calls)
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (err) {
-        console.error(`Error processing capture ${capture.id}:`, err);
+        console.error(`❌ [Reanalyze] Error processing capture ${capture.id}:`, err);
         errors.push(`${capture.id}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         failed++;
       }
     }
 
-    console.log(`Re-analysis complete: ${updated} updated, ${failed} failed`);
+    console.log(`🎉 [Reanalyze] Re-analysis complete: ${updated} updated, ${failed} failed`);
     if (errors.length > 0) {
-      console.error('Errors:', errors);
+      console.error('❌ [Reanalyze] Errors:', errors);
     }
 
     return new Response(
@@ -162,7 +176,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('💥 [Reanalyze] Unexpected error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
