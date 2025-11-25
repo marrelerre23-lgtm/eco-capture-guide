@@ -146,15 +146,14 @@ export const SubscriptionBanner = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Analyser idag</span>
-              {/* FIX #7: Show breakdown directly for users with rewarded bonuses */}
-              {/* #23: Animated counter for real-time updates */}
+              {/* FIX #4: Clarify base vs rewarded analyses */}
               <span className="font-medium">
                 <AnimatedCounter value={subscription.analysesToday} />
                 {' / '}
-                <AnimatedCounter value={subscription.maxAnalysesPerDay + (subscription.rewardedAnalysesToday || 0)} />
+                <AnimatedCounter value={subscription.maxAnalysesPerDay} />
                 {subscription.rewardedAnalysesToday > 0 && (
-                  <span className="text-xs text-warning ml-1">
-                    ({subscription.maxAnalysesPerDay} + <AnimatedCounter value={subscription.rewardedAnalysesToday} /> ★)
+                  <span className="text-xs text-accent ml-1">
+                    ({subscription.baseMaxAnalysesPerDay} + <AnimatedCounter value={subscription.rewardedAnalysesToday} /> bonus ★)
                   </span>
                 )}
               </span>
