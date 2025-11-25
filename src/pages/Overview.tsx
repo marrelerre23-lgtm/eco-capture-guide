@@ -56,16 +56,23 @@ const Overview = () => {
       );
     });
 
-    // Calculate unique locations (improved logic)
+    // Calculate unique locations using GPS coordinates with 100m tolerance
     const uniqueLocations = new Set(
       captures
         .map(c => {
-          const locationName = c.location_name?.trim();
-          // Only count valid location names
-          if (!locationName || locationName === '' || locationName === 'undefined') {
-            return null;
+          // Prefer GPS coordinates for accuracy
+          if (c.latitude && c.longitude) {
+            // Round to 3 decimals (~100m precision)
+            const lat = Math.round(c.latitude * 1000) / 1000;
+            const lon = Math.round(c.longitude * 1000) / 1000;
+            return `gps:${lat},${lon}`;
           }
-          return locationName;
+          // Fallback to location_name if GPS not available
+          const locationName = c.location_name?.trim();
+          if (locationName && locationName !== '' && locationName !== 'undefined') {
+            return `name:${locationName}`;
+          }
+          return null;
         })
         .filter(Boolean)
     );
