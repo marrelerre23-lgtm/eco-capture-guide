@@ -73,20 +73,28 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel, isFreeUser = 
       setCurrentFactIndex((prev) => (prev + 1) % FUN_FACTS.length);
     }, 5000);
 
-    // Simulate progress
+    // FIX #9: More realistic progress based on detailLevel
+    const totalTime = detailLevel === 'quick' ? 5000 : detailLevel === 'deep' ? 20000 : 10000;
+    const startTime = Date.now();
+    
     const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const expectedProgress = Math.min(95, (elapsed / totalTime) * 100);
+      
       setProgress((prev) => {
-        if (prev >= 95) return prev;
-        return prev + Math.random() * 10;
+        // Smooth approach to expected progress with slight randomness
+        const diff = expectedProgress - prev;
+        const increment = diff * 0.3 + (Math.random() - 0.5) * 2;
+        return Math.min(95, prev + Math.max(0, increment));
       });
-    }, 500);
+    }, 300);
 
     return () => {
       clearInterval(tipInterval);
       clearInterval(factInterval);
       clearInterval(progressInterval);
     };
-  }, []);
+  }, [detailLevel]);
 
   const getEstimatedTime = () => {
     switch (detailLevel) {

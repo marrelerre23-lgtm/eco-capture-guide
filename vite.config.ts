@@ -140,7 +140,8 @@ export default defineConfig(({ mode }) => ({
           supabase: ["@supabase/supabase-js"],
           ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
           charts: ["recharts"],
-          maps: ["leaflet"],
+          // FIX #5: Include leaflet.markercluster for proper CSS bundling
+          maps: ["leaflet", "leaflet.markercluster"],
         },
       },
     },
