@@ -37,13 +37,13 @@ export const useSubscription = () => {
         setError(`User error: ${userError.message}`);
         const defaultInfo: SubscriptionInfo = {
           tier: 'free',
-          analysesRemaining: 15,
+          analysesRemaining: 999,
           analysesToday: 0,
-          capturesRemaining: 100,
+          capturesRemaining: 500,
           capturesCount: 0,
-          baseMaxAnalysesPerDay: 15,
-          maxAnalysesPerDay: 15,
-          maxCaptures: 100,
+          baseMaxAnalysesPerDay: null, // unlimited
+          maxAnalysesPerDay: null, // unlimited
+          maxCaptures: 500,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
           subscription_end: null,
@@ -59,13 +59,13 @@ export const useSubscription = () => {
         console.log('⚠️ [useSubscription] No user found');
         const defaultInfo: SubscriptionInfo = {
           tier: 'free',
-          analysesRemaining: 15,
+          analysesRemaining: 999,
           analysesToday: 0,
-          capturesRemaining: 100,
+          capturesRemaining: 500,
           capturesCount: 0,
-          baseMaxAnalysesPerDay: 15,
-          maxAnalysesPerDay: 15,
-          maxCaptures: 100,
+          baseMaxAnalysesPerDay: null, // unlimited
+          maxAnalysesPerDay: null, // unlimited
+          maxCaptures: 500,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
           subscription_end: null,
@@ -91,13 +91,13 @@ export const useSubscription = () => {
         
         const defaultInfo: SubscriptionInfo = {
           tier: 'free',
-          analysesRemaining: 15,
+          analysesRemaining: 999,
           analysesToday: 0,
-          capturesRemaining: 100,
+          capturesRemaining: 500,
           capturesCount: 0,
-          baseMaxAnalysesPerDay: 15,
-          maxAnalysesPerDay: 15,
-          maxCaptures: 100,
+          baseMaxAnalysesPerDay: null, // unlimited
+          maxAnalysesPerDay: null, // unlimited
+          maxCaptures: 500,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
           subscription_end: null,
@@ -113,13 +113,13 @@ export const useSubscription = () => {
         console.log('⚠️ [useSubscription] No profile found, using defaults');
         const defaultInfo: SubscriptionInfo = {
           tier: 'free',
-          analysesRemaining: 15,
+          analysesRemaining: 999,
           analysesToday: 0,
-          capturesRemaining: 100,
+          capturesRemaining: 500,
           capturesCount: 0,
-          baseMaxAnalysesPerDay: 15,
-          maxAnalysesPerDay: 15,
-          maxCaptures: 100,
+          baseMaxAnalysesPerDay: null, // unlimited
+          maxAnalysesPerDay: null, // unlimited
+          maxCaptures: 500,
           isAnalysisLimitReached: false,
           isCaptureLimitReached: false,
           subscription_end: null,
@@ -133,17 +133,17 @@ export const useSubscription = () => {
 
       console.log('📊 [useSubscription] Profile data:', profile);
 
-      // Calculate total analyses available (base + rewarded)
-      const baseMaxAnalyses = profile.max_analyses_per_day || 15;
+      // Calculate total analyses available - now unlimited
+      const baseMaxAnalyses = profile.max_analyses_per_day; // null = unlimited
       const rewardedAnalyses = profile.rewarded_analyses_today || 0;
-      const totalMaxAnalyses = baseMaxAnalyses + rewardedAnalyses;
+      const totalMaxAnalyses = baseMaxAnalyses ? (baseMaxAnalyses + rewardedAnalyses) : null;
       
-      const analysesRemaining = profile.max_analyses_per_day 
+      const analysesRemaining = totalMaxAnalyses 
         ? Math.max(0, totalMaxAnalyses - (profile.analyses_today || 0))
-        : Infinity;
+        : 999; // Show 999 for unlimited
 
-      // Calculate total captures available (base + extra from ads)
-      const baseMaxCaptures = profile.max_captures || 100;
+      // Calculate total captures available (base 500 + extra from ads)
+      const baseMaxCaptures = profile.max_captures || 500;
       const extraCaptures = profile.extra_captures_from_ads || 0;
       const totalMaxCaptures = baseMaxCaptures + extraCaptures;
       
@@ -157,14 +157,14 @@ export const useSubscription = () => {
 
       const subscriptionInfo: SubscriptionInfo = {
         tier,
-        analysesRemaining: analysesRemaining === Infinity ? 999 : analysesRemaining,
+        analysesRemaining,
         analysesToday: profile.analyses_today || 0,
         capturesRemaining,
         capturesCount: profile.captures_count || 0,
         baseMaxAnalysesPerDay: baseMaxAnalyses,
         maxAnalysesPerDay: totalMaxAnalyses,
         maxCaptures: totalMaxCaptures,
-        isAnalysisLimitReached: analysesRemaining === 0,
+        isAnalysisLimitReached: false, // Never reached - unlimited
         isCaptureLimitReached: capturesRemaining === 0,
         subscription_end: profile.subscription_expires_at || null,
         rewardedAnalysesToday: rewardedAnalyses,
@@ -181,13 +181,13 @@ export const useSubscription = () => {
       
       const defaultInfo: SubscriptionInfo = {
         tier: 'free',
-        analysesRemaining: 15,
+        analysesRemaining: 999,
         analysesToday: 0,
-        capturesRemaining: 100,
+        capturesRemaining: 500,
         capturesCount: 0,
-        baseMaxAnalysesPerDay: 15,
-        maxAnalysesPerDay: 15,
-        maxCaptures: 100,
+        baseMaxAnalysesPerDay: null, // unlimited
+        maxAnalysesPerDay: null, // unlimited
+        maxCaptures: 500,
         isAnalysisLimitReached: false,
         isCaptureLimitReached: false,
         subscription_end: null,
@@ -244,18 +244,7 @@ export const useSubscription = () => {
   }, []);
 
   const checkCanAnalyze = async (): Promise<boolean> => {
-    // FIX #2: Return value directly from fetch to avoid race condition
-    const currentInfo = await fetchSubscriptionInfo();
-    
-    if (currentInfo.isAnalysisLimitReached) {
-      toast({
-        variant: 'destructive',
-        title: 'Analysgräns nådd',
-        description: 'Du har använt alla dina analyser för idag. Uppgradera till Premium för obegränsade analyser!',
-      });
-      return false;
-    }
-    
+    // No longer enforcing analysis limits
     return true;
   };
 
