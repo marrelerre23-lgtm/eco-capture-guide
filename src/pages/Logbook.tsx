@@ -214,6 +214,7 @@ const Logbook = () => {
   const [showBulkRecategorizeDialog, setShowBulkRecategorizeDialog] = useState(false);
   const [bulkRecategoryTarget, setBulkRecategoryTarget] = useState<string>("");
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
   
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -469,6 +470,35 @@ const Logbook = () => {
     }
   };
 
+  const handleReanalyzeCaptures = async () => {
+    setIsReanalyzing(true);
+    vibrateClick();
+
+    try {
+      const { data, error } = await supabase.functions.invoke('reanalyze-captures');
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+
+      vibrateSuccess();
+      toast({
+        title: "Re-analys klar!",
+        description: data.message || `${data.updated} fångster uppdaterade`,
+      });
+    } catch (err) {
+      vibrateError();
+      console.error('Error re-analyzing captures:', err);
+      toast({
+        title: "Kunde inte re-analysera fångster",
+        description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReanalyzing(false);
+    }
+  };
+
   // Convert captures to species with search filtering
   const allSpecies = useMemo(() => {
     if (!captures) return [];
@@ -579,6 +609,21 @@ const Logbook = () => {
             const rarityA = rarityFactA?.description || "vanlig";
             const rarityB = rarityFactB?.description || "vanlig";
             return getRarityScore(rarityA) - getRarityScore(rarityB);
+          });
+          break;
+        case "edibility":
+          // Sort by edibility: ätlig → ätlig-med-förbehåll → inte-ätlig → giftig → okänd
+          const getEdibilityScore = (edibility: string | undefined): number => {
+            if (!edibility) return 5;
+            const e = edibility.toLowerCase();
+            if (e === 'ätlig') return 1;
+            if (e === 'ätlig-med-förbehåll') return 2;
+            if (e === 'inte-ätlig') return 3;
+            if (e === 'giftig') return 4;
+            return 5; // okänd
+          };
+          categorySpecies.sort((a, b) => {
+            return getEdibilityScore(a.edibility) - getEdibilityScore(b.edibility);
           });
           break;
         case "location":
@@ -840,6 +885,23 @@ const Logbook = () => {
                   <DropdownMenuItem onClick={() => handleExport('json')}>
                     Exportera som JSON
                   </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleReanalyzeCaptures}
+                    disabled={isReanalyzing}
+                    className="text-primary"
+                  >
+                    {isReanalyzing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Analyserar om...
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        Uppdatera ätbarhet
+                      </>
+                    )}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -1018,6 +1080,9 @@ const Logbook = () => {
                           <SelectItem value="name">Artnamn A-Ö</SelectItem>
                           <SelectItem value="rarity">Sällsynthet</SelectItem>
                           <SelectItem value="location">Plats</SelectItem>
+                          {(['svampar', 'örter-blommor', 'träd-vedartade'] as string[]).includes(category.key) && (
+                            <SelectItem value="edibility">Ätbarhet</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
