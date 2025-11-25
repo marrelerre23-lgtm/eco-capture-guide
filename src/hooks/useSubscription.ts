@@ -9,7 +9,8 @@ export interface SubscriptionInfo {
   analysesToday: number;
   capturesRemaining: number | null; // null = unlimited
   capturesCount: number;
-  maxAnalysesPerDay: number | null;
+  baseMaxAnalysesPerDay: number | null; // Base limit without bonuses
+  maxAnalysesPerDay: number | null; // Total including bonuses
   maxCaptures: number | null;
   isAnalysisLimitReached: boolean;
   isCaptureLimitReached: boolean;
@@ -24,7 +25,7 @@ export const useSubscription = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchSubscriptionInfo = async () => {
+  const fetchSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
     try {
       console.log('🔍 [useSubscription] Fetching subscription info...');
       setError(null);
@@ -34,14 +35,46 @@ export const useSubscription = () => {
       if (userError) {
         console.error('❌ [useSubscription] Error fetching user:', userError);
         setError(`User error: ${userError.message}`);
+        const defaultInfo: SubscriptionInfo = {
+          tier: 'free',
+          analysesRemaining: 15,
+          analysesToday: 0,
+          capturesRemaining: 100,
+          capturesCount: 0,
+          baseMaxAnalysesPerDay: 15,
+          maxAnalysesPerDay: 15,
+          maxCaptures: 100,
+          isAnalysisLimitReached: false,
+          isCaptureLimitReached: false,
+          subscription_end: null,
+          rewardedAnalysesToday: 0,
+          extraCapturesFromAds: 0,
+        };
+        setSubscription(defaultInfo);
         setLoading(false);
-        return;
+        return defaultInfo;
       }
       
       if (!user) {
         console.log('⚠️ [useSubscription] No user found');
+        const defaultInfo: SubscriptionInfo = {
+          tier: 'free',
+          analysesRemaining: 15,
+          analysesToday: 0,
+          capturesRemaining: 100,
+          capturesCount: 0,
+          baseMaxAnalysesPerDay: 15,
+          maxAnalysesPerDay: 15,
+          maxCaptures: 100,
+          isAnalysisLimitReached: false,
+          isCaptureLimitReached: false,
+          subscription_end: null,
+          rewardedAnalysesToday: 0,
+          extraCapturesFromAds: 0,
+        };
+        setSubscription(defaultInfo);
         setLoading(false);
-        return;
+        return defaultInfo;
       }
 
       console.log('✅ [useSubscription] User found:', user.id);
@@ -56,13 +89,13 @@ export const useSubscription = () => {
         console.error('❌ [useSubscription] Error fetching profile:', profileError);
         setError(`Profile error: ${profileError.message}`);
         
-        // Set default free tier if profile doesn't exist
-        setSubscription({
+        const defaultInfo: SubscriptionInfo = {
           tier: 'free',
           analysesRemaining: 15,
           analysesToday: 0,
           capturesRemaining: 100,
           capturesCount: 0,
+          baseMaxAnalysesPerDay: 15,
           maxAnalysesPerDay: 15,
           maxCaptures: 100,
           isAnalysisLimitReached: false,
@@ -70,19 +103,21 @@ export const useSubscription = () => {
           subscription_end: null,
           rewardedAnalysesToday: 0,
           extraCapturesFromAds: 0,
-        });
+        };
+        setSubscription(defaultInfo);
         setLoading(false);
-        return;
+        return defaultInfo;
       }
 
       if (!profile) {
         console.log('⚠️ [useSubscription] No profile found, using defaults');
-        setSubscription({
+        const defaultInfo: SubscriptionInfo = {
           tier: 'free',
           analysesRemaining: 15,
           analysesToday: 0,
           capturesRemaining: 100,
           capturesCount: 0,
+          baseMaxAnalysesPerDay: 15,
           maxAnalysesPerDay: 15,
           maxCaptures: 100,
           isAnalysisLimitReached: false,
@@ -90,9 +125,10 @@ export const useSubscription = () => {
           subscription_end: null,
           rewardedAnalysesToday: 0,
           extraCapturesFromAds: 0,
-        });
+        };
+        setSubscription(defaultInfo);
         setLoading(false);
-        return;
+        return defaultInfo;
       }
 
       console.log('📊 [useSubscription] Profile data:', profile);
@@ -125,6 +161,7 @@ export const useSubscription = () => {
         analysesToday: profile.analyses_today || 0,
         capturesRemaining,
         capturesCount: profile.captures_count || 0,
+        baseMaxAnalysesPerDay: baseMaxAnalyses,
         maxAnalysesPerDay: totalMaxAnalyses,
         maxCaptures: totalMaxCaptures,
         isAnalysisLimitReached: analysesRemaining === 0,
@@ -137,17 +174,18 @@ export const useSubscription = () => {
       console.log('✅ [useSubscription] Subscription info:', subscriptionInfo);
       setSubscription(subscriptionInfo);
       setLoading(false);
+      return subscriptionInfo;
     } catch (err) {
       console.error('❌ [useSubscription] Unexpected error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       
-      // Set default free tier on unexpected error
-      setSubscription({
+      const defaultInfo: SubscriptionInfo = {
         tier: 'free',
         analysesRemaining: 15,
         analysesToday: 0,
         capturesRemaining: 100,
         capturesCount: 0,
+        baseMaxAnalysesPerDay: 15,
         maxAnalysesPerDay: 15,
         maxCaptures: 100,
         isAnalysisLimitReached: false,
@@ -155,8 +193,10 @@ export const useSubscription = () => {
         subscription_end: null,
         rewardedAnalysesToday: 0,
         extraCapturesFromAds: 0,
-      });
+      };
+      setSubscription(defaultInfo);
       setLoading(false);
+      return defaultInfo;
     }
   };
 
@@ -204,9 +244,10 @@ export const useSubscription = () => {
   }, []);
 
   const checkCanAnalyze = async (): Promise<boolean> => {
-    await fetchSubscriptionInfo();
+    // FIX #2: Return value directly from fetch to avoid race condition
+    const currentInfo = await fetchSubscriptionInfo();
     
-    if (subscription && subscription.isAnalysisLimitReached) {
+    if (currentInfo.isAnalysisLimitReached) {
       toast({
         variant: 'destructive',
         title: 'Analysgräns nådd',
@@ -219,13 +260,14 @@ export const useSubscription = () => {
   };
 
   const checkCanCapture = async (): Promise<boolean> => {
-    await fetchSubscriptionInfo();
+    // FIX #2: Return value directly from fetch to avoid race condition
+    const currentInfo = await fetchSubscriptionInfo();
     
-    if (subscription?.isCaptureLimitReached) {
+    if (currentInfo.isCaptureLimitReached) {
       toast({
         variant: 'destructive',
         title: 'Lagringsgräns nådd',
-        description: `Du har nått gränsen på ${subscription.maxCaptures} fångster. Uppgradera till Premium för obegränsat utrymme!`,
+        description: `Du har nått gränsen på ${currentInfo.maxCaptures} fångster. Uppgradera till Premium för obegränsat utrymme!`,
       });
       return false;
     }

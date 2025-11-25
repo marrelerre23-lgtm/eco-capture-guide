@@ -226,8 +226,8 @@ const Camera = () => {
           
           setCapturedImage(compressedImage);
           
-          // Get location when photo is captured
-          getLocation();
+          // FIX #5: No need to fetch GPS here, already fetched at mount
+          // Location state is already populated from useEffect
           
           toast({
             title: 'Bild tagen!',
@@ -295,8 +295,8 @@ const Camera = () => {
             
             setCapturedImage(compressedImage);
             
-            // Get location when file is uploaded
-            getLocation();
+            // FIX #5: No need to fetch GPS here, already fetched at mount
+            // Location state is already populated from useEffect
             
             toast({
               title: 'Bild uppladdad!',
@@ -356,8 +356,8 @@ const Camera = () => {
           
           setCapturedImage(compressedImage);
           
-          // Get location when file is uploaded
-          getLocation();
+          // FIX #5: No need to fetch GPS here, already fetched at mount
+          // Location state is already populated from useEffect
           
           toast({
             title: 'Bild uppladdad!',
@@ -391,9 +391,11 @@ const Camera = () => {
   };
 
 
-  // Start camera when component mounts
+  // Start camera and fetch GPS when component mounts
   React.useEffect(() => {
     startCamera();
+    // FIX #5: Fetch GPS early so it's ready when user takes photo
+    getLocation();
     
     return () => {
       // Cleanup: stop camera when component unmounts
