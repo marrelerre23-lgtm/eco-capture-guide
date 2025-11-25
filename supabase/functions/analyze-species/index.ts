@@ -566,6 +566,22 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
           alt.species.ageStage = 'okänd';
         }
         
+        // POST-PROCESSING FIX #6: Ensure ALL captures have edibility field
+        if (!alt.species.edibility || alt.species.edibility.trim() === '') {
+          // Set default edibility based on category
+          if (alt.species.category === 'svamp') {
+            console.warn(`⚠️ SÄKERHETSVARNING: Svamp "${commonName}" saknar ätlighet, sätter till "okänd"`);
+            alt.species.edibility = 'okänd';
+          } else if (['barrträd', 'lövträd', 'buske', 'klätterväxt', 'blomma', 'ört', 'gräs'].includes(alt.species.category)) {
+            // Plants - default to okänd unless AI specifically states otherwise
+            alt.species.edibility = 'okänd';
+          } else {
+            // Animals, rocks, traces etc - default to inte-ätlig
+            alt.species.edibility = 'inte-ätlig';
+          }
+          console.log(`Sätter default edibility för "${commonName}" (${alt.species.category}): ${alt.species.edibility}`);
+        }
+        
         return alt;
       });
     } catch (parseError) {

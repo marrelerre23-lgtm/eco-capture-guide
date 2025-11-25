@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 
 import { useSpeciesCaptures } from '@/hooks/useSpeciesCaptures';
 import { Button } from '@/components/ui/button';
@@ -31,7 +34,7 @@ const Map = () => {
 
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
   // Filter captures with valid coordinates
@@ -77,38 +80,6 @@ const Map = () => {
     
     return filtered;
   }, [validCaptures, selectedCategory, selectedLocation]);
-
-  // Calculate hotspots
-  const hotspots = useMemo(() => {
-    const clusters: { [key: string]: { count: number; lat: number; lng: number; captures: typeof validCaptures } } = {};
-    const gridSize = 0.01;
-
-    validCaptures.forEach(capture => {
-      if (!capture.latitude || !capture.longitude) return;
-      
-      const lat = Number(capture.latitude);
-      const lng = Number(capture.longitude);
-      const gridKey = `${Math.floor(lat / gridSize)},${Math.floor(lng / gridSize)}`;
-      
-      if (!clusters[gridKey]) {
-        clusters[gridKey] = { count: 0, lat: 0, lng: 0, captures: [] };
-      }
-      
-      clusters[gridKey].count++;
-      clusters[gridKey].lat += lat;
-      clusters[gridKey].lng += lng;
-      clusters[gridKey].captures.push(capture);
-    });
-
-    return Object.values(clusters)
-      .filter(c => c.count >= 3)
-      .map(c => ({
-        count: c.count,
-        lat: c.lat / c.count,
-        lng: c.lng / c.count,
-        captures: c.captures
-      }));
-  }, [validCaptures]);
 
   // Initialize map
   useEffect(() => {
@@ -172,15 +143,44 @@ const Map = () => {
     }
   }, [userLocation]);
 
-  // Update capture markers
+  // Update capture markers with clustering
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Clear old markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
+    // Clear old marker cluster group
+    if (markerClusterGroupRef.current) {
+      mapRef.current.removeLayer(markerClusterGroupRef.current);
+      markerClusterGroupRef.current = null;
+    }
 
-    // Add new markers
+    // Create new marker cluster group
+    const markerClusterGroup = L.markerClusterGroup({
+      maxClusterRadius: 60,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        let size = 'small';
+        let sizeClass = 'w-10 h-10 text-sm';
+        
+        if (count >= 10) {
+          size = 'large';
+          sizeClass = 'w-14 h-14 text-base';
+        } else if (count >= 5) {
+          size = 'medium';
+          sizeClass = 'w-12 h-12 text-sm';
+        }
+
+        return L.divIcon({
+          html: `<div class="${sizeClass} flex items-center justify-center bg-primary text-primary-foreground rounded-full border-4 border-white shadow-lg font-bold">${count}</div>`,
+          className: 'custom-cluster-icon',
+          iconSize: L.point(40, 40, true)
+        });
+      }
+    });
+
+    // Add markers to cluster group
     filteredCaptures.forEach(capture => {
       if (!capture.latitude || !capture.longitude) return;
 
@@ -191,54 +191,26 @@ const Map = () => {
         .bindPopup(`
           <div class="space-y-2">
             <h4 class="font-semibold">${capture.ai_analysis?.species?.commonName || 'Okänd'}</h4>
-            ${capture.ai_analysis?.species?.commonName ? `<p class="text-sm italic">${capture.ai_analysis.species.scientificName}</p>` : ''}
+            ${capture.ai_analysis?.species?.scientificName ? `<p class="text-sm italic">${capture.ai_analysis.species.scientificName}</p>` : ''}
             ${capture.location_name ? `<p class="text-sm">📍 ${capture.location_name}</p>` : ''}
             ${capture.captured_at ? `<p class="text-xs text-muted-foreground">${new Date(capture.captured_at).toLocaleDateString('sv-SE')}</p>` : ''}
           </div>
-        `)
-        .addTo(mapRef.current!);
+        `);
 
-      markersRef.current.push(marker);
+      markerClusterGroup.addLayer(marker);
     });
 
-    // Add hotspot markers
-    hotspots.forEach((hotspot) => {
-      const hotspotMarker = L.marker([hotspot.lat, hotspot.lng], {
-        icon: L.divIcon({
-          className: 'custom-hotspot-marker',
-          html: `<div style="
-            background: hsl(var(--warning));
-            color: white;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 12px;
-            border: 3px solid white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          ">${hotspot.count}</div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16]
-        })
-      })
-        .bindPopup(`
-          <div class="space-y-2">
-            <h4 class="font-semibold">🔥 Hotspot</h4>
-            <p class="text-sm text-muted-foreground">${hotspot.count} fångster i detta område</p>
-            <div class="space-y-1 max-h-32 overflow-y-auto">
-              ${hotspot.captures.slice(0, 5).map(c => `<p class="text-xs">• ${c.ai_analysis?.species?.commonName || 'Okänd'}</p>`).join('')}
-              ${hotspot.captures.length > 5 ? `<p class="text-xs text-muted-foreground">+${hotspot.captures.length - 5} fler</p>` : ''}
-            </div>
-          </div>
-        `)
-        .addTo(mapRef.current!);
+    // Add cluster group to map
+    mapRef.current.addLayer(markerClusterGroup);
+    markerClusterGroupRef.current = markerClusterGroup;
 
-      markersRef.current.push(hotspotMarker);
-    });
-  }, [filteredCaptures, hotspots]);
+    // Cleanup on unmount
+    return () => {
+      if (markerClusterGroupRef.current && mapRef.current) {
+        mapRef.current.removeLayer(markerClusterGroupRef.current);
+      }
+    };
+  }, [filteredCaptures]);
 
   const centerOnUser = useCallback(() => {
     if (userLocation) {
@@ -370,11 +342,6 @@ const Map = () => {
         {/* Stats */}
         <div className="flex gap-2 text-xs text-muted-foreground">
           <Badge variant="secondary">{filteredCaptures.length} fångster</Badge>
-          {hotspots.length > 0 && (
-            <Badge variant="secondary" className="bg-warning/10 text-warning">
-              {hotspots.length} hotspots
-            </Badge>
-          )}
         </div>
       </div>
 
