@@ -43,16 +43,30 @@ const Overview = () => {
         .filter(Boolean)
     );
 
-    // Calculate rare finds (based on rarity level only)
+    // Calculate rare finds (normalized rarity matching)
     const rareFinds = captures.filter(c => {
-      const rarity = c.ai_analysis?.species?.rarity?.toLowerCase();
-      return rarity && (rarity.includes('sällsynt') || rarity.includes('ovanlig') || rarity.includes('rare'));
+      const rarity = c.ai_analysis?.species?.rarity?.toLowerCase().trim() || '';
+      return rarity && (
+        rarity.includes('sällsynt') || 
+        rarity.includes('ovanlig') || 
+        rarity.includes('rare') || 
+        rarity.includes('uncommon') ||
+        rarity.includes('hotad') ||
+        rarity.includes('rödlistad')
+      );
     });
 
-    // Calculate unique locations
+    // Calculate unique locations (improved logic)
     const uniqueLocations = new Set(
       captures
-        .map(c => c.location_name)
+        .map(c => {
+          const locationName = c.location_name?.trim();
+          // Only count valid location names
+          if (!locationName || locationName === '' || locationName === 'undefined') {
+            return null;
+          }
+          return locationName;
+        })
         .filter(Boolean)
     );
 

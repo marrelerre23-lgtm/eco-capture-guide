@@ -321,6 +321,7 @@ VATTEN- OCH RYGGRADSLÖST LIV:
 STENAR & MINERALER:
 - "sten" - för bergarter och stenar
 - "mineral" - för mineraler och kristaller
+⚠️ KRITISKT: Stenar och mineraler är ALDRIG ätliga! Om det är sten/mineral, använd edibility: "inte-ätlig"
 
 ⚠️⚠️⚠️ KRITISKT VIKTIGT - "SPÅR" KATEGORIN ⚠️⚠️⚠️
 SPÅR OCH ÖVRIGT:
@@ -446,6 +447,13 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
                                 commonName.includes('klätter') ||
                                 description.includes('klättrande') ||
                                 description.includes('slingrande');
+        
+        // POST-PROCESSING FIX #7: Force stones/minerals to NEVER be edible
+        const isStoneMinerals = category === 'sten' || category === 'mineral';
+        if (isStoneMinerals && alt.species?.edibility && alt.species.edibility !== 'inte-ätlig') {
+          console.log(`POST-PROCESSING FIX #7: Correcting edibility for stone/mineral from "${alt.species.edibility}" to "inte-ätlig"`);
+          alt.species.edibility = 'inte-ätlig';
+        }
         
         if (isClimbingPlant && (category === 'blomma' || category === 'ört')) {
           console.warn(`🔧 AUTO-KORRIGERING: "${commonName}" från "${category}" → "klätterväxt"`);

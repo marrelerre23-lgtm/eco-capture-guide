@@ -31,6 +31,8 @@ const Map = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [liveTracking, setLiveTracking] = useState(false);
+  const watchIdRef = useRef<number | null>(null);
 
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -106,9 +108,33 @@ const Map = () => {
     }
   }, [mapCenter]);
 
-  // Get user location
+  // Get user location (initial or live tracking)
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (!navigator.geolocation) return;
+
+    // Stop existing watch if any
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
+    if (liveTracking) {
+      // Live tracking mode
+      setLoadingLocation(true);
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        (position) => {
+          const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setUserLocation(coords);
+          setLoadingLocation(false);
+        },
+        (error) => {
+          console.log('Could not get user location:', error);
+          setLoadingLocation(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      // One-time location
       setLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -124,7 +150,13 @@ const Map = () => {
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
       );
     }
-  }, []);
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, [liveTracking]);
 
   // Update user location marker
   useEffect(() => {
@@ -136,7 +168,20 @@ const Map = () => {
     }
 
     if (userLocation) {
-      const marker = L.marker(userLocation)
+      // Create custom user location icon (pulsating blue circle)
+      const userIcon = L.divIcon({
+        html: `
+          <div class="relative">
+            <div class="absolute w-6 h-6 bg-blue-500 rounded-full opacity-30 animate-ping"></div>
+            <div class="relative w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-lg"></div>
+          </div>
+        `,
+        className: 'custom-user-location-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      const marker = L.marker(userLocation, { icon: userIcon })
         .bindPopup('<div class="text-center"><strong>Din plats</strong></div>')
         .addTo(mapRef.current);
       userMarkerRef.current = marker;
@@ -189,7 +234,8 @@ const Map = () => {
 
       const marker = L.marker([lat, lng])
         .bindPopup(`
-          <div class="space-y-2">
+          <div class="space-y-2 min-w-[200px]">
+            ${capture.image_url ? `<img src="${capture.image_url}" alt="${capture.ai_analysis?.species?.commonName || 'Fångst'}" class="w-full h-32 object-cover rounded-md mb-2" />` : ''}
             <h4 class="font-semibold">${capture.ai_analysis?.species?.commonName || 'Okänd'}</h4>
             ${capture.ai_analysis?.species?.scientificName ? `<p class="text-sm italic">${capture.ai_analysis.species.scientificName}</p>` : ''}
             ${capture.location_name ? `<p class="text-sm">📍 ${capture.location_name}</p>` : ''}
@@ -336,6 +382,14 @@ const Map = () => {
 
           <Button variant="outline" size="icon" onClick={centerOnUser}>
             <Locate className="h-4 w-4" />
+          </Button>
+
+          <Button 
+            variant={liveTracking ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setLiveTracking(!liveTracking)}
+          >
+            {liveTracking ? "🔴 Live" : "📍 Spårning"}
           </Button>
         </div>
 

@@ -38,6 +38,13 @@ export const useSpeciesCaptures = () => {
   return useQuery({
     queryKey: ["species-captures"],
     queryFn: async (): Promise<ParsedSpeciesCapture[]> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log('[useSpeciesCaptures] No user logged in');
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("species_captures")
         .select("*")
