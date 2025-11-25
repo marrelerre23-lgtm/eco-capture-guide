@@ -224,7 +224,9 @@ const Logbook = () => {
   const loadMoreInCategory = (categoryKey: string, totalItems: number) => {
     const currentPage = categoryPages[categoryKey] || 1;
     const nextPage = currentPage + 1;
-    if (nextPage * 10 < totalItems) {
+    // FIX #8: More items per page on desktop for better UX
+    const itemsPerPage = isMobile ? 10 : 20;
+    if (nextPage * itemsPerPage < totalItems) {
       setCategoryPages(prev => ({ ...prev, [categoryKey]: nextPage }));
       vibrateClick();
     }
@@ -674,8 +676,9 @@ const Logbook = () => {
         originalCount: isSubcategoryActive ? originalCategoryCount : categorySpecies.length,
         isSubcategoryFiltered: isSubcategoryActive,
         infiniteScroll: {
-          displayedItems: categorySpecies.slice(0, 10),
-          hasMore: categorySpecies.length > 10,
+          // FIX #8: More items per page on desktop, fewer on mobile
+          displayedItems: categorySpecies.slice(0, (categoryPages[categoryKey] || 1) * (isMobile ? 10 : 20)),
+          hasMore: categorySpecies.length > (categoryPages[categoryKey] || 1) * (isMobile ? 10 : 20),
           totalItems: categorySpecies.length
         },
         speciesByCategory // Pass it down for subcategory counting
