@@ -134,7 +134,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       localStorage.setItem('has_analyzed', 'true');
 
       // Check analysis cache (5 min TTL) to prevent accidental duplicates
-      const cachedAnalysis = await getCachedAnalysis(imageUrl);
+      // FIX #12: Include category hint in cache lookup
+      const cachedAnalysis = await getCachedAnalysis(imageUrl, selectedCategory);
       if (cachedAnalysis) {
         console.log('Using cached analysis (within 5 min window)');
         navigate('/analysis-result', { 
@@ -235,7 +236,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         };
 
         // Cache the result with 5-minute TTL
-        await setCachedAnalysis(imageUrl, resultState);
+        // FIX #12: Include category hint in cache key
+        await setCachedAnalysis(imageUrl, resultState, selectedCategory);
         console.log('Analysis result cached with 5-min TTL');
 
         // Navigate to analysis result page with all alternatives
@@ -269,7 +271,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         };
 
         // Cache the result with 5-minute TTL
-        await setCachedAnalysis(imageUrl, resultState);
+        // FIX #12: Include category hint in cache key
+        await setCachedAnalysis(imageUrl, resultState, selectedCategory);
         console.log('Analysis result cached with 5-min TTL');
         
         navigate('/analysis-result', { state: resultState });

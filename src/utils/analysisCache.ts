@@ -9,20 +9,23 @@ interface CachedAnalysis {
   hash: string;
 }
 
-// Generate a hash from image data
-const generateImageHash = async (dataUrl: string): Promise<string> => {
+// Generate a hash from image data AND category hint
+// FIX #12: Include category in hash so changing hint allows re-analysis
+const generateImageHash = async (dataUrl: string, categoryHint?: string | null): Promise<string> => {
   const encoder = new TextEncoder();
-  // Sample first 10KB for performance
-  const data = encoder.encode(dataUrl.substring(0, 10000));
+  // Include category in hash to allow re-analysis with different hints
+  const dataToHash = dataUrl.substring(0, 10000) + (categoryHint || 'auto');
+  const data = encoder.encode(dataToHash);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
 // Get cached analysis result if it exists and is not expired
-export const getCachedAnalysis = async (imageDataUrl: string): Promise<any | null> => {
+// FIX #12: Include category hint in cache lookup
+export const getCachedAnalysis = async (imageDataUrl: string, categoryHint?: string | null): Promise<any | null> => {
   try {
-    const hash = await generateImageHash(imageDataUrl);
+    const hash = await generateImageHash(imageDataUrl, categoryHint);
     const cacheKey = `analysis_${hash}`;
     
     const cached = localStorage.getItem(cacheKey);
@@ -46,9 +49,10 @@ export const getCachedAnalysis = async (imageDataUrl: string): Promise<any | nul
 };
 
 // Cache an analysis result
-export const setCachedAnalysis = async (imageDataUrl: string, result: any) => {
+// FIX #12: Include category hint in cache key
+export const setCachedAnalysis = async (imageDataUrl: string, result: any, categoryHint?: string | null) => {
   try {
-    const hash = await generateImageHash(imageDataUrl);
+    const hash = await generateImageHash(imageDataUrl, categoryHint);
     const cacheKey = `analysis_${hash}`;
     
     const cacheData: CachedAnalysis = {
