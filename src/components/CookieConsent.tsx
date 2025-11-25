@@ -36,11 +36,12 @@ export const CookieConsent = () => {
             
             <div className="flex-1 space-y-3">
               <div className="space-y-1">
-                <h3 className="font-semibold text-base">Vi använder cookies</h3>
+                <h3 className="font-semibold text-base">Vi använder cookies och visar annonser</h3>
                 <p className="text-sm text-muted-foreground">
                   Vi använder cookies för att förbättra din upplevelse, analysera trafik och 
-                  personalisera innehåll. Genom att fortsätta använda vår tjänst godkänner du vår 
-                  användning av cookies enligt{' '}
+                  personalisera innehåll. För gratisanvändare visas annonser via Google AdMob, som kan 
+                  använda cookies för att visa relevanta annonser. Genom att fortsätta använda vår tjänst 
+                  godkänner du vår användning av cookies och annonser enligt{' '}
                   <a href="/privacy" className="text-primary hover:underline">
                     integritetspolicy
                   </a>

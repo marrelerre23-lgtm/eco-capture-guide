@@ -144,7 +144,37 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>6. Delning av uppgifter</CardTitle>
+            <CardTitle>6. Annonser och monetarisering</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-muted-foreground">
+            <p>
+              För att erbjuda vår tjänst gratis visar vi annonser för användare som inte har en Premium-prenumeration.
+            </p>
+            <p className="font-semibold text-foreground">6.1 Annonspartners</p>
+            <ul className="list-disc ml-4 space-y-2">
+              <li><strong>Google AdMob</strong>: Visar personaliserade annonser baserat på dina intressen och beteende</li>
+              <li>Annonspartners kan samla in information som enhetstyp, annonsinteraktioner och ungefärlig plats</li>
+            </ul>
+            <p className="mt-3">
+              Du kan läsa mer om hur Google använder data i deras{' '}
+              <a 
+                href="https://policies.google.com/privacy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                integritetspolicy
+              </a>.
+            </p>
+            <p className="mt-2">
+              Premium-användare ser inga annonser och deras data delas inte med annonspartners.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>7. Delning av uppgifter</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>Vi delar dina uppgifter med:</p>
@@ -152,6 +182,8 @@ const Privacy = () => {
               <li><strong>Supabase</strong>: Vår leverantör för databas och autentisering</li>
               <li><strong>Google Gemini AI</strong>: För bildanalys och artidentifiering</li>
               <li><strong>Cloudflare</strong>: För säker hosting och CDN</li>
+              <li><strong>Google AdMob</strong>: För visning av annonser (endast för gratisanvändare)</li>
+              <li><strong>Stripe</strong>: För betalningshantering av Premium-prenumerationer</li>
             </ul>
             <p className="mt-3">
               Vi säljer aldrig dina personuppgifter till tredje part. Delning sker endast med leverantörer som är nödvändiga för tjänsten och som följer GDPR.
@@ -161,7 +193,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>7. Datalagring och säkerhet</CardTitle>
+            <CardTitle>8. Datalagring och säkerhet</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
@@ -181,7 +213,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>8. Dina rättigheter enligt GDPR</CardTitle>
+            <CardTitle>9. Dina rättigheter enligt GDPR</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>Du har rätt att:</p>
@@ -202,7 +234,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>9. Cookies och spårning</CardTitle>
+            <CardTitle>10. Cookies och spårning</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
@@ -222,7 +254,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>10. Barns integritet</CardTitle>
+            <CardTitle>11. Barns integritet</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
@@ -233,7 +265,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>11. Ändringar i integritetspolicyn</CardTitle>
+            <CardTitle>12. Ändringar i integritetspolicyn</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
@@ -244,7 +276,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>12. Klagomål</CardTitle>
+            <CardTitle>13. Klagomål</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
@@ -262,7 +294,7 @@ const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>13. Kontakt</CardTitle>
+            <CardTitle>14. Kontakt</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>

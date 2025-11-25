@@ -247,6 +247,27 @@ const Auth = () => {
                     placeholder="Minst 8 tecken, 1 stor bokstav, 1 siffra"
                   />
                 </div>
+                
+                <div className="flex items-start space-x-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="age-verification"
+                    required
+                    disabled={loading}
+                    className="mt-1"
+                  />
+                  <label htmlFor="age-verification" className="text-sm text-muted-foreground leading-tight">
+                    Jag bekräftar att jag är minst 13 år gammal och godkänner{' '}
+                    <a href="/terms" target="_blank" className="text-primary hover:underline">
+                      användarvillkoren
+                    </a>
+                    {' '}och{' '}
+                    <a href="/privacy" target="_blank" className="text-primary hover:underline">
+                      integritetspolicyn
+                    </a>
+                  </label>
+                </div>
+                
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Registrera
