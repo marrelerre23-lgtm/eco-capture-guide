@@ -16,13 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { AdDisplay } from "./AdDisplay";
-
 interface AnalyzingScreenProps {
   category: string;
   detailLevel: string;
   onCancel: () => void;
-  isFreeUser?: boolean;
 }
 
 const AI_TIPS = [
@@ -41,15 +38,13 @@ const FUN_FACTS = [
   "Det finns fler träd på jorden än stjärnor i Vintergatan",
 ];
 
-export const AnalyzingScreen = ({ category, detailLevel, onCancel, isFreeUser = false }: AnalyzingScreenProps) => {
+export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingScreenProps) => {
   const navigate = useNavigate();
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [showAd, setShowAd] = useState(isFreeUser);
-  const [adCompleted, setAdCompleted] = useState(!isFreeUser);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -103,16 +98,6 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel, isFreeUser = 
       default: return "~10";
     }
   };
-
-  const handleAdComplete = () => {
-    setShowAd(false);
-    setAdCompleted(true);
-  };
-
-  // Don't show analyzing screen until ad is completed
-  if (showAd && !adCompleted) {
-    return <AdDisplay onAdComplete={handleAdComplete} />;
-  }
 
   return (
     <>

@@ -11,7 +11,6 @@ import { Loader2, User, LogOut, Mail, Calendar, Camera, Lock, Sparkles, Crown, D
 import { useNavigate } from "react-router-dom";
 import { uploadAvatarImage } from "@/utils/storage";
 import { useSubscription } from "@/hooks/useSubscription";
-import { UpgradeDialog } from "@/components/UpgradeDialog";
 import { Badge } from "@/components/ui/badge";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
@@ -41,7 +40,6 @@ const Profile = () => {
   });
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const { subscription, loading: subscriptionLoading, error: subscriptionError } = useSubscription();
   const { data: captures, isLoading: capturesLoading } = useSpeciesCaptures();
@@ -521,57 +519,6 @@ const Profile = () => {
                   </div>
                 )}
                 </div>
-
-                {subscription.tier === 'free' && (
-                  <div className="pt-2">
-                    <Button 
-                      onClick={() => setUpgradeDialogOpen(true)} 
-                      className="w-full"
-                      size="lg"
-                    >
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Uppgradera till Premium
-                    </Button>
-                    
-                    <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                      <p className="text-xs text-muted-foreground text-center">
-                        Med Premium får du obegränsade analyser, ingen annonser, och mycket mer!
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                 {subscription.tier !== 'free' && (
-                  <div className="pt-2">
-                    <Button 
-                      onClick={async () => {
-                        try {
-                          const { data: { session } } = await supabase.auth.getSession();
-                          if (!session) throw new Error('Not authenticated');
-                          
-                          const { data, error } = await supabase.functions.invoke('customer-portal', {
-                            headers: { Authorization: `Bearer ${session.access_token}` },
-                          });
-                          
-                          if (error) throw error;
-                          if (data?.url) window.open(data.url, '_blank');
-                        } catch (error) {
-                          toast({
-                            variant: 'destructive',
-                            title: 'Kunde inte öppna prenumerationshantering',
-                            description: error instanceof Error ? error.message : 'Ett fel uppstod',
-                          });
-                        }
-                      }} 
-                      variant="outline"
-                      className="w-full"
-                      size="lg"
-                    >
-                      <Crown className="mr-2 h-4 w-4" />
-                      Hantera prenumeration
-                    </Button>
-                  </div>
-                )}
               </>
             ) : (
               <div className="text-center py-4 text-muted-foreground">
@@ -762,11 +709,6 @@ const Profile = () => {
           Logga ut
         </Button>
       </div>
-
-      <UpgradeDialog 
-        open={upgradeDialogOpen} 
-        onOpenChange={setUpgradeDialogOpen}
-      />
     </div>
   );
 };

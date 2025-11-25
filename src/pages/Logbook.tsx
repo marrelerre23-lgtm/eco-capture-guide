@@ -13,7 +13,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ImageViewer } from "@/components/ImageViewer";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
 import { EditCaptureDialog } from "@/components/EditCaptureDialog";
-import { BannerAd } from "@/components/BannerAd";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LazyImage } from "@/components/LazyImage";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -809,9 +808,6 @@ const Logbook = () => {
   return (
     <div className="min-h-screen bg-background pb-20 pt-16">
       <div className="p-4 space-y-4">
-        {/* Banner Ad for Free Users */}
-        {subscription?.tier === 'free' && <BannerAd position="bottom" />}
-        
         {/* Header */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
