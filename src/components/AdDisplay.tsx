@@ -51,25 +51,10 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
       return;
     }
 
-    // Web version: Show simulated ad with countdown
-    analytics.trackAd(ANALYTICS_EVENTS.AD_SHOWN, 'interstitial', {
-      hasRealAds,
-      isTestMode: !hasRealAds,
-    });
-
-    // Countdown timer
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          setCanClose(true);
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
+    // Web version: Skip ads (only show in native app)
+    console.log('[AdDisplay] Web environment - skipping ad display');
+    onAdComplete?.();
+    return;
   }, [subscription, onAdComplete, hasRealAds]);
 
   // Don't show anything for premium users
