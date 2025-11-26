@@ -1212,17 +1212,6 @@ const Logbook = () => {
                                 </DropdownMenu>
                               )}
                               
-                              {/* Age/Stage badge */}
-                              <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                                {species.ageStage && (
-                                  <Badge 
-                                    variant="secondary"
-                                    className="bg-blue-500/90 text-white border-blue-600 text-xs"
-                                  >
-                                    {species.ageStage}
-                                  </Badge>
-                                )}
-                              </div>
                             </div>
 
                             {/* Species info below image */}
@@ -1233,6 +1222,12 @@ const Logbook = () => {
                               <p className="text-xs italic text-muted-foreground line-clamp-1">
                                 {species.scientificName}
                               </p>
+                              {species.ageStage && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <span>🕐</span>
+                                  <span className="line-clamp-1">{species.ageStage}</span>
+                                </p>
+                              )}
                               {species.location && (
                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                                   <span>📍</span>

@@ -399,7 +399,7 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
         "identificationFeatures": "Specifika kännetecken som hjälper till identifiering",
         "rarity": "vanlig/ovanlig/sällsynt/hotad",
         "sizeInfo": "Information om storlek och dimensioner",
-        "ageStage": "Ålder, mognad eller livsstadium (t.ex. ung/mogen/gammal, larv/puppa/vuxen, etc)"
+        "ageStage": "KONKRET ÅLDERSUPPSKATTNING (t.ex. '~15-20 år', '~2-3 veckor gammal', '~1-2 månader gammal' - SE RIKTLINJER NEDAN)"
       },
       "reasoning": "Förklaring av varför du tror det är detta alternativ (1-2 meningar)"
     }
@@ -479,11 +479,41 @@ PRIORITERINGSREGLER - FÖLJ DESSA STRIKT:
 
 ⚠️ OBLIGATORISKA KRAV:
 - Returnera EXAKT 3 alternativ, sorterade efter confidence (högst först)
-- ALLA organismer MÅSTE ha ageStage (ålder/mognad/livsstadium: ung/mogen/gammal, larv/puppa/vuxen, etc)
+- ALLA organismer MÅSTE ha konkret ageStage (åldersuppskattning) - SE RIKTLINJER NEDAN
 - Du MÅSTE alltid välja rätt kategori från listan ovan
 - Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland)
 - Använd korrekta svenska och latinska namn
 - Om osäker, ge lägre confidence-värden (0.3-0.5)
+
+🕐 ÅLDERS-UPPSKATTNINGS-RIKTLINJER (KRITISKT VIKTIGT):
+
+ageStage MÅSTE vara en KONKRET åldersuppskattning, ALDRIG generiska termer som "mogen", "ung", "gammal", "okänd"!
+
+ANVÄND DESSA FORMAT:
+
+För TRÄD/BUSKAR - Uppskatta baserat på stamtjocklek, barktextur, grenstruktur:
+  Exempel: "~3-5 år", "~15-20 år", "~50-100 år", "~200+ år" (för mycket gamla träd)
+
+För BLOMMOR/ÖRTER - Uppskatta baserat på blomningsstadium och växtmognad:
+  Exempel: "~2-3 veckor gammal", "~1-2 månader gammal", "~3-6 månader gammal"
+
+För SVAMPAR - Uppskatta baserat på hattstorlek, sporutveckling, nedbrytning:
+  Exempel: "~1-2 dagar gammal", "~3-5 dagar gammal", "~1-2 veckor gammal"
+
+För MOSSOR/LAVAR - Uppskatta baserat på täckning och mattjocklek:
+  Exempel: "~6-12 månader gammal", "~2-3 år gammal", "~5-10 år gammal"
+
+För DJUR - Uppskatta livsstadium baserat på storlek, fjäderdräkt/päls, beteende:
+  Exempel: "~2-3 veckor gammal (unge)", "~3-6 månader gammal (juvenil)", "~2-3 år gammal (vuxen)"
+
+För STENAR/MINERALER - Använd formationstidsram om identifierbar:
+  Exempel: "~100-500 miljoner år gammal", "~1-2 miljarder år gammal"
+
+För SPÅR - Uppskatta hur färskt spåret är:
+  Exempel: "~1-2 timmar gammalt spår", "~1-2 dagar gammalt spår", "~1-2 veckor gammalt spår"
+
+⚠️ ALDRIG använda "mogen", "ung", "gammal", "okänd" - GE ALLTID en konkret åldersuppskattning!
+Om verkligen omöjligt att uppskatta (mycket sällsynt), använd "Ålder svår att uppskatta" men förklara varför i description.
 
 ❌ VANLIGA MISSTAG - GÖR ALDRIG DETTA:
 - Björk (Betula) → "barrträd" ❌ RÄTT: "lövträd"
@@ -493,14 +523,14 @@ PRIORITERINGSREGLER - FÖLJ DESSA STRIKT:
 - Gran (Picea abies) → "lövträd" ❌ RÄTT: "barrträd"
 - Ek (Quercus) → "buske" ❌ RÄTT: "lövträd"
 
-EXEMPEL PÅ KORREKT KATEGORISERING:
-✅ Vårtbjörk (Betula pendula) → "lövträd" med ageStage: "mogen"
-✅ Murgröna (Hedera helix) → "klätterväxt" (INTE "blomma")
-✅ Humle (Humulus lupulus) → "klätterväxt" (INTE "ört")
-✅ Flugsvamp (Amanita muscaria) → "svamp" med ageStage: "mogen"
-✅ Maskros (Taraxacum officinale) → "blomma" med ageStage: "blommande"
-✅ Vitmossa (Sphagnum) → "mossa" (INTE "spår")
-✅ Tallskog (ung gran) → "barrträd" med ageStage: "ung"`
+EXEMPEL PÅ KORREKT KATEGORISERING OCH ÅLDER:
+✅ Vårtbjörk (Betula pendula) → "lövträd" med ageStage: "~20-30 år"
+✅ Murgröna (Hedera helix) → "klätterväxt" (INTE "blomma") med ageStage: "~3-5 år"
+✅ Humle (Humulus lupulus) → "klätterväxt" (INTE "ört") med ageStage: "~1-2 år"
+✅ Flugsvamp (Amanita muscaria) → "svamp" med ageStage: "~3-5 dagar gammal"
+✅ Maskros (Taraxacum officinale) → "blomma" med ageStage: "~2-3 veckor gammal"
+✅ Vitmossa (Sphagnum) → "mossa" (INTE "spår") med ageStage: "~1-2 år gammal"
+✅ Tallskog (ung gran) → "barrträd" med ageStage: "~5-8 år"`
               },
               {
                 type: 'image_url',

@@ -517,12 +517,6 @@ const AnalysisResult = () => {
               )}
             </div>
 
-            {/* Age/Stage Badge */}
-            {selectedSpecies.ageStage && (
-              <Badge variant="outline" className="text-sm w-fit">
-                {selectedSpecies.ageStage}
-              </Badge>
-            )}
           </div>
 
           <div className="space-y-3">
@@ -591,6 +585,21 @@ const AnalysisResult = () => {
             <div className="space-y-3">
               <h3 className="text-lg font-semibold">Fakta & Detaljer</h3>
               <div className="grid gap-3">
+                {/* Age/Stage as first fact if available */}
+                {selectedSpecies.ageStage && (
+                  <Card className="bg-gradient-to-br from-card to-card/50 border-l-4 border-l-primary hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Sun className="w-4 h-4 text-primary" />
+                        </div>
+                        <p className="text-sm leading-relaxed flex-1 pt-1">
+                          <span className="font-semibold">Uppskattad ålder:</span> {selectedSpecies.ageStage}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 {selectedSpecies.facts.map((fact, index) => {
                   const Icon = getFactIcon(fact);
                   return (
