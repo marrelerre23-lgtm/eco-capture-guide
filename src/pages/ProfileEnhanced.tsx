@@ -7,11 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, LogOut, User, Mail, Lock, Shield, Camera, Trophy, TrendingUp, Share2, Info, HelpCircle, FileText } from "lucide-react";
+import { Loader2, Upload, LogOut, User, Mail, Lock, Shield, Camera, TrendingUp, Share2, Info, HelpCircle, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
-import { useAchievements } from "@/hooks/useAchievements";
-import { AchievementBadge } from "@/components/AchievementBadge";
 import { StatsChart } from "@/components/StatsChart";
 import { Badge } from "@/components/ui/badge";
 import { ShareDialog } from "@/components/ShareDialog";
@@ -38,7 +36,6 @@ const ProfileEnhanced = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const { data: captures } = useSpeciesCaptures();
-  const { achievements, userAchievements, getProgress, unlockedCount, totalCount } = useAchievements();
 
   // Calculate user stats
   const stats = useMemo(() => {
@@ -269,15 +266,9 @@ const ProfileEnhanced = () => {
                   <Mail className="h-3 w-3" />
                   {user?.email}
                 </p>
-                <div className="flex gap-2 mt-2">
-                  <Badge variant="secondary" className="text-xs">
-                    <Trophy className="h-3 w-3 mr-1" />
-                    {unlockedCount}/{totalCount} badges
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    {stats.total} fångster
-                  </Badge>
-                </div>
+                <Badge variant="secondary" className="text-xs mt-2">
+                  {stats.total} fångster
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -285,14 +276,10 @@ const ProfileEnhanced = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="stats" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="stats">
               <TrendingUp className="h-4 w-4 mr-2" />
               Statistik
-            </TabsTrigger>
-            <TabsTrigger value="achievements">
-              <Trophy className="h-4 w-4 mr-2" />
-              Badges
             </TabsTrigger>
             <TabsTrigger value="settings">
               <User className="h-4 w-4 mr-2" />
@@ -342,49 +329,6 @@ const ProfileEnhanced = () => {
             <StatsChart captures={captures || []} />
           </TabsContent>
 
-          {/* Achievements Tab */}
-          <TabsContent value="achievements" className="space-y-4">
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">Dina prestationer</h3>
-              <p className="text-sm text-muted-foreground">
-                {unlockedCount} av {totalCount} badges upplåsta
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {achievements.map(achievement => {
-                const userAchievement = userAchievements.find(
-                  ua => (ua.achievement as any)?.id === achievement.id
-                );
-                
-                // Map achievement key to correct stat
-                let currentValue = 0;
-                if (achievement.key.includes('capture')) {
-                  currentValue = stats.total;
-                } else if (achievement.key === 'first_rare') {
-                  currentValue = stats.rare;
-                } else if (achievement.key === 'favorite_collector') {
-                  currentValue = stats.favorites;
-                } else if (achievement.key === 'explorer') {
-                  // This would need location count - using total as fallback
-                  currentValue = stats.total;
-                } else {
-                  currentValue = stats.total;
-                }
-                
-                const progress = getProgress(achievement.key, currentValue);
-
-                return (
-                  <AchievementBadge
-                    key={achievement.id}
-                    achievement={achievement}
-                    userAchievement={userAchievement}
-                    progress={progress}
-                  />
-                );
-              })}
-            </div>
-          </TabsContent>
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-4">
