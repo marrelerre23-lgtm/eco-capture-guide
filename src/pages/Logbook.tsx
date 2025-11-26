@@ -571,22 +571,6 @@ const Logbook = () => {
         });
       }
 
-      // Apply edibility filtering for relevant categories
-      if (edibilityFilter && ['svampar', 'örter-blommor', 'träd-vedartade'].includes(categoryKey)) {
-        categorySpecies = categorySpecies.filter(species => {
-          if (!species.edibility) return false; // Filter out NULL values
-          const edibility = species.edibility.toLowerCase();
-          const filter = edibilityFilter.toLowerCase();
-          
-          // Intelligent matching for "ätlig" - includes "ätlig-med-förbehåll"
-          if (filter === 'ätlig') {
-            return edibility === 'ätlig' || edibility === 'ätlig-med-förbehåll';
-          }
-          // Exact or substring match for other filters
-          return edibility === filter || edibility.includes(filter);
-        });
-      }
-
       // Apply GPS accuracy filter
       if (gpsAccuracyFilter) {
         categorySpecies = categorySpecies.filter(species => {
@@ -1239,6 +1223,7 @@ const Logbook = () => {
                                   </Badge>
                                 )}
                               </div>
+                            </div>
 
                             {/* Species info below image */}
                             <div className="p-3 space-y-1">
