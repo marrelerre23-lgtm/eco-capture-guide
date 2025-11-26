@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 import { OverviewSkeleton } from "@/components/LoadingSkeleton";
-import { getMainCategory, getCategoryDisplayName } from "@/types/species";
+import { getMainCategory, MAIN_CATEGORY_DISPLAY } from "@/types/species";
 
 const Overview = () => {
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
@@ -345,10 +345,11 @@ const Overview = () => {
                     .map(([category, count], index) => {
                       const total = statistics.totalCaptures;
                       const percentage = Math.round((count / total) * 100);
+                      const displayName = MAIN_CATEGORY_DISPLAY[category as keyof typeof MAIN_CATEGORY_DISPLAY]?.name || 'Annat';
                       return (
                         <div key={category} className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium capitalize">{getCategoryDisplayName(category)}</span>
+                            <span className="font-medium">{displayName}</span>
                             <span className="text-muted-foreground">{count} ({percentage}%)</span>
                           </div>
                           <div className="h-2 bg-muted rounded-full overflow-hidden">
