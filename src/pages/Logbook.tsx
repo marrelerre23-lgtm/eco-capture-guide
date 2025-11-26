@@ -72,7 +72,6 @@ interface Species {
   notes?: string;
   capturedAt: Date;
   isFavorite?: boolean;
-  edibility?: string;
   ageStage?: string;
   gpsAccuracy?: number;
   facts: {
@@ -108,7 +107,6 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
     notes: capture.notes,
     capturedAt: capturedDate,
     isFavorite: capture.is_favorite || false,
-    edibility: capture.edibility,
     ageStage: capture.age_stage,
     gpsAccuracy: capture.gps_accuracy,
     facts: [
@@ -137,11 +135,6 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
         icon: "📏",
         title: "Storlek",
         description: species.sizeInfo
-      }] : []),
-      ...(capture.edibility ? [{
-        icon: "🍽️",
-        title: "Ätlighet",
-        description: capture.edibility
       }] : []),
       ...(capture.age_stage ? [{
         icon: "🔄",
@@ -206,7 +199,6 @@ const Logbook = () => {
   const [categoryPages, setCategoryPages] = useState<Record<string, number>>({});
   const [subcategoryFilter, setSubcategoryFilter] = useState<Record<string, string>>({});
   const [showEmptyCategories, setShowEmptyCategories] = useState(true);
-  const [edibilityFilter, setEdibilityFilter] = useState<string>("");
   const [gpsAccuracyFilter, setGpsAccuracyFilter] = useState<string>("");
   const [sharingCapture, setSharingCapture] = useState<{ id: string; image_url: string; species_name: string; scientific_name: string } | null>(null);
   const [recategorizingCapture, setRecategorizingCapture] = useState<{ id: string; category: string; name: string } | null>(null);
@@ -637,21 +629,6 @@ const Logbook = () => {
             return getRarityScore(rarityA) - getRarityScore(rarityB);
           });
           break;
-        case "edibility":
-          // Sort by edibility: ätlig → ätlig-med-förbehåll → inte-ätlig → giftig → okänd
-          const getEdibilityScore = (edibility: string | undefined): number => {
-            if (!edibility) return 5;
-            const e = edibility.toLowerCase();
-            if (e === 'ätlig') return 1;
-            if (e === 'ätlig-med-förbehåll') return 2;
-            if (e === 'inte-ätlig') return 3;
-            if (e === 'giftig') return 4;
-            return 5; // okänd
-          };
-          categorySpecies.sort((a, b) => {
-            return getEdibilityScore(a.edibility) - getEdibilityScore(b.edibility);
-          });
-          break;
         case "location":
           categorySpecies.sort((a, b) => (a.location || "").localeCompare(b.location || "", 'sv-SE'));
           break;
@@ -683,7 +660,7 @@ const Logbook = () => {
         speciesByCategory // Pass it down for subcategory counting
       };
     }).filter(cat => showEmptyCategories || cat.count > 0);
-  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories, edibilityFilter]);
+  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories]);
 
   const toggleCategory = (categoryKey: string) => {
     setExpandedCategory(expandedCategory === categoryKey ? "" : categoryKey);
@@ -709,7 +686,7 @@ const Logbook = () => {
         habitat: species?.habitat,
         rarity: species?.rarity,
         confidence: species?.confidence,
-        edibility: capture.edibility,
+        
         ageStage: capture.age_stage,
         notes: capture.notes,
         isFavorite: capture.is_favorite || false,
@@ -762,15 +739,13 @@ const Logbook = () => {
 
   // Count active filters
   const activeFilterCount = [
-    edibilityFilter,
     gpsAccuracyFilter,
     ...Object.values(subcategoryFilter).filter(v => v)
   ].filter(Boolean).length;
 
   // Get active filter chips data
   const activeFilters = [
-    ...(edibilityFilter ? [{ label: `Ätlighet: ${edibilityFilter}`, onRemove: () => setEdibilityFilter("") }] : []),
-    ...(gpsAccuracyFilter ? [{ 
+    ...(gpsAccuracyFilter ? [{
       label: `GPS: ${gpsAccuracyFilter === 'high' ? 'Hög' : gpsAccuracyFilter === 'medium' ? 'Medel' : 'Låg'}`, 
       onRemove: () => setGpsAccuracyFilter("") 
     }] : []),
@@ -781,7 +756,6 @@ const Logbook = () => {
   ];
 
   const handleClearAllFilters = () => {
-    setEdibilityFilter("");
     setGpsAccuracyFilter("");
     setSubcategoryFilter({});
   };
@@ -1104,9 +1078,6 @@ const Logbook = () => {
                           <SelectItem value="name">Artnamn A-Ö</SelectItem>
                           <SelectItem value="rarity">Sällsynthet</SelectItem>
                           <SelectItem value="location">Plats</SelectItem>
-                          {(['svampar', 'örter-blommor', 'träd-vedartade'] as string[]).includes(category.key) && (
-                            <SelectItem value="edibility">Ätbarhet</SelectItem>
-                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1126,20 +1097,18 @@ const Logbook = () => {
                   ) : (
                     <>
                       {/* Empty results feedback when filters are active but no results */}
-                      {category.species.length === 0 && (edibilityFilter || subcategoryFilter[category.key] || gpsAccuracyFilter) && (
+                      {category.species.length === 0 && (subcategoryFilter[category.key] || gpsAccuracyFilter) && (
                         <div className="py-8 text-center space-y-2 bg-muted/30 rounded-lg border border-dashed border-muted-foreground/20 mb-4">
                           <Filter className="h-8 w-8 text-muted-foreground mx-auto opacity-50" />
                           <p className="text-sm font-medium text-muted-foreground">Inga fångster matchar filtret</p>
                           <p className="text-xs text-muted-foreground/70">
-                            {edibilityFilter && `Ätlighet: ${edibilityFilter}`}
-                            {subcategoryFilter[category.key] && ` • ${subcategoryFilter[category.key]}`}
+                            {subcategoryFilter[category.key] && `${subcategoryFilter[category.key]}`}
                             {gpsAccuracyFilter && ` • GPS: ${gpsAccuracyFilter === 'high' ? 'Hög' : gpsAccuracyFilter === 'medium' ? 'Medel' : 'Låg'} noggrannhet`}
                           </p>
                           <Button 
                             variant="ghost" 
                             size="sm" 
                             onClick={() => {
-                              setEdibilityFilter("");
                               setSubcategoryFilter(prev => ({...prev, [category.key]: ""}));
                               setGpsAccuracyFilter("");
                             }}
@@ -1158,7 +1127,7 @@ const Logbook = () => {
                           className="shadow-card hover:shadow-eco transition-all overflow-hidden"
                         >
                           <CardContent className="p-0">
-                             <div 
+                            <div 
                               className="relative aspect-square cursor-pointer"
                               onClick={() => !bulkSelectMode && setSelectedSpecies(species)}
                             >
@@ -1259,36 +1228,8 @@ const Logbook = () => {
                                 </DropdownMenu>
                               )}
                               
-                              {/* Edibility and Age/Stage badges */}
+                              {/* Age/Stage badge */}
                               <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                                {species.edibility && (
-                                  <Badge 
-                                    variant="outline"
-                                    className={`text-xs
-                                      ${species.edibility === 'ätlig' 
-                                        ? 'bg-green-500/90 text-white border-green-600' 
-                                        : species.edibility === 'ätlig-med-förbehåll'
-                                        ? 'bg-yellow-500/90 text-white border-yellow-600'
-                                        : species.edibility === 'giftig'
-                                        ? 'bg-red-500/90 text-white border-red-600'
-                                        : species.edibility === 'inte-ätlig'
-                                        ? 'bg-gray-500/90 text-white border-gray-600'
-                                        : 'bg-muted border-muted-foreground/20 text-muted-foreground'
-                                      }
-                                    `}
-                                  >
-                                    {species.edibility === 'ätlig' 
-                                      ? '✓ Ätlig' 
-                                      : species.edibility === 'ätlig-med-förbehåll'
-                                      ? '⚠ Förbehåll'
-                                      : species.edibility === 'giftig'
-                                      ? '☠ Giftig'
-                                      : species.edibility === 'inte-ätlig'
-                                      ? '⊘ Ej ätlig'
-                                      : '? Okänd'
-                                    }
-                                  </Badge>
-                                )}
                                 {species.ageStage && (
                                   <Badge 
                                     variant="secondary"
@@ -1298,7 +1239,6 @@ const Logbook = () => {
                                   </Badge>
                                 )}
                               </div>
-                            </div>
 
                             {/* Species info below image */}
                             <div className="p-3 space-y-1">
@@ -1574,11 +1514,9 @@ const Logbook = () => {
       <FilterDrawer
         open={filterDrawerOpen}
         onOpenChange={setFilterDrawerOpen}
-        edibilityFilter={edibilityFilter}
-        onEdibilityChange={setEdibilityFilter}
-        showEdibilityFilter={categorizedSpecies.some(cat => 
-          ['svampar', 'örter-blommor', 'träd-vedartade'].includes(cat.key)
-        )}
+        showEdibilityFilter={false}
+        edibilityFilter=""
+        onEdibilityChange={() => {}}
         gpsAccuracyFilter={gpsAccuracyFilter}
         onGpsAccuracyChange={setGpsAccuracyFilter}
         subcategoryFilter={subcategoryFilter}

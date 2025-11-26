@@ -202,7 +202,6 @@ const AnalysisResult = () => {
           longitude: gpsLocation?.longitude || null,
           gps_accuracy: gpsLocation?.accuracy || null,
           location_name: locationName,
-          edibility: selectedSpecies.edibility || null,
           age_stage: selectedSpecies.ageStage || null,
           ai_analysis: {
             species: {
@@ -215,7 +214,6 @@ const AnalysisResult = () => {
               identificationFeatures: factsMap['Kännetecken'] || undefined,
               rarity: factsMap['Sällsynthet'] || undefined,
               sizeInfo: factsMap['Storlek'] || undefined,
-              edibility: selectedSpecies.edibility || undefined,
               ageStage: selectedSpecies.ageStage || undefined,
             }
           },
@@ -518,33 +516,6 @@ const AnalysisResult = () => {
                 </>
               )}
             </div>
-
-            {/* Edibility Badge (for mushrooms and plants) */}
-            {selectedSpecies.edibility && selectedSpecies.edibility !== 'okänd' && (
-              <div className="flex items-center gap-2">
-                <Badge 
-                  variant={
-                    selectedSpecies.edibility === 'giftig' ? 'destructive' :
-                    selectedSpecies.edibility === 'ätlig' ? 'default' :
-                    'secondary'
-                  }
-                  className={`text-sm ${
-                    selectedSpecies.edibility === 'giftig' ? 'bg-red-500' :
-                    selectedSpecies.edibility === 'ätlig' ? 'bg-green-500' :
-                    'bg-yellow-500'
-                  }`}
-                >
-                  {selectedSpecies.edibility === 'giftig' && '⚠️ '}
-                  {selectedSpecies.edibility === 'ätlig' && '✓ '}
-                  {selectedSpecies.edibility}
-                </Badge>
-                {selectedSpecies.edibility === 'giftig' && (
-                  <span className="text-xs text-destructive font-semibold">
-                    Rör ej! Potentiellt farlig.
-                  </span>
-                )}
-              </div>
-            )}
 
             {/* Age/Stage Badge */}
             {selectedSpecies.ageStage && (
