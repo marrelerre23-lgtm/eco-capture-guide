@@ -28,6 +28,138 @@ const VALID_SUBCATEGORIES = [
   'spår', 'annat'
 ];
 
+// Expanded known species mapping for better categorization
+const KNOWN_SPECIES: Record<string, string> = {
+  // Träd - Barrträd
+  'picea abies': 'barrträd',
+  'pinus sylvestris': 'barrträd',
+  'abies': 'barrträd',
+  'larix': 'barrträd',
+  'juniperus': 'barrträd',
+  'taxus': 'barrträd',
+  
+  // Träd - Lövträd
+  'betula': 'lövträd',
+  'betula pendula': 'lövträd',
+  'betula pubescens': 'lövträd',
+  'quercus': 'lövträd',
+  'fagus': 'lövträd',
+  'alnus': 'lövträd',
+  'populus': 'lövträd',
+  'salix': 'lövträd',
+  'acer': 'lövträd',
+  'fraxinus': 'lövträd',
+  'tilia': 'lövträd',
+  'ulmus': 'lövträd',
+  'sorbus': 'lövträd',
+  'prunus': 'lövträd',
+  'malus': 'lövträd',
+  'pyrus': 'lövträd',
+  
+  // Buskar
+  'rosa': 'buske',
+  'rubus': 'buske',
+  'corylus': 'buske',
+  'sambucus': 'buske',
+  'viburnum': 'buske',
+  'ribes': 'buske',
+  'symphoricarpos': 'buske',
+  
+  // Klätterväxter
+  'hedera': 'klätterväxt',
+  'hedera helix': 'klätterväxt',
+  'humulus': 'klätterväxt',
+  'clematis': 'klätterväxt',
+  'lonicera': 'klätterväxt',
+  
+  // Blommor och Örter
+  'taraxacum': 'blomma',
+  'bellis': 'blomma',
+  'ranunculus': 'blomma',
+  'trifolium': 'blomma',
+  'viola': 'blomma',
+  'primula': 'blomma',
+  'anemone': 'blomma',
+  'tussilago': 'blomma',
+  'leucanthemum': 'blomma',
+  'convallaria': 'blomma',
+  'galium': 'ört',
+  'urtica': 'ört',
+  'plantago': 'ört',
+  'rumex': 'ört',
+  'artemisia': 'ört',
+  
+  // Gräs
+  'poa': 'gräs',
+  'festuca': 'gräs',
+  'agrostis': 'gräs',
+  'deschampsia': 'gräs',
+  'phragmites': 'gräs',
+  
+  // Mossor
+  'sphagnum': 'mossa',
+  'polytrichum': 'mossa',
+  'hylocomium': 'mossa',
+  'pleurozium': 'mossa',
+  'dicranum': 'mossa',
+  
+  // Lavar
+  'cladonia': 'lav',
+  'usnea': 'lav',
+  'parmelia': 'lav',
+  'xanthoria': 'lav',
+  
+  // Svampar
+  'amanita': 'svamp',
+  'boletus': 'svamp',
+  'cantharellus': 'svamp',
+  'russula': 'svamp',
+  'lactarius': 'svamp',
+  'cortinarius': 'svamp',
+  'tricholoma': 'svamp',
+  'suillus': 'svamp',
+  
+  // Fåglar
+  'turdus': 'fågel',
+  'parus': 'fågel',
+  'corvus': 'fågel',
+  'pica': 'fågel',
+  'sturnus': 'fågel',
+  'columba': 'fågel',
+  'anas': 'fågel',
+  
+  // Däggdjur
+  'vulpes': 'däggdjur',
+  'cervus': 'däggdjur',
+  'alces': 'däggdjur',
+  'lepus': 'däggdjur',
+  'sciurus': 'däggdjur',
+  'erinaceus': 'däggdjur',
+  
+  // Insekter
+  'apis': 'insekt',
+  'bombus': 'insekt',
+  'vespa': 'insekt',
+  'formica': 'insekt',
+  'pieris': 'insekt',
+  'vanessa': 'insekt',
+  'coccinella': 'insekt',
+};
+
+// Scientific name prefix to category mapping for contradiction detection
+const SCIENTIFIC_NAME_CATEGORIES: Record<string, string> = {
+  'betula': 'lövträd',
+  'quercus': 'lövträd',
+  'picea': 'barrträd',
+  'pinus': 'barrträd',
+  'taraxacum': 'blomma',
+  'hedera': 'klätterväxt',
+  'humulus': 'klätterväxt',
+  'sphagnum': 'mossa',
+  'amanita': 'svamp',
+  'boletus': 'svamp',
+};
+
 // Main categories that map to subcategories
 const MAIN_CATEGORIES = [
   'träd-vedartade', 'örter-blommor', 'mossor-lavar', 'svampar', 
@@ -247,7 +379,7 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Du är en expert på nordisk natur - flora, fauna, geologi och ekologi. Analysera denna bild och identifiera de 3 mest sannolika alternativen. 
+                text: `Du är en expert på nordisk natur - flora, fauna, geologi och ekologi med specialistkompetens inom svensk flora och fauna. Analysera denna bild och identifiera de 3 mest sannolika alternativen. 
 
 ${categoryHint}
 ${detailPrompt}
@@ -259,18 +391,17 @@ Ge svar på svenska i följande JSON-format med EXAKT 3 alternativ sorterade eft
     {
       "species": {
         "commonName": "Svenskt namn",
-        "scientificName": "Vetenskapligt namn",
+        "scientificName": "Vetenskapligt namn (Genus species)",
         "category": "Välj från listan nedan",
         "confidence": 0.85,
-        "description": "Detaljerad beskrivning på svenska",
+        "description": "Detaljerad beskrivning på svenska (2-3 meningar)",
         "habitat": "Var arten/objektet normalt förekommer",
-        "identificationFeatures": "Kännetecken som hjälper till identifiering",
+        "identificationFeatures": "Specifika kännetecken som hjälper till identifiering",
         "rarity": "vanlig/ovanlig/sällsynt/hotad",
-        "sizeInfo": "Information om storlek",
-        "edibility": "För svamp och växter: EXAKT ett av dessa värden: ätlig | giftig | ätlig-med-förbehåll | inte-ätlig | okänd",
-        "ageStage": "Ålder, mognad eller livsstadium (t.ex. ung/mogen, larv/vuxen, etc)"
+        "sizeInfo": "Information om storlek och dimensioner",
+        "ageStage": "Ålder, mognad eller livsstadium (t.ex. ung/mogen/gammal, larv/puppa/vuxen, etc)"
       },
-      "reasoning": "Förklaring av varför du tror det är detta alternativ"
+      "reasoning": "Förklaring av varför du tror det är detta alternativ (1-2 meningar)"
     }
   ]
 }
@@ -295,7 +426,6 @@ MOSSOR OCH LAVAR:
 
 SVAMPAR:
 - "svamp" - för alla svampar
-⚠️ KRITISKT: För ALLA svampar MÅSTE edibility-fältet ALLTID vara ifyllt (ätlig/giftig/ätlig med förbehåll/inte ätlig/okänd)!
 
 FÅGLAR:
 - "fågel" - för alla fåglar
@@ -321,7 +451,6 @@ VATTEN- OCH RYGGRADSLÖST LIV:
 STENAR & MINERALER:
 - "sten" - för bergarter och stenar
 - "mineral" - för mineraler och kristaller
-⚠️ KRITISKT: Stenar och mineraler är ALDRIG ätliga! Om det är sten/mineral, använd edibility: "inte-ätlig"
 
 ⚠️⚠️⚠️ KRITISKT VIKTIGT - "SPÅR" KATEGORIN ⚠️⚠️⚠️
 SPÅR OCH ÖVRIGT:
@@ -350,16 +479,27 @@ PRIORITERINGSREGLER - FÖLJ DESSA STRIKT:
 
 ⚠️ OBLIGATORISKA KRAV:
 - Returnera EXAKT 3 alternativ, sorterade efter confidence (högst först)
-- ALLA svampar MÅSTE ha edibility (ätlig/giftig/ätlig med förbehåll/inte ätlig/okänd)
 - ALLA organismer MÅSTE ha ageStage (ålder/mognad/livsstadium: ung/mogen/gammal, larv/puppa/vuxen, etc)
 - Du MÅSTE alltid välja rätt kategori från listan ovan
 - Fokusera på nordiska arter (Sverige, Norge, Danmark, Finland)
+- Använd korrekta svenska och latinska namn
 - Om osäker, ge lägre confidence-värden (0.3-0.5)
 
+❌ VANLIGA MISSTAG - GÖR ALDRIG DETTA:
+- Björk (Betula) → "barrträd" ❌ RÄTT: "lövträd"
+- Maskros (Taraxacum) → "buske" ❌ RÄTT: "blomma"
+- Murgröna (Hedera) → "blomma" ❌ RÄTT: "klätterväxt"
+- Mossa (Sphagnum/Polytrichum) → "spår" ❌ RÄTT: "mossa"
+- Gran (Picea abies) → "lövträd" ❌ RÄTT: "barrträd"
+- Ek (Quercus) → "buske" ❌ RÄTT: "lövträd"
+
 EXEMPEL PÅ KORREKT KATEGORISERING:
+✅ Vårtbjörk (Betula pendula) → "lövträd" med ageStage: "mogen"
 ✅ Murgröna (Hedera helix) → "klätterväxt" (INTE "blomma")
 ✅ Humle (Humulus lupulus) → "klätterväxt" (INTE "ört")
-✅ Flugsvamp (Amanita muscaria) → "svamp" med edibility: "giftig"
+✅ Flugsvamp (Amanita muscaria) → "svamp" med ageStage: "mogen"
+✅ Maskros (Taraxacum officinale) → "blomma" med ageStage: "blommande"
+✅ Vitmossa (Sphagnum) → "mossa" (INTE "spår")
 ✅ Tallskog (ung gran) → "barrträd" med ageStage: "ung"`
               },
               {
@@ -448,83 +588,38 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
                                 description.includes('klättrande') ||
                                 description.includes('slingrande');
         
-        // POST-PROCESSING FIX #7: Force stones/minerals to NEVER be edible
-        const isStoneMinerals = category === 'sten' || category === 'mineral';
-        if (isStoneMinerals && alt.species?.edibility && alt.species.edibility !== 'inte-ätlig') {
-          console.log(`POST-PROCESSING FIX #7: Correcting edibility for stone/mineral from "${alt.species.edibility}" to "inte-ätlig"`);
-          alt.species.edibility = 'inte-ätlig';
-        }
-        
         if (isClimbingPlant && (category === 'blomma' || category === 'ört')) {
           console.warn(`🔧 AUTO-KORRIGERING: "${commonName}" från "${category}" → "klätterväxt"`);
           alt.species.category = 'klätterväxt';
         }
         
-        // POST-PROCESSING FIX #2: Auto-correct known species misclassified as "spår"
-        // This prevents common plants/trees from being incorrectly categorized as traces
-        if (category === 'spår') {
-          const knownSpecies: Record<string, string> = {
-            // Barrträd
-            'picea abies': 'barrträd',
-            'picea': 'barrträd',
-            'pinus sylvestris': 'barrträd',
-            'pinus': 'barrträd',
-            'tall': 'barrträd',
-            'gran': 'barrträd',
-            
-            // Lövträd
-            'betula pendula': 'lövträd',
-            'betula pubescens': 'lövträd',
-            'betula': 'lövträd',
-            'björk': 'lövträd',
-            'aesculus hippocastanum': 'lövträd',
-            'kastanj': 'lövträd',
-            'acer': 'lövträd',
-            'lönn': 'lövträd',
-            'quercus': 'lövträd',
-            'ek': 'lövträd',
-            
-            // Buskar
-            'calluna vulgaris': 'buske',
-            'calluna': 'buske',
-            'ljung': 'buske',
-            'vaccinium myrtillus': 'buske',
-            'blåbär': 'buske',
-            'symphoricarpos albus': 'buske',
-            'snöbär': 'buske',
-            'chamaedorea': 'buske',
-            'rosa': 'buske',
-            'ros': 'buske',
-            
-            // Blommor/Örter
-            'taraxacum': 'blomma',
-            'maskros': 'blomma',
-            'plantago major': 'ört',
-            'groblad': 'ört',
-            'artemisia vulgaris': 'ört',
-            'gråbo': 'ört',
-            'hylotelephium spectabile': 'blomma',
-            'kärleksört': 'blomma',
-            'trifolium': 'blomma',
-            'klöver': 'blomma',
-            'ranunculus': 'blomma',
-            'smörblomma': 'blomma',
-            
-            // Gräs
-            'dactylis glomerata': 'gräs',
-            'hundäxing': 'gräs',
-            'poa': 'gräs',
-            'gröe': 'gräs'
-          };
-          
-          // Check both scientific and common name
+        // POST-PROCESSING FIX #2: Auto-correct known species using KNOWN_SPECIES mapping
+        if (category === 'spår' || !VALID_SUBCATEGORIES.includes(category)) {
+          // Check scientific name first (more accurate)
           let correctedCategory: string | null = null;
-          for (const [species, correctCat] of Object.entries(knownSpecies)) {
-            if (scientificName.includes(species) || commonName.includes(species)) {
+          for (const [speciesKey, correctCat] of Object.entries(KNOWN_SPECIES)) {
+            if (scientificName.includes(speciesKey)) {
               correctedCategory = correctCat;
-              console.warn(`🔧 AUTO-KORRIGERING: "${alt.species.commonName}" från "spår" → "${correctCat}" (matchade: ${species})`);
+              console.warn(`🔧 AUTO-KORRIGERING: "${alt.species.commonName}" från "${category}" → "${correctCat}" (matchade vetenskapligt namn: ${speciesKey})`);
               break;
             }
+          }
+          
+          // If not found by scientific name, try common name (less reliable)
+          if (!correctedCategory) {
+            for (const [speciesKey, correctCat] of Object.entries(KNOWN_SPECIES)) {
+              if (commonName.includes(speciesKey)) {
+                correctedCategory = correctCat;
+                console.warn(`🔧 AUTO-KORRIGERING: "${alt.species.commonName}" från "${category}" → "${correctCat}" (matchade vanligt namn: ${speciesKey})`);
+                break;
+              }
+            }
+          }
+          
+          // Special fix for mosses misclassified as "spår"
+          if (!correctedCategory && commonName.includes('mossa') && category === 'spår') {
+            correctedCategory = 'mossa';
+            console.warn(`🔧 AUTO-KORRIGERING: "${alt.species.commonName}" från "spår" → "mossa" (innehåller ordet "mossa")`);
           }
           
           if (correctedCategory) {
@@ -532,62 +627,33 @@ EXEMPEL PÅ KORREKT KATEGORISERING:
           }
         }
         
-        // Final validation: if still invalid category, use "annat"
-        if (!category || !VALID_SUBCATEGORIES.includes(alt.species.category)) {
-          console.warn(`Ogiltig kategori från AI: "${category}", använder "annat"`);
+        // POST-PROCESSING FIX #3: Contradiction detection - verify category matches scientific name
+        for (const [prefix, expectedCategory] of Object.entries(SCIENTIFIC_NAME_CATEGORIES)) {
+          if (scientificName.startsWith(prefix)) {
+            if (alt.species.category !== expectedCategory) {
+              console.warn(`🔧 MOTSÄGELSE UPPTÄCKT: "${alt.species.commonName}" har vetenskapligt namn "${scientificName}" men kategori "${alt.species.category}". Korrigerar till "${expectedCategory}"`);
+              alt.species.category = expectedCategory;
+            }
+            break;
+          }
+        }
+        
+        // POST-PROCESSING FIX #4: Final validation - if still invalid category, use "annat"
+        if (!alt.species.category || !VALID_SUBCATEGORIES.includes(alt.species.category)) {
+          console.warn(`Ogiltig kategori från AI: "${alt.species.category}", använder "annat"`);
           alt.species.category = 'annat';
         }
         
-        // Set default confidence if missing or invalid
+        // POST-PROCESSING FIX #5: Set default confidence if missing or invalid
         if (typeof alt.species.confidence !== 'number' || isNaN(alt.species.confidence)) {
           console.warn('Confidence saknas eller är ogiltig, använder default 0.5');
           alt.species.confidence = 0.5;
         }
         
-        // POST-PROCESSING FIX #3: Normalize edibility values
-        if (alt.species.edibility) {
-          const edibility = alt.species.edibility.toLowerCase();
-          if (edibility.includes('ätlig') && (edibility.includes('förbehåll') || edibility.includes('försiktig'))) {
-            alt.species.edibility = 'ätlig-med-förbehåll';
-          } else if (edibility.includes('ätlig') || edibility.includes('matsvamp')) {
-            alt.species.edibility = 'ätlig';
-          } else if (edibility.includes('giftig') || edibility.includes('dödlig')) {
-            alt.species.edibility = 'giftig';
-          } else if (edibility.includes('inte') || edibility.includes('ej') || edibility.includes('icke')) {
-            alt.species.edibility = 'inte-ätlig';
-          } else {
-            alt.species.edibility = 'okänd';
-          }
-        }
-        
-        // POST-PROCESSING FIX #4: Ensure mushrooms ALWAYS have edibility
-        if (alt.species.category === 'svamp') {
-          if (!alt.species.edibility || alt.species.edibility.trim() === '') {
-            console.warn(`⚠️ SÄKERHETSVARNING: Svamp "${commonName}" saknar ätlighet, sätter till "okänd"`);
-            alt.species.edibility = 'okänd';
-          }
-        }
-        
-        // POST-PROCESSING FIX #5: Ensure ALL organisms have ageStage
+        // POST-PROCESSING FIX #6: Ensure ALL organisms have ageStage
         if (!alt.species.ageStage || alt.species.ageStage.trim() === '') {
           console.warn(`Organism "${commonName}" saknar ageStage, sätter till "okänd"`);
           alt.species.ageStage = 'okänd';
-        }
-        
-        // POST-PROCESSING FIX #6: Ensure ALL captures have edibility field
-        if (!alt.species.edibility || alt.species.edibility.trim() === '') {
-          // Set default edibility based on category
-          if (alt.species.category === 'svamp') {
-            console.warn(`⚠️ SÄKERHETSVARNING: Svamp "${commonName}" saknar ätlighet, sätter till "okänd"`);
-            alt.species.edibility = 'okänd';
-          } else if (['barrträd', 'lövträd', 'buske', 'klätterväxt', 'blomma', 'ört', 'gräs'].includes(alt.species.category)) {
-            // Plants - default to okänd unless AI specifically states otherwise
-            alt.species.edibility = 'okänd';
-          } else {
-            // Animals, rocks, traces etc - default to inte-ätlig
-            alt.species.edibility = 'inte-ätlig';
-          }
-          console.log(`Sätter default edibility för "${commonName}" (${alt.species.category}): ${alt.species.edibility}`);
         }
         
         return alt;
