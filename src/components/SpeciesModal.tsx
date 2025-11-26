@@ -9,6 +9,7 @@ interface Species {
   image: string;
   dateFound: string;
   description: string;
+  ageStage?: string;
   facts: {
     icon: string;
     title: string;
@@ -84,6 +85,18 @@ export const SpeciesModal = ({
                 {species.description}
               </p>
             </div>
+
+            {/* Age if available */}
+            {species.ageStage && (
+              <div className="px-6 pb-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🕐</span>
+                  <p className="text-sm" style={{ color: '#3d4d3d' }}>
+                    <span className="font-semibold" style={{ color: '#2e7d5e' }}>Uppskattad ålder:</span> {species.ageStage}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Facts - structured with dividers */}
             <div className="px-6 pb-6 space-y-0">
