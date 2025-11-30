@@ -34,7 +34,7 @@ const Privacy = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              Välkommen till Svampjakten. Vi värnar om din integritet och är ålagda enligt GDPR att informera dig om hur vi samlar in, använder och skyddar dina personuppgifter.
+              Välkommen till EcoCapture. Vi värnar om din integritet och är ålagda enligt GDPR att informera dig om hur vi samlar in, använder och skyddar dina personuppgifter.
             </p>
             <p>
               Genom att använda vår tjänst godkänner du villkoren i denna integritetspolicy.
@@ -48,11 +48,11 @@ const Privacy = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              Svampjakten är personuppgiftsansvarig för behandlingen av dina personuppgifter.
+              EcoCapture är personuppgiftsansvarig för behandlingen av dina personuppgifter.
             </p>
             <p className="text-sm">
               Kontaktuppgifter:<br />
-              E-post: info@svampjakten.se<br />
+              E-post: info@ecocapture.app<br />
               Organisationsnummer: Privatperson - enskild firma
             </p>
           </CardContent>
@@ -89,7 +89,7 @@ const Privacy = () => {
               <div>
                 <p className="font-semibold text-foreground">3.3 Innehållsdata</p>
                 <ul className="list-disc ml-4 mt-2">
-                  <li>Foton av svamp och bär</li>
+                  <li>Foton av växter, djur, svampar och natur</li>
                   <li>GPS-koordinater (om du ger tillåtelse)</li>
                   <li>Anteckningar och kommentarer</li>
                   <li>Favoritmarkeringar</li>
@@ -116,7 +116,7 @@ const Privacy = () => {
             <p>Vi använder dina personuppgifter för att:</p>
             <ul className="list-disc ml-4 space-y-2">
               <li>Tillhandahålla och förbättra vår tjänst</li>
-              <li>Identifiera svamp och bär med AI-teknologi</li>
+              <li>Identifiera växter, djur, svampar och natur med AI-teknologi</li>
               <li>Spara och organisera dina fynd i loggboken</li>
               <li>Visa dina fynd på kartan</li>
               <li>Generera statistik och prestationsbadges</li>
@@ -227,7 +227,7 @@ const Privacy = () => {
               <li><strong>Återkalla samtycke</strong>: När som helst återkalla lämnat samtycke</li>
             </ul>
             <p className="mt-3">
-              För att utöva dina rättigheter, kontakta oss på info@svampjakten.se
+              För att utöva dina rättigheter, kontakta oss på info@ecocapture.app
             </p>
           </CardContent>
         </Card>
@@ -301,7 +301,7 @@ const Privacy = () => {
               Om du har frågor om denna integritetspolicy eller hur vi behandlar dina personuppgifter, kontakta oss:
             </p>
             <p className="text-sm">
-              E-post: info@svampjakten.se<br />
+              E-post: info@ecocapture.app<br />
               Eller via profilen i appen
             </p>
           </CardContent>

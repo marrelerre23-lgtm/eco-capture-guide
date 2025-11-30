@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'se.svampjakten.app',
-  appName: 'Svampjakten',
+  appId: 'app.ecocapture.app',
+  appName: 'EcoCapture',
   webDir: 'dist',
   plugins: {
     SplashScreen: {

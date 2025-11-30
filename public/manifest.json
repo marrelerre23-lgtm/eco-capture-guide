@@ -1,7 +1,7 @@
 {
-  "name": "Svampjakten - Upptäck naturen",
-  "short_name": "Svampjakten",
-  "description": "Fånga och identifiera växter, svampar och insekter med AI. Din digitala naturloggbok.",
+  "name": "EcoCapture - Discover Nature",
+  "short_name": "EcoCapture",
+  "description": "Capture and identify plants, mushrooms, insects and wildlife with AI. Your digital nature journal.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f9f8",

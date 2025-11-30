@@ -34,7 +34,7 @@ const Terms = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              Välkommen till Svampjakten. Genom att registrera dig och använda denna tjänst godkänner du dessa användarvillkor i sin helhet. Om du inte godkänner villkoren ska du inte använda tjänsten.
+              Välkommen till EcoCapture. Genom att registrera dig och använda denna tjänst godkänner du dessa användarvillkor i sin helhet. Om du inte godkänner villkoren ska du inte använda tjänsten.
             </p>
             <p>
               Vi förbehåller oss rätten att när som helst uppdatera dessa villkor. Fortsatt användning efter ändringar innebär att du godkänner de nya villkoren.
@@ -48,7 +48,7 @@ const Terms = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              Svampjakten är en digital tjänst för identifiering, dokumentation och delning av svamp- och bärfynd. Tjänsten använder AI-teknologi för att analysera bilder och ge information om olika arter.
+              EcoCapture är en digital tjänst för identifiering, dokumentation och delning av växt-, djur- och svampfynd. Tjänsten använder AI-teknologi för att analysera bilder och ge information om olika arter.
             </p>
             <p className="font-semibold text-foreground">Tjänsten inkluderar:</p>
             <ul className="list-disc ml-4 space-y-2">
@@ -70,7 +70,7 @@ const Terms = () => {
               ⚠️ VIKTIG INFORMATION OM SÄKERHET
             </p>
             <p>
-              AI-identifieringen är ett hjälpmedel och ingen garanti. Du ansvarar själv för att säkerställa korrekt identifiering innan du konsumerar någon svamp eller bär.
+              AI-identifieringen är ett hjälpmedel och ingen garanti. Du ansvarar själv för att säkerställa korrekt identifiering innan du konsumerar någon växt, svamp eller bär.
             </p>
             <p className="font-semibold text-foreground">Som användare förbinder du dig att:</p>
             <ul className="list-disc ml-4 space-y-2">
@@ -89,11 +89,11 @@ const Terms = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p className="font-semibold text-foreground">
-              Svampjakten och dess ägare ansvarar INTE för:
+              EcoCapture och dess ägare ansvarar INTE för:
             </p>
             <ul className="list-disc ml-4 space-y-2">
               <li>Felaktiga AI-identifieringar eller annan information i appen</li>
-              <li>Förgiftning, sjukdom eller skada till följd av konsumtion av svamp eller bär</li>
+              <li>Förgiftning, sjukdom eller skada till följd av konsumtion av växter, svampar eller bär</li>
               <li>Förlust av data eller innehåll</li>
               <li>Tekniska problem, avbrott eller fel i tjänsten</li>
               <li>Skador som uppstår vid användning av tjänsten</li>
@@ -155,7 +155,7 @@ const Terms = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              Allt innehåll i tjänsten (design, logotyper, text, kod, AI-modeller) ägs av Svampjakten och är skyddat av upphovsrätt och andra immateriella rättigheter.
+              Allt innehåll i tjänsten (design, logotyper, text, kod, AI-modeller) ägs av EcoCapture och är skyddat av upphovsrätt och andra immateriella rättigheter.
             </p>
             <p>
               Du får inte kopiera, modifiera, distribuera eller sälja någon del av tjänsten utan vårt skriftliga godkännande.
@@ -297,7 +297,7 @@ const Terms = () => {
               Om du har frågor om dessa användarvillkor, kontakta oss:
             </p>
             <p className="text-sm">
-              E-post: info@svampjakten.se<br />
+              E-post: info@ecocapture.app<br />
               Eller via profilen i appen
             </p>
           </CardContent>
@@ -312,7 +312,7 @@ const Terms = () => {
               <li>AI-identifieringen är ett hjälpmedel, inte en garanti</li>
               <li>Du ansvarar själv för att säkerställa korrekt identifiering</li>
               <li>Vi tar inget ansvar för felaktiga identifieringar eller skador</li>
-              <li>Konsumera aldrig svamp/bär om du inte är 100% säker</li>
+              <li>Konsumera aldrig växter/svampar/bär om du inte är 100% säker</li>
               <li>Följ användarvillkoren och var en ansvarsfull användare</li>
             </ul>
           </CardContent>
@@ -320,7 +320,7 @@ const Terms = () => {
 
         <div className="text-center text-sm text-muted-foreground pt-4">
           <p>Dessa användarvillkor gäller från {new Date().toLocaleDateString('sv-SE')}</p>
-          <p className="mt-2">Genom att använda Svampjakten godkänner du dessa villkor</p>
+          <p className="mt-2">Genom att använda EcoCapture godkänner du dessa villkor</p>
         </div>
       </div>
     </div>

@@ -19,9 +19,9 @@ const About = () => {
         </Button>
 
         <div className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl font-bold text-primary">Om Svampjakten</h1>
+          <h1 className="text-3xl font-bold text-primary">Om EcoCapture</h1>
           <p className="text-muted-foreground">
-            Din digitala guide för svamp- och bäridentifiering
+            Din digitala guide för naturidentifiering
           </p>
         </div>
 
@@ -35,10 +35,10 @@ const About = () => {
           </CardHeader>
           <CardContent className="space-y-3 text-muted-foreground">
             <p>
-              Svampjakten gör det enkelt och säkert att upptäcka, identifiera och dokumentera svamp och bär i naturen. Oavsett om du är nybörjare eller erfaren svampplockare hjälper vår app dig att lära dig mer om naturens rikedom.
+              EcoCapture makes it easy and safe to discover, identify and document plants, mushrooms, insects and wildlife in nature. Whether you're a beginner or experienced nature enthusiast, our app helps you learn more about nature's diversity.
             </p>
             <p>
-              Vi tror på att göra naturkunskap tillgänglig för alla och bidra till en säkrare och roligare upplevelse i skogen.
+              We believe in making nature knowledge accessible to everyone and contributing to a safer and more enjoyable outdoor experience.
             </p>
           </CardContent>
         </Card>
@@ -60,7 +60,7 @@ const About = () => {
                 <div>
                   <h4 className="font-semibold mb-1">Ta ett foto</h4>
                   <p className="text-sm text-muted-foreground">
-                    Använd kameran för att ta en tydlig bild av svampen eller bäret från olika vinklar.
+                    Använd kameran för att ta en tydlig bild av växten, djuret eller svampen från olika vinklar.
                   </p>
                 </div>
               </div>
@@ -121,9 +121,9 @@ const About = () => {
                 <Shield className="h-4 w-4" />
                 Viktigt att veta
               </p>
-              <p className="text-sm text-muted-foreground">
-                AI-analysen är ett hjälpmedel och ingen garanti. Konsultera alltid flera källor och en expert innan du konsumerar okända svampar eller bär. Vi tar inget ansvar för felaktiga identifieringar.
-              </p>
+            <p className="text-sm text-muted-foreground">
+              AI-analysen är ett hjälpmedel och ingen garanti. Konsultera alltid flera källor och en expert innan du konsumerar okända växter, svampar eller bär. Vi tar inget ansvar för felaktiga identifieringar.
+            </p>
             </div>
           </CardContent>
         </Card>
@@ -183,13 +183,13 @@ const About = () => {
               Har du frågor, feedback eller förslag? Vi vill gärna höra från dig!
             </p>
             <p className="text-sm">
-              E-post: <span className="text-primary">info@svampjakten.se</span>
+              E-post: <span className="text-primary">info@ecocapture.app</span>
             </p>
           </CardContent>
         </Card>
 
         <p className="text-center text-sm text-muted-foreground">
-          Version 1.0.0 • © 2025 Svampjakten
+          Version 1.0.0 • © 2025 EcoCapture
         </p>
       </div>
     </div>

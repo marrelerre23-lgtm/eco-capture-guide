@@ -424,7 +424,7 @@ const ProfileEnhanced = () => {
                   onClick={() => navigate('/about')}
                 >
                   <Info className="mr-2 h-4 w-4" />
-                  Om Svampjakten
+                  Om EcoCapture
                 </Button>
                 <Button 
                   variant="outline" 

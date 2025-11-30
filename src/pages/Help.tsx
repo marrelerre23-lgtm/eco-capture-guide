@@ -36,10 +36,10 @@ const Help = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3 text-muted-foreground">
-              <p className="font-semibold text-foreground">Så här använder du Svampjakten:</p>
+              <p className="font-semibold text-foreground">Så här använder du EcoCapture:</p>
               <ol className="list-decimal list-inside space-y-2 ml-2">
                 <li>Öppna kameran genom att klicka på kamera-ikonen</li>
-                <li>Ta ett tydligt foto av svampen eller bäret</li>
+                <li>Ta ett tydligt foto av växten, djuret eller svampen</li>
                 <li>Vänta medan AI:n analyserar bilden</li>
                 <li>Läs informationen noggrant och kontrollera säkerhetsvarningar</li>
                 <li>Spara ditt fynd i loggboken med platsmarkering</li>
@@ -67,8 +67,8 @@ const Help = () => {
                   <ul className="space-y-2 ml-4">
                     <li>• Använd naturligt ljus och undvik blixt</li>
                     <li>• Ta bilder från olika vinklar (ovanifrån, från sidan, undersidan)</li>
-                    <li>• Se till att svampen/bäret är i fokus och fyller bilden</li>
-                    <li>• Inkludera omgivningen för att visa växplats</li>
+                    <li>• Se till att motivet är i fokus och fyller bilden</li>
+                    <li>• Inkludera omgivningen för att visa växplats/habitat</li>
                     <li>• Undvik suddiga eller dåligt belysta bilder</li>
                   </ul>
                 </AccordionContent>
@@ -240,7 +240,7 @@ const Help = () => {
           <CardContent className="pt-6">
             <h3 className="font-semibold text-warning mb-2">⚠️ Viktig säkerhetsinformation</h3>
             <p className="text-sm text-muted-foreground">
-              Konsumera aldrig svamp eller bär om du inte är 100% säker på identifieringen. AI:n är ett hjälpmedel och ingen garanti. Vid minsta tvivel, kontakta en expert eller lämna den ifred.
+              Konsumera aldrig växter, svampar eller bär om du inte är 100% säker på identifieringen. AI:n är ett hjälpmedel och ingen garanti. Vid minsta tvivel, kontakta en expert eller lämna det ifred.
             </p>
           </CardContent>
         </Card>
