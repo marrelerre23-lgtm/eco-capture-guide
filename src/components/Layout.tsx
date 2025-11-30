@@ -65,9 +65,10 @@ const Layout = ({ children }: LayoutProps) => {
     };
   }, [navigate, location.pathname]);
 
-  // Redirect to auth if not authenticated and not on auth page
+  // Redirect to auth if not authenticated and not on public pages
   useEffect(() => {
-    if (!loading && !user && location.pathname !== "/auth") {
+    const publicRoutes = ["/auth", "/forgot-password"];
+    if (!loading && !user && !publicRoutes.includes(location.pathname)) {
       navigate("/auth");
     }
   }, [user, loading, location.pathname, navigate]);
