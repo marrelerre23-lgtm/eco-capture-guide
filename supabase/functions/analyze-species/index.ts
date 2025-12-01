@@ -682,8 +682,17 @@ EXEMPEL PÅ KORREKT KATEGORISERING OCH ÅLDER:
         
         // POST-PROCESSING FIX #6: Ensure ALL organisms have ageStage
         if (!alt.species.ageStage || alt.species.ageStage.trim() === '') {
-          console.warn(`Organism "${commonName}" saknar ageStage, sätter till "okänd"`);
-          alt.species.ageStage = 'okänd';
+          console.warn(`Organism "${commonName}" saknar ageStage, sätter fallback-värde`);
+          alt.species.ageStage = 'Ålder svår att uppskatta från bilden';
+        }
+        
+        // POST-PROCESSING FIX #7: Ensure stones/minerals are never edible
+        const currentCategory = alt.species.category?.toLowerCase();
+        if (currentCategory === 'sten' || currentCategory === 'mineral') {
+          if (alt.species.edibility && alt.species.edibility !== 'inte-ätlig') {
+            console.warn(`🔧 AUTO-KORRIGERING: Sten/mineral "${commonName}" hade edibility "${alt.species.edibility}", korrigerar till "inte-ätlig"`);
+          }
+          alt.species.edibility = 'inte-ätlig';
         }
         
         return alt;
