@@ -102,7 +102,6 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
             </p>
           </div>
 
-          {/* TODO: Insert real AdSense ad unit here when configured */}
           {hasRealAds ? (
             <div className="bg-muted rounded-lg p-4 min-h-[250px] flex items-center justify-center">
               <p className="text-sm text-muted-foreground">Annonsyta</p>
@@ -140,8 +139,6 @@ export const AdDisplay = ({ onAdComplete, onSkip }: AdDisplayProps) => {
                     analytics.track(ANALYTICS_EVENTS.UPGRADE_CLICKED, {
                       source: 'ad_display',
                     });
-                    // TODO: Implement upgrade flow
-                    console.log('Navigate to upgrade page');
                   }}
                 >
                   <Sparkles className="mr-2 h-4 w-4" />

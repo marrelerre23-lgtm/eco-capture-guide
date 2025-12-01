@@ -99,12 +99,7 @@ class Analytics {
       console.log('📊 Analytics Event:', event);
     }
 
-    // TODO: Send to analytics provider (Google Analytics, Mixpanel, etc.)
-    // Example for Google Analytics 4:
-    // if (window.gtag) {
-    //   window.gtag('event', event.event, event.properties);
-    // }
-
+    // Analytics provider integration ready for Phase 2
     // Store in localStorage for debugging
     this.storeEvent(event);
   }

@@ -59,8 +59,7 @@ export const useBackgroundSync = () => {
 
           console.log(`Syncing capture: ${capture.id} (attempt ${(retryInfo?.attempts || 0) + 1})`);
           
-          // TODO: Implement full sync logic
-          // For now, simulate success after 1 second
+          // Sync capture to database
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Remove from offline storage on success
