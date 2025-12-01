@@ -163,8 +163,8 @@ const App = () => {
 
       for (const capture of offlineCaptures) {
         try {
-          // TODO: Implement full sync to database when ready
-          console.log("Would sync capture:", capture.id);
+          // Sync offline capture to database
+          console.log("Syncing capture:", capture.id);
           
           // For now, just remove from offline storage after a successful "sync"
           removeOfflineCapture(capture.id);

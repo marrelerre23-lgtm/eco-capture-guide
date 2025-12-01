@@ -25,11 +25,10 @@ export const getAdMobConfig = () => {
 
   // For native Android app
   if (isNative && platform === 'android') {
-    // TODO: Replace with actual Supabase secrets in production
-    // These test IDs should be replaced with:
-    // - Real App ID: ca-app-pub-5095846544588256~1694925896
-    // - Get real Ad Unit IDs from AdMob console
-    const appId = 'ca-app-pub-3940256099942544~3347511713'; // TEST ID - replace in production
+    // Using test IDs for development - replace with real AdMob credentials before launch:
+    // Real App ID: ca-app-pub-5095846544588256~1694925896
+    // Get real Ad Unit IDs from AdMob console after approval
+    const appId = 'ca-app-pub-3940256099942544~3347511713'; // TEST ID
     const bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111'; // TEST ID
     const interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712'; // TEST ID
     const rewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917'; // TEST ID

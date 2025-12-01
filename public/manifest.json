@@ -26,12 +26,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "lifestyle", "utilities"],
-  "screenshots": [
-    {
-      "src": "/screenshot-1.png",
-      "sizes": "540x720",
-      "type": "image/png"
-    }
-  ]
+  "categories": ["education", "lifestyle", "utilities"]
 }

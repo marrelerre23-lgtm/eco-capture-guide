@@ -82,7 +82,6 @@ export const BannerAd = ({ position = 'bottom', onClose }: BannerAdProps) => {
       <div className="relative max-w-4xl mx-auto px-4 py-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex-1 flex items-center gap-3 min-w-0">
-            {/* TODO: Replace with real AdSense banner unit when configured */}
             {hasRealAds ? (
               <div className="flex-1 min-h-[50px] bg-muted rounded flex items-center justify-center">
                 <p className="text-xs text-muted-foreground">Annonsyta (Banner)</p>
