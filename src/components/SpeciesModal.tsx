@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2, Trash2, MapPin, Calendar, Navigation, Maximize2, Check, Save } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { SecureImage } from "@/components/SecureImage";
 
 interface Species {
   id: string;
@@ -269,7 +270,7 @@ export const SpeciesModal = ({
             <div className="px-6 pb-4">
               <div className={`${isAnimating ? 'animate-polaroid-drop' : ''}`}>
                 <div className="polaroid-frame tape-effect">
-                  <img 
+                  <SecureImage 
                     src={species.image}
                     alt={species.name}
                     className="w-full aspect-[4/3] object-cover"

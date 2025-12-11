@@ -4,7 +4,7 @@ import { Trophy, Leaf, Camera, MapPin, Loader2, AlertCircle } from "lucide-react
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
+import { SecureImage } from "@/components/SecureImage";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
 import { OverviewSkeleton } from "@/components/LoadingSkeleton";
 import { getMainCategory, MAIN_CATEGORY_DISPLAY } from "@/types/species";
@@ -141,7 +141,7 @@ const Overview = () => {
                     <CarouselItem key={capture.id}>
                       <Card className="overflow-hidden shadow-card">
                         <div className="aspect-square relative bg-gradient-earth">
-                          <img 
+                          <SecureImage 
                             src={capture.image_url}
                             alt={capture.ai_analysis?.species?.commonName || "Capture"}
                             className="w-full h-full object-cover"
@@ -307,7 +307,7 @@ const Overview = () => {
                       </div>
                       <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center">
                         {capture.image_url ? (
-                          <img 
+                          <SecureImage 
                             src={capture.image_url} 
                             alt={species?.commonName || "Capture"} 
                             className="w-full h-full object-cover"

@@ -25,12 +25,8 @@ const uploadCaptureImage = async (imageFile: File): Promise<string> => {
     throw new Error(`Kunde inte ladda upp bilden: ${uploadError.message}`);
   }
 
-  // Get public URL
-  const { data: urlData } = supabase.storage
-    .from('captures')
-    .getPublicUrl(data.path);
-
-  return urlData.publicUrl;
+  // Return the file path (not public URL) - signed URLs will be generated when displaying
+  return data.path;
 };
 
 export const uploadCaptureFromDataUrl = async (dataUrl: string): Promise<string> => {
