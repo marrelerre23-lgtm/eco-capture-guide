@@ -1,7 +1,5 @@
 /**
  * Analytics Utility for EcoCapture
- * 
- * Tracks key events for user behavior analysis.
  */
 
 interface AnalyticsEvent {
@@ -46,13 +44,6 @@ class Analytics {
     this.sendEvent(eventData);
   }
 
-  trackUserJourney(event: string, properties?: Record<string, any>) {
-    this.track(event, {
-      ...properties,
-      category: 'user_journey',
-    });
-  }
-
   private sendEvent(event: AnalyticsEvent) {
     if (process.env.NODE_ENV === 'development') {
       console.log('📊 Analytics Event:', event);
@@ -77,9 +68,7 @@ class Analytics {
   }
 
   private getCategoryFromEvent(event: string): string {
-    if (event.startsWith('analysis_')) return 'core_feature';
-    if (event.startsWith('capture_')) return 'core_feature';
-    if (event.startsWith('limit_')) return 'engagement';
+    if (event.startsWith('onboarding_')) return 'user_journey';
     return 'general';
   }
 
@@ -91,44 +80,11 @@ class Analytics {
       }
     }
   }
-
-  getStoredEvents(): AnalyticsEvent[] {
-    try {
-      const stored = localStorage.getItem('analytics_events');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  clearStoredEvents() {
-    localStorage.removeItem('analytics_events');
-  }
 }
 
 export const analytics = new Analytics();
 
 export const ANALYTICS_EVENTS = {
-  // Analysis events
-  ANALYSIS_STARTED: 'analysis_started',
-  ANALYSIS_COMPLETED: 'analysis_completed',
-  ANALYSIS_FAILED: 'analysis_failed',
-  ANALYSIS_CACHED: 'analysis_cached',
-  
-  // Limit events
-  LIMIT_REACHED_ANALYSIS: 'limit_reached_analysis',
-  LIMIT_REACHED_CAPTURE: 'limit_reached_capture',
-  LIMIT_WARNING_SHOWN: 'limit_warning_shown',
-  
-  // Capture events
-  CAPTURE_CREATED: 'capture_created',
-  CAPTURE_DELETED: 'capture_deleted',
-  CAPTURE_FAVORITED: 'capture_favorited',
-  
-  // User journey
   ONBOARDING_STARTED: 'onboarding_started',
   ONBOARDING_COMPLETED: 'onboarding_completed',
-  APP_INSTALLED: 'app_installed',
-  USER_SIGNUP: 'user_signup',
-  USER_LOGIN: 'user_login',
 } as const;
