@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Leaflet MarkerCluster styles */
-@import 'leaflet.markercluster/dist/MarkerCluster.css';
-@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-
 /* EcoCapture Design System - Nature inspired theme */
 
 @layer base {
