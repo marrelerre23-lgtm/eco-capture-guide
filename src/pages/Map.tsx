@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { getMainCategory, MAIN_CATEGORY_DISPLAY } from '@/types/species';
 import { MapSkeleton } from '@/components/LoadingSkeleton';
+import { getSignedUrls } from '@/hooks/useSignedUrl';
 
 // Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -39,12 +40,34 @@ const Map = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
+  
+  // Signed URLs for capture images (for popup display)
+  const [signedUrlsMap, setSignedUrlsMap] = useState<Record<string, string>>({});
 
   // Filter captures with valid coordinates
   const validCaptures = useMemo(() => {
     if (!captures) return [];
     return captures.filter(c => c.latitude && c.longitude);
   }, [captures]);
+  
+  // Pre-fetch signed URLs for all capture images
+  useEffect(() => {
+    if (!validCaptures.length) return;
+    
+    const imageUrls = validCaptures
+      .map(c => c.image_url)
+      .filter(Boolean) as string[];
+    
+    if (imageUrls.length === 0) return;
+    
+    getSignedUrls(imageUrls).then(urlMap => {
+      const record: Record<string, string> = {};
+      urlMap.forEach((value, key) => {
+        record[key] = value;
+      });
+      setSignedUrlsMap(record);
+    });
+  }, [validCaptures]);
 
   // Get unique categories and locations
   const categories = useMemo(() => {
@@ -233,10 +256,13 @@ const Map = () => {
       const lat = Number(capture.latitude);
       const lng = Number(capture.longitude);
 
+      // Use signed URL if available, fallback to original
+      const imageUrl = capture.image_url ? (signedUrlsMap[capture.image_url] || capture.image_url) : '';
+      
       const marker = L.marker([lat, lng])
         .bindPopup(`
           <div class="space-y-2 min-w-[200px]">
-            ${capture.image_url ? `<img src="${capture.image_url}" alt="${capture.ai_analysis?.species?.commonName || 'Fångst'}" class="w-full h-32 object-cover rounded-md mb-2" />` : ''}
+            ${imageUrl ? `<img src="${imageUrl}" alt="${capture.ai_analysis?.species?.commonName || 'Fångst'}" class="w-full h-32 object-cover rounded-md mb-2" onerror="this.style.display='none'" />` : ''}
             <h4 class="font-semibold">${capture.ai_analysis?.species?.commonName || 'Okänd'}</h4>
             ${capture.ai_analysis?.species?.scientificName ? `<p class="text-sm italic">${capture.ai_analysis.species.scientificName}</p>` : ''}
             ${capture.location_name ? `<p class="text-sm">📍 ${capture.location_name}</p>` : ''}
@@ -257,7 +283,7 @@ const Map = () => {
         mapRef.current.removeLayer(markerClusterGroupRef.current);
       }
     };
-  }, [filteredCaptures]);
+  }, [filteredCaptures, signedUrlsMap]);
 
   const centerOnUser = useCallback(() => {
     if (userLocation) {
