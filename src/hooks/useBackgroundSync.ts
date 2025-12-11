@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useOfflineStorage } from "./useOfflineStorage";
 import { toast } from "./use-toast";

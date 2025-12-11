@@ -2,12 +2,7 @@ project_id = "iccxtssdximiuarmnbmx"
 
 [functions.analyze-species]
 
-[functions.create-checkout]
-
 [functions.daily-reset]
-verify_jwt = false
-
-[functions.stripe-webhook]
 verify_jwt = false
 
 [functions.reanalyze-captures]
