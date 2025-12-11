@@ -69,6 +69,7 @@ export const CookieConsent = () => {
               size="icon"
               className="shrink-0"
               onClick={handleDecline}
+              aria-label="Stäng cookie-meddelande"
             >
               <X className="h-4 w-4" />
             </Button>
