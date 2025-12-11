@@ -214,8 +214,3 @@ export const getCategoryDisplayName = (category: string): string => {
   
   return displayNames[normalized] || 'Annat';
 };
-
-// Helper to validate if a category is valid
-export const isValidCategory = (category: string): category is CategoryKey => {
-  return VALID_CATEGORIES.includes(category.toLowerCase().trim() as CategoryKey);
-};

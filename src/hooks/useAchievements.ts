@@ -96,21 +96,6 @@ export const useAchievements = () => {
     },
   });
 
-  // Check if user has unlocked specific achievement
-  const hasAchievement = (achievementKey: string): boolean => {
-    if (!userAchievements) return false;
-    return userAchievements.some(
-      ua => (ua.achievement as any)?.key === achievementKey
-    );
-  };
-
-  // Calculate progress for an achievement
-  const getProgress = (achievementKey: string, currentValue: number): number => {
-    const achievement = achievements?.find(a => a.key === achievementKey);
-    if (!achievement) return 0;
-    return Math.min(100, (currentValue / achievement.requirement_value) * 100);
-  };
-
   // Check and unlock achievements based on user stats
   const checkAndUnlockAchievements = async (stats: {
     totalCaptures: number;
@@ -155,11 +140,6 @@ export const useAchievements = () => {
   return {
     achievements: achievements || [],
     userAchievements: userAchievements || [],
-    unlockAchievement: unlockMutation.mutate,
     checkAndUnlockAchievements,
-    hasAchievement,
-    getProgress,
-    unlockedCount: userAchievements?.length || 0,
-    totalCount: achievements?.length || 0,
   };
 };

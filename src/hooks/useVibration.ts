@@ -21,17 +21,9 @@ export const useVibration = () => {
     }
   }, [canVibrate]);
 
-  const vibrateLongPress = useCallback(() => {
-    if (canVibrate) {
-      navigator.vibrate(200);
-    }
-  }, [canVibrate]);
-
   return {
     vibrateClick,
     vibrateSuccess,
     vibrateError,
-    vibrateLongPress,
-    canVibrate,
   };
 };
