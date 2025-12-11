@@ -42,7 +42,7 @@ export const CookieConsent = () => {
                   personalisera innehåll. För gratisanvändare visas annonser via Google AdMob, som kan 
                   använda cookies för att visa relevanta annonser. Genom att fortsätta använda vår tjänst 
                   godkänner du vår användning av cookies och annonser enligt{' '}
-                  <a href="/privacy" className="text-primary hover:underline">
+                  <a href="/privacy" className="text-primary underline hover:no-underline">
                     integritetspolicy
                   </a>
                   .
