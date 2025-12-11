@@ -69,6 +69,10 @@ interface Species {
   category: string;
   confidence?: number;
   location?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
   notes?: string;
   capturedAt: Date;
   isFavorite?: boolean;
@@ -104,6 +108,10 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
     category: mainCategory, // Use main category for grouping
     confidence: species?.confidence,
     location: capture.location_name,
+    coordinates: capture.latitude && capture.longitude ? {
+      latitude: capture.latitude,
+      longitude: capture.longitude,
+    } : undefined,
     notes: capture.notes,
     capturedAt: capturedDate,
     isFavorite: capture.is_favorite || false,

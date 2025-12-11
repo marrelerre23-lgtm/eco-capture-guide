@@ -169,3 +169,226 @@
 .leaflet-popup-content {
   margin: 0;
 }
+
+/* ===== Naturalistens Datajournal Design System ===== */
+
+/* Typography */
+.font-handwritten {
+  font-family: 'Caveat', cursive;
+}
+
+.font-serif {
+  font-family: 'Libre Baskerville', Georgia, serif;
+}
+
+/* Paper/Parchment texture background */
+.paper-texture {
+  background-color: hsl(45 30% 96%);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: multiply;
+}
+
+.dark .paper-texture {
+  background-color: hsl(150 20% 12%);
+}
+
+/* Polaroid frame effect */
+.polaroid-frame {
+  background: white;
+  padding: 0.5rem;
+  padding-bottom: 2rem;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 4px 20px rgba(0, 0, 0, 0.05);
+  transform: rotate(-1deg);
+}
+
+.dark .polaroid-frame {
+  background: hsl(150 20% 18%);
+}
+
+/* Tape effect */
+.tape-effect {
+  position: relative;
+}
+
+.tape-effect::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(135deg, 
+    hsla(45, 50%, 85%, 0.9) 0%, 
+    hsla(45, 40%, 75%, 0.8) 100%
+  );
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+/* Vintage postmark stamp */
+.postmark-stamp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: 2px solid hsl(0 65% 45%);
+  border-radius: 4px;
+  color: hsl(0 65% 45%);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transform: rotate(-5deg);
+  opacity: 0.85;
+}
+
+.postmark-stamp::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px dashed hsl(0 65% 45% / 0.5);
+  border-radius: 6px;
+}
+
+/* Category wax seal stamp */
+.wax-seal {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, 
+    hsl(150 60% 35%) 0%, 
+    hsl(150 70% 25%) 100%
+  );
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  animation: stamp-down 0.4s ease-out;
+}
+
+@keyframes stamp-down {
+  0% { transform: scale(1.3) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* AI Confidence progress bar gradient */
+.confidence-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: hsl(0 0% 90%);
+  overflow: hidden;
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease-out;
+}
+
+.confidence-low { background: linear-gradient(90deg, hsl(0 70% 55%), hsl(30 70% 55%)); }
+.confidence-medium { background: linear-gradient(90deg, hsl(45 80% 55%), hsl(90 60% 50%)); }
+.confidence-high { background: linear-gradient(90deg, hsl(120 60% 45%), hsl(150 60% 40%)); }
+
+/* Vintage divider */
+.vintage-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: hsl(150 15% 50%);
+}
+
+.vintage-divider::before,
+.vintage-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    hsl(150 20% 70%) 50%, 
+    transparent 100%
+  );
+}
+
+/* Lined paper background for notes */
+.lined-paper {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    hsl(200 30% 85%) 28px
+  );
+  background-position: 0 8px;
+  line-height: 28px;
+}
+
+/* Mini map expedition style */
+.expedition-map {
+  border: 3px solid hsl(35 40% 60%);
+  border-radius: 4px;
+  box-shadow: 
+    inset 0 0 20px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.expedition-map .leaflet-tile {
+  filter: sepia(0.3) saturate(0.8);
+}
+
+/* Tab styling for journal */
+.journal-tabs {
+  border-bottom: 2px solid hsl(35 30% 80%);
+}
+
+.journal-tab {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.875rem;
+  color: hsl(150 15% 45%);
+  transition: all 0.2s ease;
+}
+
+.journal-tab.active {
+  color: hsl(150 60% 30%);
+}
+
+.journal-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: hsl(150 60% 35%);
+  border-radius: 2px 2px 0 0;
+}
+
+/* Fact card styling */
+.fact-card {
+  background: hsl(45 20% 97%);
+  border-left: 3px solid hsl(150 50% 40%);
+  padding: 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.dark .fact-card {
+  background: hsl(150 20% 15%);
+}
+
+/* Journal entry animation */
+@keyframes journal-fade-in {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.journal-entry {
+  animation: journal-fade-in 0.4s ease-out;
+}
