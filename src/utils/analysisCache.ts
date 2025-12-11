@@ -1,5 +1,4 @@
 // Analysis result cache with short TTL to prevent accidental duplicates
-// but still show ads for "real" analyses
 
 const ANALYSIS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -10,10 +9,8 @@ interface CachedAnalysis {
 }
 
 // Generate a hash from image data AND category hint
-// FIX #12: Include category in hash so changing hint allows re-analysis
 const generateImageHash = async (dataUrl: string, categoryHint?: string | null): Promise<string> => {
   const encoder = new TextEncoder();
-  // Include category in hash to allow re-analysis with different hints
   const dataToHash = dataUrl.substring(0, 10000) + (categoryHint || 'auto');
   const data = encoder.encode(dataToHash);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -22,7 +19,6 @@ const generateImageHash = async (dataUrl: string, categoryHint?: string | null):
 };
 
 // Get cached analysis result if it exists and is not expired
-// FIX #12: Include category hint in cache lookup
 export const getCachedAnalysis = async (imageDataUrl: string, categoryHint?: string | null): Promise<any | null> => {
   try {
     const hash = await generateImageHash(imageDataUrl, categoryHint);
@@ -34,7 +30,6 @@ export const getCachedAnalysis = async (imageDataUrl: string, categoryHint?: str
     const parsedCache: CachedAnalysis = JSON.parse(cached);
     const now = Date.now();
     
-    // Check if cache is expired (older than 5 minutes)
     if (now - parsedCache.timestamp > ANALYSIS_CACHE_TTL) {
       localStorage.removeItem(cacheKey);
       return null;
@@ -49,7 +44,6 @@ export const getCachedAnalysis = async (imageDataUrl: string, categoryHint?: str
 };
 
 // Cache an analysis result
-// FIX #12: Include category hint in cache key
 export const setCachedAnalysis = async (imageDataUrl: string, result: any, categoryHint?: string | null) => {
   try {
     const hash = await generateImageHash(imageDataUrl, categoryHint);
@@ -65,38 +59,5 @@ export const setCachedAnalysis = async (imageDataUrl: string, result: any, categ
     console.log('Analysis result cached with 5-minute TTL');
   } catch (error) {
     console.error('Error caching analysis:', error);
-  }
-};
-
-// Clear expired analysis cache entries
-export const clearExpiredAnalysisCache = () => {
-  try {
-    const now = Date.now();
-    const keysToRemove: string[] = [];
-    
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('analysis_')) {
-        const cached = localStorage.getItem(key);
-        if (cached) {
-          try {
-            const parsedCache: CachedAnalysis = JSON.parse(cached);
-            if (now - parsedCache.timestamp > ANALYSIS_CACHE_TTL) {
-              keysToRemove.push(key);
-            }
-          } catch {
-            keysToRemove.push(key); // Remove invalid entries
-          }
-        }
-      }
-    }
-    
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    
-    if (keysToRemove.length > 0) {
-      console.log(`Cleared ${keysToRemove.length} expired analysis cache entries`);
-    }
-  } catch (error) {
-    console.error('Error clearing expired analysis cache:', error);
   }
 };
