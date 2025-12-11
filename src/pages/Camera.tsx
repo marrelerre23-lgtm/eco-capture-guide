@@ -4,7 +4,7 @@ import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOu
 import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { PhotoTipsDialog } from "@/components/PhotoTipsDialog";
-import { uploadCaptureFromDataUrl } from "@/utils/storage";
+
 import { useToast } from "@/hooks/use-toast";
 import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
@@ -13,8 +13,6 @@ import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 import { Slider } from "@/components/ui/slider";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-
-import { Species } from "@/types/species";
 
 const Camera = () => {
   const navigate = useNavigate();

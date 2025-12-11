@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, LogOut, User, Mail, Lock, Shield, Camera, TrendingUp, Share2, Info, HelpCircle, FileText } from "lucide-react";
+import { Loader2, LogOut, User, Mail, Lock, Shield, Camera, TrendingUp, Info, HelpCircle, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { StatsChart } from "@/components/StatsChart";
