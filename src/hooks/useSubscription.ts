@@ -148,10 +148,6 @@ export const useSubscription = () => {
     };
   }, []);
 
-  const checkCanAnalyze = async (): Promise<boolean> => {
-    return true;
-  };
-
   const checkCanCapture = async (): Promise<boolean> => {
     const currentInfo = await fetchSubscriptionInfo();
     
@@ -171,7 +167,6 @@ export const useSubscription = () => {
     subscription,
     loading,
     error,
-    checkCanAnalyze,
     checkCanCapture,
     refetch: fetchSubscriptionInfo,
   };
