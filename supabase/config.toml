@@ -1,6 +1,8 @@
 project_id = "iccxtssdximiuarmnbmx"
 
-[functions.check-subscription]
+[functions.analyze-species]
+
+[functions.create-checkout]
 
 [functions.daily-reset]
 verify_jwt = false

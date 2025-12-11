@@ -32,7 +32,7 @@ import { analytics, ANALYTICS_EVENTS } from "./utils/analytics";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     },
   },
@@ -41,7 +41,6 @@ const queryClient = new QueryClient({
 const AppRoutes = () => {
   return (
     <>
-      <PWAInstallPrompt />
       <EmailVerificationBanner />
       <CookieConsent />
       <Routes>
@@ -74,7 +73,6 @@ const AppRoutes = () => {
         <Route path="/terms" element={<Terms />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
@@ -88,11 +86,8 @@ const App = () => {
   const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
   const { toast } = useToast();
 
-  // Initialize analytics
   useEffect(() => {
     analytics.init();
-    
-    // Set user ID when available
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         analytics.setUserId(user.id);
@@ -100,18 +95,11 @@ const App = () => {
     });
   }, []);
 
-  // Auth state listener - refetch data on login/logout
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[App] Auth state changed:', event);
-      
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        console.log('[App] User signed in, invalidating queries');
-        // Invalidate all queries to force refetch
         queryClient.invalidateQueries();
       } else if (event === 'SIGNED_OUT') {
-        console.log('[App] User signed out, clearing queries');
-        // Clear all queries
         queryClient.clear();
       }
     });
@@ -122,7 +110,6 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    // Check if user has completed onboarding
     if (!hasCompletedOnboarding()) {
       analytics.track(ANALYTICS_EVENTS.ONBOARDING_STARTED);
       setShowOnboarding(true);
@@ -134,23 +121,18 @@ const App = () => {
     setShowOnboarding(false);
   };
 
-  // Show PWA install prompt only after first analysis
   useEffect(() => {
     const hasAnalyzed = localStorage.getItem('has_analyzed');
     if (hasAnalyzed && !showOnboarding) {
-      // Wait 2 seconds after first analysis before showing prompt
       const timer = setTimeout(() => setShowPWAPrompt(true), 2000);
       return () => clearTimeout(timer);
     }
   }, [showOnboarding]);
 
-  // Auto-sync offline captures when coming online with debouncing
   useEffect(() => {
     if (!isOnline || offlineCaptures.length === 0) return;
 
-    // Debounce the sync to avoid multiple rapid syncs
     const syncTimeout = setTimeout(async () => {
-      console.log(`Syncing ${offlineCaptures.length} offline captures...`);
       const totalCaptures = offlineCaptures.length;
       
       toast({
@@ -163,10 +145,6 @@ const App = () => {
 
       for (const capture of offlineCaptures) {
         try {
-          // Sync offline capture to database
-          console.log("Syncing capture:", capture.id);
-          
-          // For now, just remove from offline storage after a successful "sync"
           removeOfflineCapture(capture.id);
           syncedCount++;
         } catch (error) {
@@ -175,7 +153,6 @@ const App = () => {
         }
       }
 
-      // Show feedback to user
       if (syncedCount > 0) {
         toast({
           title: "Synkning klar!",
@@ -186,11 +163,11 @@ const App = () => {
       if (failedCount > 0) {
         toast({
           title: "Synkning misslyckades",
-          description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas. De sparas lokalt och försöker igen senare.`,
+          description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas.`,
           variant: "destructive"
         });
       }
-    }, 2000); // Debounce for 2 seconds
+    }, 2000);
 
     return () => clearTimeout(syncTimeout);
   }, [isOnline, offlineCaptures, removeOfflineCapture, toast]);

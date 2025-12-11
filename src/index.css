@@ -334,11 +334,7 @@
   animation: stamp-down 0.4s ease-out;
 }
 
-@keyframes stamp-down {
-  0% { transform: scale(1.3) rotate(-10deg); opacity: 0; }
-  60% { transform: scale(0.95) rotate(2deg); }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
+/* stamp-down animation defined above as stamp-down-anim */
 
 /* AI Confidence progress bar gradient */
 .confidence-bar {
