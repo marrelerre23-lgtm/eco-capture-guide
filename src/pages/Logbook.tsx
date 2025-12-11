@@ -54,10 +54,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Helper function to map AI category to main category
-const mapToCategory = (aiCategory: string): MainCategoryKey => {
-  return getMainCategory(aiCategory);
-};
 
 interface Species {
   id: string;
@@ -89,7 +85,7 @@ interface Species {
 const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
   const species = capture.ai_analysis?.species;
   const capturedDate = new Date(capture.captured_at);
-  const mainCategory = mapToCategory(species?.category || "annat");
+  const mainCategory = getMainCategory(species?.category || "annat");
   
   return {
     id: capture.id,
@@ -173,23 +169,6 @@ const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {
   };
 };
 
-// Helper function to get category icon
-const getCategoryIcon = (category: string): string => {
-  const icons: Record<string, string> = {
-    'blomma': '🌸',
-    'buske': '🌱',
-    'ört': '🌿',
-    'träd': '🌳',
-    'svamp': '🍄',
-    'mossa': '🌾',
-    'sten': '💎',
-    'insekt': '🦋',
-    'fågel': '🦅',
-    'däggdjur': '🦌',
-    'okänt': '❓'
-  };
-  return icons[category.toLowerCase()] || '🔍';
-};
 
 const Logbook = () => {
   const [expandedCategory, setExpandedCategory] = useState<string>("");
@@ -761,7 +740,7 @@ const Logbook = () => {
       counts: (cat.subcategories || []).reduce((acc, subcat) => {
         const subcatLower = subcat.toLowerCase();
         const count = allSpecies.filter(s => {
-          const mainCat = mapToCategory(s.category);
+          const mainCat = getMainCategory(s.category);
           if (mainCat !== cat.key) return false;
           const detailedCategoryFact = s.facts.find(f => f.title === "Detaljerad kategori");
           return detailedCategoryFact?.description.toLowerCase() === subcatLower;
