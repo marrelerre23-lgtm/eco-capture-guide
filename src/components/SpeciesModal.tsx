@@ -103,11 +103,8 @@ export const SpeciesModal = ({
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isMapLoading, setIsMapLoading] = useState(true);
   
-  const mapRef = useRef<HTMLDivElement>(null);
   const expandedMapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
   const expandedMapInstanceRef = useRef<L.Map | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -116,103 +113,11 @@ export const SpeciesModal = ({
     if (isOpen) {
       setIsAnimating(true);
       setEditedNotes(species.notes || "");
-      setIsMapLoading(true);
     } else {
       setIsAnimating(false);
       setIsMapExpanded(false);
     }
   }, [isOpen, species.notes]);
-
-  // Initialize mini-map with improved timing for proper sizing
-  useEffect(() => {
-    if (!isOpen || !mapRef.current || !species.coordinates) return;
-
-    // Clean up existing map
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
-
-    setIsMapLoading(true);
-
-    // Increased delay to ensure container has proper size after animations
-    const initTimeout = setTimeout(() => {
-      if (!mapRef.current) return;
-      
-      const { latitude, longitude } = species.coordinates!;
-
-      // Create map with expedition style
-      const map = L.map(mapRef.current, {
-        center: [latitude, longitude],
-        zoom: 14,
-        zoomControl: false,
-        attributionControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-      });
-
-      // Use a vintage/terrain style tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-      }).addTo(map);
-
-      // Custom marker icon
-      const markerIcon = L.divIcon({
-        className: 'custom-marker',
-        html: `
-          <div style="
-            width: 20px; 
-            height: 20px; 
-            background: linear-gradient(135deg, hsl(0 65% 50%), hsl(0 70% 40%));
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          "></div>
-        `,
-        iconSize: [20, 20],
-        iconAnchor: [10, 20],
-      });
-
-      L.marker([latitude, longitude], { icon: markerIcon }).addTo(map);
-
-      // Accuracy circle
-      if (species.gpsAccuracy) {
-        L.circle([latitude, longitude], {
-          radius: species.gpsAccuracy,
-          color: 'hsl(150 60% 40%)',
-          fillColor: 'hsl(150 60% 40%)',
-          fillOpacity: 0.15,
-          weight: 2,
-          dashArray: '5, 5',
-        }).addTo(map);
-      }
-
-      mapInstanceRef.current = map;
-
-      // Multiple invalidateSize calls to ensure proper rendering
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 100);
-      
-      setTimeout(() => {
-        map.invalidateSize();
-        setIsMapLoading(false);
-      }, 300);
-      
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 600);
-    }, 500); // Increased initial delay
-
-    return () => {
-      clearTimeout(initTimeout);
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [isOpen, species.coordinates, species.gpsAccuracy]);
 
   // Initialize expanded map
   useEffect(() => {
@@ -360,64 +265,15 @@ export const SpeciesModal = ({
               </div>
             </div>
 
-            {/* Image Section with Polaroid + Mini Map */}
+            {/* Image Section - Polaroid only */}
             <div className="px-6 pb-4">
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                {/* Polaroid Image */}
-                <div className={`sm:col-span-3 ${isAnimating ? 'animate-polaroid-drop' : ''}`}>
-                  <div className="polaroid-frame tape-effect">
-                    <img 
-                      src={species.image}
-                      alt={species.name}
-                      className="w-full aspect-[4/3] object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Mini Map */}
-                <div className={`sm:col-span-2 ${isAnimating ? 'animate-fade-in-delayed' : ''}`}>
-                  {species.coordinates ? (
-                    <div className="expedition-map h-[160px] relative overflow-hidden rounded-lg" style={{ touchAction: 'manipulation' }}>
-                      {/* Loading Spinner */}
-                      {isMapLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-muted/30 z-10">
-                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        </div>
-                      )}
-                      
-                      <div 
-                        ref={mapRef} 
-                        className="absolute inset-0 w-full h-full" 
-                        style={{ zIndex: 1, position: 'relative' }} 
-                      />
-                      
-                      {/* Expand Button */}
-                      <button
-                        onClick={() => setIsMapExpanded(true)}
-                        className="absolute top-2 right-2 p-1.5 rounded bg-white/90 dark:bg-black/70 hover:bg-white dark:hover:bg-black/90 transition-all shadow-md"
-                        style={{ zIndex: 1000 }}
-                      >
-                        <Maximize2 className="h-3.5 w-3.5 text-foreground" />
-                      </button>
-                      
-                      {species.gpsAccuracy && (
-                        <div 
-                          className="absolute bottom-2 left-2 bg-white/90 dark:bg-black/70 px-2 py-1 rounded text-[10px] flex items-center gap-1 shadow-sm"
-                          style={{ zIndex: 1000 }}
-                        >
-                          <Navigation className="h-3 w-3 text-primary" />
-                          <span>±{Math.round(species.gpsAccuracy)}m</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="expedition-map h-[160px] flex items-center justify-center bg-muted/50 rounded-lg">
-                      <div className="text-center text-muted-foreground">
-                        <MapPin className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-xs">Ingen GPS-data</p>
-                      </div>
-                    </div>
-                  )}
+              <div className={`${isAnimating ? 'animate-polaroid-drop' : ''}`}>
+                <div className="polaroid-frame tape-effect">
+                  <img 
+                    src={species.image}
+                    alt={species.name}
+                    className="w-full aspect-[4/3] object-cover"
+                  />
                 </div>
               </div>
             </div>
@@ -499,25 +355,33 @@ export const SpeciesModal = ({
                   {/* Facts Grid */}
                   {species.facts.length > 0 && (
                     <div className="space-y-2">
-                      {species.facts.map((fact, index) => (
-                        <div 
-                          key={index} 
-                          className="fact-card animate-fact-slide-in"
-                          style={{ animationDelay: `${0.15 + index * 0.05}s` }}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className="text-xl flex-shrink-0">{fact.icon}</span>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-serif font-semibold text-sm text-primary mb-1">
-                                {fact.title}
-                              </h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {fact.description}
-                              </p>
+                      {species.facts.map((fact, index) => {
+                        const isLocationCard = fact.title === "Plats" && species.coordinates;
+                        
+                        return (
+                          <div 
+                            key={index} 
+                            className={`fact-card animate-fact-slide-in ${isLocationCard ? 'cursor-pointer hover:bg-primary/10 transition-colors' : ''}`}
+                            style={{ animationDelay: `${0.15 + index * 0.05}s` }}
+                            onClick={isLocationCard ? () => setIsMapExpanded(true) : undefined}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="text-xl flex-shrink-0">{fact.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-serif font-semibold text-sm text-primary mb-1 flex items-center gap-2">
+                                  {fact.title}
+                                  {isLocationCard && (
+                                    <Maximize2 className="h-3 w-3 text-muted-foreground" />
+                                  )}
+                                </h4>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                  {fact.description}
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </TabsContent>
