@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
@@ -32,6 +33,7 @@ const signupSchema = z.object({
     .regex(/[A-Z]/, { message: "Måste innehålla minst en stor bokstav" })
     .regex(/[a-z]/, { message: "Måste innehålla minst en liten bokstav" })
     .regex(/[0-9]/, { message: "Måste innehålla minst en siffra" }),
+  confirmPassword: z.string(),
   displayName: z.string()
     .trim()
     .min(2, { message: "Namnet måste vara minst 2 tecken" })
@@ -39,7 +41,27 @@ const signupSchema = z.object({
     .regex(/^[a-zA-ZåäöÅÄÖ0-9\s]+$/, { message: "Endast bokstäver, siffror och mellanslag" })
     .optional()
     .or(z.literal("")),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Lösenorden matchar inte",
+  path: ["confirmPassword"],
 });
+
+// Translate Supabase error messages to Swedish
+const translateSupabaseError = (error: string): string => {
+  const errorMap: Record<string, string> = {
+    "Invalid login credentials": "Fel e-postadress eller lösenord",
+    "Email not confirmed": "E-postadressen har inte bekräftats. Kontrollera din inkorg.",
+    "User already registered": "Ett konto med denna e-postadress finns redan",
+    "Password should be at least 6 characters": "Lösenordet måste vara minst 6 tecken",
+    "Unable to validate email address: invalid format": "Ogiltig e-postadress",
+    "Email rate limit exceeded": "För många försök. Försök igen senare.",
+    "For security purposes, you can only request this once every 60 seconds": "Av säkerhetsskäl kan du bara begära detta en gång per minut",
+    "Signup is disabled": "Registrering är tillfälligt avstängd",
+    "User not found": "Användaren hittades inte",
+  };
+  
+  return errorMap[error] || error;
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -47,7 +69,11 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +103,7 @@ const Auth = () => {
         toast({
           variant: "destructive",
           title: "Inloggning misslyckades",
-          description: error.message,
+          description: translateSupabaseError(error.message),
         });
       } else {
         toast({
@@ -106,6 +132,7 @@ const Auth = () => {
       const validationResult = signupSchema.safeParse({ 
         email, 
         password,
+        confirmPassword,
         displayName: displayName || ""
       });
       
@@ -137,7 +164,7 @@ const Auth = () => {
         toast({
           variant: "destructive",
           title: "Registrering misslyckades",
-          description: error.message,
+          description: translateSupabaseError(error.message),
         });
       } else {
         toast({
@@ -185,14 +212,39 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Lösenord</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember-me" 
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
                     disabled={loading}
                   />
+                  <label 
+                    htmlFor="remember-me" 
+                    className="text-sm text-muted-foreground cursor-pointer select-none"
+                  >
+                    Kom ihåg mig
+                  </label>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -236,16 +288,50 @@ const Auth = () => {
                   <Label htmlFor="signup-password">
                     Lösenord <span className="text-muted-foreground text-xs">(minst 8 tecken, 1 stor bokstav, 1 siffra)</span>
                   </Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    minLength={8}
-                    placeholder="Minst 8 tecken, 1 stor bokstav, 1 siffra"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      minLength={8}
+                      placeholder="Minst 8 tecken, 1 stor bokstav, 1 siffra"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Bekräfta lösenord</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      placeholder="Skriv lösenordet igen"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="flex items-start space-x-2 pt-2">

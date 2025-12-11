@@ -103,6 +103,7 @@ export const SpeciesModal = ({
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(true);
   
   const mapRef = useRef<HTMLDivElement>(null);
   const expandedMapRef = useRef<HTMLDivElement>(null);
@@ -115,13 +116,14 @@ export const SpeciesModal = ({
     if (isOpen) {
       setIsAnimating(true);
       setEditedNotes(species.notes || "");
+      setIsMapLoading(true);
     } else {
       setIsAnimating(false);
       setIsMapExpanded(false);
     }
   }, [isOpen, species.notes]);
 
-  // Initialize mini-map with delay for proper sizing
+  // Initialize mini-map with improved timing for proper sizing
   useEffect(() => {
     if (!isOpen || !mapRef.current || !species.coordinates) return;
 
@@ -131,7 +133,9 @@ export const SpeciesModal = ({
       mapInstanceRef.current = null;
     }
 
-    // Delay initialization to ensure container has proper size
+    setIsMapLoading(true);
+
+    // Increased delay to ensure container has proper size after animations
     const initTimeout = setTimeout(() => {
       if (!mapRef.current) return;
       
@@ -186,11 +190,20 @@ export const SpeciesModal = ({
 
       mapInstanceRef.current = map;
 
-      // Force size recalculation after another small delay
+      // Multiple invalidateSize calls to ensure proper rendering
       setTimeout(() => {
         map.invalidateSize();
       }, 100);
-    }, 300);
+      
+      setTimeout(() => {
+        map.invalidateSize();
+        setIsMapLoading(false);
+      }, 300);
+      
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 600);
+    }, 500); // Increased initial delay
 
     return () => {
       clearTimeout(initTimeout);
@@ -364,8 +377,19 @@ export const SpeciesModal = ({
                 {/* Mini Map */}
                 <div className={`sm:col-span-2 ${isAnimating ? 'animate-fade-in-delayed' : ''}`}>
                   {species.coordinates ? (
-                    <div className="expedition-map h-[160px] relative overflow-hidden rounded-lg">
-                      <div ref={mapRef} className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }} />
+                    <div className="expedition-map h-[160px] relative overflow-hidden rounded-lg" style={{ touchAction: 'manipulation' }}>
+                      {/* Loading Spinner */}
+                      {isMapLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-muted/30 z-10">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                      )}
+                      
+                      <div 
+                        ref={mapRef} 
+                        className="absolute inset-0 w-full h-full" 
+                        style={{ zIndex: 1, position: 'relative' }} 
+                      />
                       
                       {/* Expand Button */}
                       <button
