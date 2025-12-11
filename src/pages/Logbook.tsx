@@ -1287,6 +1287,29 @@ const Logbook = () => {
           isOpen={!!selectedSpecies}
           onClose={() => setSelectedSpecies(null)}
           onDelete={handleDelete}
+          onUpdateNotes={async (notes: string) => {
+            try {
+              const { error } = await supabase
+                .from('species_captures')
+                .update({ notes })
+                .eq('id', selectedSpecies.id);
+
+              if (error) throw error;
+
+              await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
+              
+              // Update local state to reflect the change
+              setSelectedSpecies(prev => prev ? { ...prev, notes } : null);
+            } catch (err) {
+              console.error('Error updating notes:', err);
+              toast({
+                title: "Kunde inte spara anteckningar",
+                description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
+                variant: "destructive",
+              });
+              throw err;
+            }
+          }}
           isDeleting={isDeleting}
           showActions={true}
         />
