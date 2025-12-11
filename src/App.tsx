@@ -3,9 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
-import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import ForgotPassword from "./pages/ForgotPassword";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { CookieConsent } from "./components/CookieConsent";
@@ -18,7 +16,7 @@ import { useToast } from "./hooks/use-toast";
 import { supabase } from "./integrations/supabase/client";
 import { analytics, ANALYTICS_EVENTS } from "./utils/analytics";
 
-// Lazy load heavy pages to reduce initial bundle size
+// Lazy load ALL pages to reduce initial bundle size and unused JS
 const Overview = lazy(() => import("./pages/Overview"));
 const Camera = lazy(() => import("./pages/Camera"));
 const Logbook = lazy(() => import("./pages/Logbook"));
@@ -30,6 +28,8 @@ const About = lazy(() => import("./pages/About"));
 const Help = lazy(() => import("./pages/Help"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
