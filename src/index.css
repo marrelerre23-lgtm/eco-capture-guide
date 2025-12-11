@@ -18,19 +18,19 @@
     --popover: 0 0% 100%;
     --popover-foreground: 150 15% 25%;
 
-    /* Primary green theme */
-    --primary: 150 60% 35%;
+    /* Primary green theme - WCAG AA compliant (4.5:1 contrast on white) */
+    --primary: 150 65% 28%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 150 50% 45%;
-    --primary-dark: 150 70% 25%;
+    --primary-light: 150 55% 38%;
+    --primary-dark: 150 70% 22%;
 
     /* Secondary earth tones */
     --secondary: 45 25% 90%;
     --secondary-foreground: 150 15% 25%;
 
-    /* Muted backgrounds */
+    /* Muted backgrounds - WCAG AA compliant */
     --muted: 50 20% 96%;
-    --muted-foreground: 150 10% 45%;
+    --muted-foreground: 150 12% 38%;
 
     /* Accent orange for camera button */
     --accent: 25 85% 55%;
