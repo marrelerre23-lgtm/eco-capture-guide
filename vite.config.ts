@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => ({
     }),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: false, // Use manual registration in index.html to avoid render-blocking
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
