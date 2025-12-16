@@ -6,3 +6,5 @@ project_id = "iccxtssdximiuarmnbmx"
 verify_jwt = false
 
 [functions.reanalyze-captures]
+
+[functions.delete-user-account]

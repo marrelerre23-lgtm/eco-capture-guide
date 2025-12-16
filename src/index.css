@@ -237,31 +237,34 @@
   font-family: 'Libre Baskerville', Georgia, serif;
 }
 
-/* Paper/Parchment texture background */
+/* Paper/Parchment texture background - Light mode: clean white, Dark mode: textured */
 .paper-texture {
-  background-color: hsl(45 30% 96%);
+  background-color: hsl(0 0% 100%);
+}
+
+.dark .paper-texture {
+  background-color: hsl(150 20% 12%);
   background-image: 
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   background-blend-mode: multiply;
 }
 
-.dark .paper-texture {
-  background-color: hsl(150 20% 12%);
-}
-
 /* Polaroid frame effect */
 .polaroid-frame {
-  background: white;
+  background: hsl(0 0% 100%);
   padding: 0.5rem;
   padding-bottom: 2rem;
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    0 4px 20px rgba(0, 0, 0, 0.05);
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    0 4px 20px rgba(0, 0, 0, 0.08);
   transform: rotate(-1deg);
 }
 
 .dark .polaroid-frame {
   background: hsl(150 20% 18%);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Tape effect */
@@ -285,30 +288,40 @@
   border-radius: 2px;
 }
 
-/* Vintage postmark stamp */
+/* Vintage postmark stamp - high contrast */
 .postmark-stamp {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  border: 2px solid hsl(0 65% 45%);
+  border: 2px solid hsl(0 60% 40%);
   border-radius: 4px;
-  color: hsl(0 65% 45%);
+  color: hsl(0 60% 35%);
   font-family: 'Libre Baskerville', serif;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transform: rotate(-5deg);
-  opacity: 0.85;
+  background: hsl(0 0% 100% / 0.5);
+}
+
+.dark .postmark-stamp {
+  border-color: hsl(0 55% 55%);
+  color: hsl(0 55% 60%);
+  background: transparent;
 }
 
 .postmark-stamp::before {
   content: '';
   position: absolute;
   inset: -4px;
-  border: 1px dashed hsl(0 65% 45% / 0.5);
+  border: 1px dashed hsl(0 60% 40% / 0.5);
   border-radius: 6px;
+}
+
+.dark .postmark-stamp::before {
+  border-color: hsl(0 55% 55% / 0.5);
 }
 
 /* Category wax seal stamp */
@@ -423,16 +436,17 @@
   border-radius: 2px 2px 0 0;
 }
 
-/* Fact card styling */
+/* Fact card styling - high contrast in light mode */
 .fact-card {
-  background: hsl(45 20% 97%);
-  border-left: 3px solid hsl(150 50% 40%);
+  background: hsl(150 15% 95%);
+  border-left: 3px solid hsl(150 50% 35%);
   padding: 1rem;
   border-radius: 0 0.5rem 0.5rem 0;
 }
 
 .dark .fact-card {
   background: hsl(150 20% 15%);
+  border-left-color: hsl(150 50% 45%);
 }
 
 /* Journal entry animation */
