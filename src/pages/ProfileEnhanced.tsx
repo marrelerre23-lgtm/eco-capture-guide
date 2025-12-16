@@ -3,17 +3,28 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, User, Mail, Lock, Shield, Camera, TrendingUp, Info, HelpCircle, FileText } from "lucide-react";
+import { Loader2, LogOut, User, Mail, Lock, Shield, Camera, TrendingUp, Info, HelpCircle, FileText, Trash2, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { StatsChart } from "@/components/StatsChart";
 import { Badge } from "@/components/ui/badge";
 import { ShareDialog } from "@/components/ShareDialog";
 import { ProfileSkeleton } from "@/components/LoadingSkeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   display_name: string | null;
@@ -28,6 +39,8 @@ const ProfileEnhanced = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile>({ display_name: null, avatar_url: null });
@@ -218,6 +231,89 @@ const ProfileEnhanced = () => {
       });
     } else {
       navigate('/auth');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    setIsDeleting(true);
+    try {
+      // 1. Delete all user's captures (and their storage files)
+      const { data: captures } = await supabase
+        .from('species_captures')
+        .select('image_url')
+        .eq('user_id', user.id);
+      
+      // Delete storage files
+      if (captures && captures.length > 0) {
+        const filePaths = captures
+          .map(c => {
+            const match = c.image_url?.match(/captures\/(.+)$/);
+            return match ? match[1] : null;
+          })
+          .filter(Boolean) as string[];
+        
+        if (filePaths.length > 0) {
+          await supabase.storage.from('captures').remove(filePaths);
+        }
+      }
+
+      // Delete avatar if exists
+      if (profile.avatar_url) {
+        const avatarMatch = profile.avatar_url.match(/avatars\/(.+)$/);
+        if (avatarMatch) {
+          await supabase.storage.from('avatars').remove([avatarMatch[1]]);
+        }
+      }
+
+      // 2. Delete all captures from database
+      await supabase
+        .from('species_captures')
+        .delete()
+        .eq('user_id', user.id);
+
+      // 3. Delete user achievements
+      await supabase
+        .from('user_achievements')
+        .delete()
+        .eq('user_id', user.id);
+
+      // 4. Delete profile
+      await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', user.id);
+
+      // 5. Sign out and delete auth user via edge function
+      const { error: deleteError } = await supabase.functions.invoke('delete-user-account', {
+        body: { userId: user.id }
+      });
+
+      if (deleteError) {
+        console.error('Error deleting auth user:', deleteError);
+        // Still sign out even if edge function fails
+      }
+
+      // Sign out
+      await supabase.auth.signOut();
+      
+      toast({
+        title: "Konto raderat",
+        description: "Ditt konto och all data har tagits bort permanent.",
+      });
+      
+      navigate('/auth');
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Kunde inte radera konto",
+        description: error.message || "Ett fel uppstod vid radering av kontot.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -453,9 +549,74 @@ const ProfileEnhanced = () => {
               </CardContent>
             </Card>
 
+            {/* Danger Zone - Delete Account */}
+            <Card className="border-destructive/30">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  Farligt område
+                </CardTitle>
+                <CardDescription>
+                  Permanenta åtgärder som inte kan ångras
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Radera mitt konto
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        Radera konto permanent?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-2">
+                        <p>
+                          Detta kommer att <strong>permanent radera</strong> ditt konto och all tillhörande data, inklusive:
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                          <li>Alla dina {stats.total} sparade fångster</li>
+                          <li>Alla uppladdade bilder</li>
+                          <li>Din profilbild</li>
+                          <li>Alla prestationer och statistik</li>
+                        </ul>
+                        <p className="text-destructive font-medium mt-3">
+                          Denna åtgärd kan inte ångras!
+                        </p>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting}>Avbryt</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Raderar...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Ja, radera mitt konto
+                          </>
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardContent>
+            </Card>
+
             {/* Sign Out */}
             <Button
-              variant="destructive"
+              variant="outline"
               className="w-full"
               onClick={handleSignOut}
             >
