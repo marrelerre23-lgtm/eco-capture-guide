@@ -65,7 +65,7 @@ const translateSupabaseError = (error: string): string => {
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
