@@ -18,7 +18,7 @@ class Analytics {
   init(userId?: string) {
     this.userId = userId || null;
     this.isInitialized = true;
-    console.log('📊 Analytics initialized', { userId: this.userId });
+    if (import.meta.env.DEV) console.log('📊 Analytics initialized', { userId: this.userId });
     this.flushQueue();
   }
 
