@@ -10,7 +10,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
