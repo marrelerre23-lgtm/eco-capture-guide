@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { AnalyzingScreen } from "./AnalyzingScreen";
-import { PhotoTipsDialog } from "./PhotoTipsDialog";
+
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 
 import { getCachedAnalysis, setCachedAnalysis } from "@/utils/analysisCache";
