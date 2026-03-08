@@ -169,9 +169,7 @@ const Camera = () => {
           // FIX #5: Show GPS accuracy warning if poor quality
           if (accuracy > 50) {
             const accuracyLevel = accuracy > 100 ? 'mycket dålig' : 'låg';
-            toast({
-              variant: "destructive",
-              title: `GPS-noggrannhet ${accuracyLevel} (±${Math.round(accuracy)}m)`,
+            toast.error(`GPS-noggrannhet ${accuracyLevel} (±${Math.round(accuracy)}m)`, {
               description: "För bästa resultat, gå ut till en öppen plats med fri sikt mot himlen.",
               duration: 6000,
             });
