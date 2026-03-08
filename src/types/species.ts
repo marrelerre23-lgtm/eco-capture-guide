@@ -12,6 +12,16 @@ export interface Species {
   facts: string[] | Array<{icon: string, title: string, description: string}>;
   edibility?: 'ätlig' | 'giftig' | 'ätlig med förbehåll' | 'inte ätlig' | 'okänd';
   ageStage?: string;
+  // UI/display fields used by Logbook and SpeciesModal
+  location?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  notes?: string;
+  capturedAt?: Date;
+  isFavorite?: boolean;
+  gpsAccuracy?: number;
 }
 
 // Valid detailed categories for species classification
