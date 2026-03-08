@@ -59,13 +59,13 @@ export const useAchievements = () => {
   // Unlock achievement mutation
   const unlockMutation = useMutation({
     mutationFn: async (achievementId: string) => {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user) throw new Error("User not authenticated");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
         .from("user_achievements")
         .insert({
-          user_id: user.data.user.id,
+          user_id: session.user.id,
           achievement_id: achievementId,
         })
         .select(`

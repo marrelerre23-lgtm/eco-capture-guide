@@ -188,7 +188,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
             category: alt.species.category || "annat",
             confidence: alt.species.confidence || 0.5,
             reasoning: alt.reasoning || "",
-            edibility: alt.species.edibility || null,
             ageStage: alt.species.ageStage || null,
             facts: [
               alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",

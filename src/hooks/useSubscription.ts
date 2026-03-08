@@ -43,9 +43,9 @@ export const useSubscription = () => {
     try {
       setError(null);
       
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (userError || !user) {
+      if (!session?.user) {
         userIdRef.current = null;
         setSubscription(DEFAULT_SUBSCRIPTION);
         setLoading(false);
