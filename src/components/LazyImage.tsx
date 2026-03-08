@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useSignedUrl } from "@/hooks/useSignedUrl";
 
+/** Note: Shares signed-URL logic with SecureImage. This component adds lazy loading. */
 interface LazyImageProps {
   src: string;
   alt: string;

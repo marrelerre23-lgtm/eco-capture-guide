@@ -64,6 +64,7 @@ export const exportToCSV = (data: ExportCapture[]): void => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 export const exportToJSON = (data: ExportCapture[]): void => {
@@ -79,4 +80,5 @@ export const exportToJSON = (data: ExportCapture[]): void => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };

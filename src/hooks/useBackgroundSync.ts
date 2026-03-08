@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useOnlineStatus } from "./useOnlineStatus";
-import { useOfflineStorage, readFromStorage } from "./useOfflineStorage";
-import type { OfflineCapture } from "./useOfflineStorage";
+import { readFromStorage, removeOfflineCaptureById } from "./useOfflineStorage";
 import { toast } from "sonner";
 
 const MAX_RETRIES = 3;
@@ -16,7 +15,6 @@ interface RetryState {
 
 export const useBackgroundSync = () => {
   const isOnline = useOnlineStatus();
-  const { removeOfflineCapture } = useOfflineStorage();
   const retryStateRef = useRef<RetryState>({});
   const isSyncingRef = useRef(false);
 
@@ -55,7 +53,7 @@ export const useBackgroundSync = () => {
           // Currently placeholder — removes offline capture without uploading
           await new Promise(resolve => setTimeout(resolve, 1000));
 
-          removeOfflineCapture(capture.id);
+          removeOfflineCaptureById(capture.id);
           syncedCount++;
 
           delete retryStateRef.current[capture.id];
@@ -96,5 +94,5 @@ export const useBackgroundSync = () => {
     }, 30000);
 
     return () => clearInterval(retryInterval);
-  }, [isOnline, removeOfflineCapture]);
+  }, [isOnline]);
 };

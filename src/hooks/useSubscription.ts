@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -41,7 +41,7 @@ export const useSubscription = () => {
   const [error, setError] = useState<string | null>(null);
   
 
-  const fetchSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
+  const fetchSubscriptionInfo = useCallback(async (): Promise<SubscriptionInfo> => {
     try {
       setError(null);
       
@@ -111,7 +111,7 @@ export const useSubscription = () => {
       setLoading(false);
       return DEFAULT_SUBSCRIPTION;
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSubscriptionInfo();
