@@ -102,19 +102,6 @@ const App = () => {
     });
   }, []);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        queryClient.invalidateQueries();
-      } else if (event === 'SIGNED_OUT') {
-        queryClient.clear();
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   useEffect(() => {
     if (!hasCompletedOnboarding()) {

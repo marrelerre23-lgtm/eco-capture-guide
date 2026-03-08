@@ -36,6 +36,13 @@ const Layout = ({ children }: LayoutProps) => {
         
         setUser(session?.user ?? null);
 
+        // Invalidate/clear queries on auth state changes
+        if (event === 'SIGNED_IN') {
+          queryClient.invalidateQueries();
+        } else if (event === 'SIGNED_OUT') {
+          queryClient.clear();
+        }
+
         // Redirect authenticated users away from auth page
         if (session?.user && location.pathname === "/auth") {
           navigate("/");

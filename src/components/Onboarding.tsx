@@ -13,7 +13,7 @@ export const hasCompletedOnboarding = (): boolean => {
   return localStorage.getItem(ONBOARDING_KEY) === 'true';
 };
 
-export const markOnboardingComplete = () => {
+const markOnboardingComplete = () => {
   localStorage.setItem(ONBOARDING_KEY, 'true');
 };
 
