@@ -11,7 +11,7 @@ import { TopNavigation } from "./TopNavigation";
 import { PhotoTipsDialog } from "./PhotoTipsDialog";
 import { User } from "@supabase/supabase-js";
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
-import { getCachedResult, setCachedResult } from "@/utils/imageCache";
+
 import { getCachedAnalysis, setCachedAnalysis } from "@/utils/analysisCache";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useRateLimit } from "@/hooks/useRateLimit";
