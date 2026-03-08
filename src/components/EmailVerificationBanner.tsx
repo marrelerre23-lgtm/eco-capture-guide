@@ -32,8 +32,7 @@ export const EmailVerificationBanner = () => {
       });
       if (error) throw error;
 
-      toast({
-        title: "Email skickad!",
+      toast("Email skickad!", {
         description: "Kolla din inkorg och verifiera din email-adress.",
       });
     } catch (error) {
