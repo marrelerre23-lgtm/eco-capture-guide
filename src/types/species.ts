@@ -30,6 +30,12 @@ export interface Species {
   gpsAccuracy?: number;
 }
 
+// Narrowed Species type where facts are always structured objects (used by Logbook, SpeciesModal)
+export interface SpeciesDetailed extends Omit<Species, 'facts' | 'dateFound'> {
+  facts: SpeciesFact[];
+  dateFound: string;
+}
+
 // Valid detailed categories for species classification
 export const VALID_CATEGORIES = [
   // Träd och Vedartade
