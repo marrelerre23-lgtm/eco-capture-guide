@@ -87,8 +87,7 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
 
           if (navigator.canShare(shareData)) {
             await navigator.share(shareData);
-            toast({
-              title: "Delat! 🎉",
+            toast.success("Delat! 🎉", {
               description: "Fångsten har delats med bild.",
             });
             return;
