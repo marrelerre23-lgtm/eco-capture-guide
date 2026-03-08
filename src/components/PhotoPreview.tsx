@@ -181,10 +181,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         console.error('AI analysis error:', data.error);
         // Check if upgrade is required
         if (data.upgradeRequired) {
-          toast({
-            title: "Gräns nådd",
+          toast.error("Gräns nådd", {
             description: data.error,
-            variant: "destructive",
             duration: 5000,
           });
           setIsAnalyzing(false);
