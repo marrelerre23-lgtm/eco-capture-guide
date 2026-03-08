@@ -84,8 +84,6 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingSc
 
   return (
     <>
-      <TopNavigation user={user} onLogout={handleLogout} />
-      
       <div className="fixed inset-0 z-50 bg-gradient-to-br from-primary/20 via-background to-accent/20 backdrop-blur-sm flex items-center justify-center p-6 pt-24">
         {/* Cancel Button */}
         <div className="absolute top-20 right-4 z-50">

@@ -219,7 +219,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           dateFound: new Date(),
           description: analysisResult.species.description || "Ingen beskrivning tillgänglig",
           category: analysisResult.species.category || "annat",
-          edibility: analysisResult.species.edibility || null,
+          ageStage: analysisResult.species.ageStage || null,
           ageStage: analysisResult.species.ageStage || null,
           facts: [
             analysisResult.species.habitat ? `Habitat: ${analysisResult.species.habitat}` : "",
