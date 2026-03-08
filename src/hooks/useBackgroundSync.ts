@@ -111,5 +111,5 @@ export const useBackgroundSync = () => {
     }, 30000);
 
     return () => clearInterval(retryInterval);
-  }, [isOnline, offlineCaptures, removeOfflineCapture]);
+  }, [isOnline, removeOfflineCapture]);
 };
