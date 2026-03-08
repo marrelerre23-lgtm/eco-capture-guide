@@ -30,8 +30,7 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "Länk kopierad!",
+      toast("Länk kopierad!", {
         description: "Delningslänken har kopierats till urklipp.",
       });
     } catch (error) {
