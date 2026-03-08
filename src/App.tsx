@@ -10,9 +10,6 @@ import { CookieConsent } from "./components/CookieConsent";
 import { EmailVerificationBanner } from "./components/EmailVerificationBanner";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
-import { useOnlineStatus } from "./hooks/useOnlineStatus";
-import { useOfflineStorage } from "./hooks/useOfflineStorage";
-import { useToast } from "./hooks/use-toast";
 import { supabase } from "./integrations/supabase/client";
 import { analytics, ANALYTICS_EVENTS } from "./utils/analytics";
 
