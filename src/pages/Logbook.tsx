@@ -255,8 +255,7 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: !currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter",
+      toast(!currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter", {
         description: !currentFavorite ? "Fångsten har markerats som favorit." : "Fångsten har tagits bort från favoriter.",
       });
     } catch (err) {
