@@ -261,10 +261,8 @@ const Logbook = () => {
     } catch (err) {
       vibrateError();
       console.error('Error toggling favorite:', err);
-      toast({
-        title: "Kunde inte uppdatera favorit",
+      toast.error("Kunde inte uppdatera favorit", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     }
   };
