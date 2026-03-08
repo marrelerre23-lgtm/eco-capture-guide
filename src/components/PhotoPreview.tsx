@@ -71,7 +71,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const { subscription, refetch } = useSubscription();
+  const { subscription } = useSubscription();
   
   // Rate limiting for AI analysis
   const { checkLimit: checkRateLimit } = useRateLimit('ai-analysis', {
