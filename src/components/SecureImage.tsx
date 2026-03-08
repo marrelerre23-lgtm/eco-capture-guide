@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -6,7 +7,7 @@ interface SecureImageProps {
   src: string | null | undefined;
   alt: string;
   className?: string;
-  fallback?: React.ReactNode;
+  fallback?: ReactNode;
 }
 
 /**

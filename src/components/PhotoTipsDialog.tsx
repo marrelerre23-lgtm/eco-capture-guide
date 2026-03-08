@@ -80,7 +80,7 @@ export const PhotoTipsDialog = ({ open, onOpenChange, category }: PhotoTipsDialo
   };
 
   const getCategoryIcon = (cat: string) => {
-    const icons: Record<string, React.ReactNode> = {
+    const icons: Record<string, ReactNode> = {
       mushroom: <Leaf className="h-5 w-5" />,
       plant: <Leaf className="h-5 w-5" />,
       tree: <TreeDeciduous className="h-5 w-5" />,

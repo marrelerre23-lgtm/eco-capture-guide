@@ -212,7 +212,7 @@ const Logbook = () => {
     }
   };
 
-  const toggleFavorite = async (speciesId: string, currentFavorite: boolean, event: React.MouseEvent) => {
+  const toggleFavorite = async (speciesId: string, currentFavorite: boolean, event: MouseEvent) => {
     event.stopPropagation();
     vibrateClick();
     

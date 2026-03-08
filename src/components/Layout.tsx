@@ -21,9 +21,6 @@ const Layout = ({ children }: LayoutProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Background sync for offline captures
-  useBackgroundSync();
-  
   // Pages where navigation should be hidden
   const hideNavigation = location.pathname === "/camera" || location.pathname === "/auth" || location.pathname === "/analysis-result";
 
