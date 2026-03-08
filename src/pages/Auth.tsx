@@ -102,8 +102,7 @@ const Auth = () => {
           description: translateSupabaseError(error.message),
         });
       } else {
-        toast({
-          title: "Välkommen tillbaka!",
+        toast.success("Välkommen tillbaka!", {
           description: "Du är nu inloggad.",
         });
         navigate("/");
