@@ -12,7 +12,6 @@ export interface SubscriptionInfo {
   baseMaxAnalysesPerDay: number | null;
   maxAnalysesPerDay: number | null;
   maxCaptures: number | null;
-  isAnalysisLimitReached: boolean;
   isCaptureLimitReached: boolean;
   subscription_end: string | null;
   rewardedAnalysesToday: number;

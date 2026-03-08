@@ -489,16 +489,11 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
                   <div className="text-xs space-y-1">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Analyser idag:</span>
-                      <span className={subscription.isAnalysisLimitReached ? 'text-destructive font-medium' : ''}>
+                      <span>
                         {subscription.analysesToday} / {subscription.maxAnalysesPerDay}
                       </span>
                     </div>
                   </div>
-                  {subscription.isAnalysisLimitReached && (
-                    <p className="text-xs text-destructive mt-1">
-                      Gräns nådd. Återställs vid midnatt.
-                    </p>
-                  )}
                 </div>
               )}
               

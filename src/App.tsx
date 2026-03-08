@@ -8,7 +8,6 @@ import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { CookieConsent, hasCookieConsent } from "./components/CookieConsent";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
-import { supabase } from "./integrations/supabase/client";
 import { analytics, ANALYTICS_EVENTS } from "./utils/analytics";
 
 // Lazy load ALL pages to reduce initial bundle size and unused JS
