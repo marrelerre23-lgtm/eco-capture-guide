@@ -180,10 +180,8 @@ const ProfileEnhanced = () => {
     }
 
     if (newPassword.length < 6) {
-      toast({
-        title: "Lösenordet är för kort",
+      toast.error("Lösenordet är för kort", {
         description: "Lösenordet måste vara minst 6 tecken långt.",
-        variant: "destructive",
       });
       return;
     }
