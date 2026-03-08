@@ -13,9 +13,25 @@ interface RetryState {
   };
 }
 
+const readCapturesFromStorage = (): OfflineCapture[] => {
+  try {
+    const stored = localStorage.getItem('ecocapture_offline_captures');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+interface OfflineCapture {
+  id: string;
+  imageUrl: string;
+  timestamp: number;
+  location?: { latitude: number; longitude: number };
+}
+
 export const useBackgroundSync = () => {
   const isOnline = useOnlineStatus();
-  const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
+  const { removeOfflineCapture } = useOfflineStorage();
   const retryStateRef = useRef<RetryState>({});
   const isSyncingRef = useRef(false);
 
@@ -23,7 +39,7 @@ export const useBackgroundSync = () => {
     const syncPendingCaptures = async () => {
       if (!isOnline || isSyncingRef.current) return;
 
-      const pendingCaptures = offlineCaptures;
+      const pendingCaptures = readCapturesFromStorage();
       if (pendingCaptures.length === 0) return;
 
       isSyncingRef.current = true;
@@ -95,5 +111,5 @@ export const useBackgroundSync = () => {
     }, 30000);
 
     return () => clearInterval(retryInterval);
-  }, [isOnline, offlineCaptures, removeOfflineCapture]);
+  }, [isOnline, removeOfflineCapture]);
 };
