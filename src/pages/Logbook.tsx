@@ -393,8 +393,7 @@ const Logbook = () => {
     const allIds = new Set(allSpecies.map(s => s.id));
     setSelectedIds(allIds);
     vibrateClick();
-    toast({
-      title: "Alla fångster valda",
+    toast("Alla fångster valda", {
       description: `${allIds.size} fångster markerade`,
     });
   };
