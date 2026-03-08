@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 export const EmailVerificationBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     checkEmailVerification();
