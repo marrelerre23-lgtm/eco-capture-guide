@@ -364,7 +364,7 @@ const Camera = () => {
 
 
   // Start camera and fetch GPS when component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     startCamera();
     // FIX #5: Fetch GPS early so it's ready when user takes photo
     getLocation();
