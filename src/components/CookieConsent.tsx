@@ -16,7 +16,6 @@ export const CookieConsent = () => {
   const handleAccept = () => {
     localStorage.setItem('cookie-consent', 'accepted');
     setIsVisible(false);
-    console.log('📊 Cookies accepted');
   };
 
   const handleDecline = () => {
