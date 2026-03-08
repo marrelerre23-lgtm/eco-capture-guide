@@ -27,57 +27,9 @@ import {
   getCategoryDisplayName, 
   MAIN_CATEGORY_DISPLAY, 
   MainCategoryKey,
-  CATEGORY_TO_MAIN 
+  CATEGORY_TO_MAIN,
+  type Species
 } from "@/types/species";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-
-interface Species {
-  id: string;
-  name: string;
-  scientificName: string;
-  image: string;
-  dateFound: string;
-  description: string;
-  category: string;
-  confidence?: number;
-  location?: string;
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
-  notes?: string;
-  capturedAt: Date;
-  isFavorite?: boolean;
-  ageStage?: string;
-  gpsAccuracy?: number;
-  facts: {
-    icon: string;
-    title: string;
-    description: string;
-  }[];
-}
 
 // Helper function to convert SpeciesCapture to Species format
 const convertCaptureToSpecies = (capture: ParsedSpeciesCapture): Species => {

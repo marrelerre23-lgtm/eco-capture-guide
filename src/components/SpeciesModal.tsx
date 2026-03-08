@@ -6,30 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2, Trash2, MapPin, Calendar, Navigation, Maximize2, Check, Save } from "lucide-react";
 import type L_Type from "leaflet";
 import { SecureImage } from "@/components/SecureImage";
-
-interface Species {
-  id: string;
-  name: string;
-  scientificName: string;
-  image: string;
-  dateFound: string;
-  description: string;
-  ageStage?: string;
-  category?: string;
-  confidence?: number;
-  location?: string;
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
-  gpsAccuracy?: number;
-  notes?: string;
-  facts: {
-    icon: string;
-    title: string;
-    description: string;
-  }[];
-}
+import type { Species } from "@/types/species";
 
 interface SpeciesModalProps {
   species: Species;

@@ -47,22 +47,10 @@ const PageLoader = () => (
 );
 
 const AppRoutes = () => {
-  const [showCookieConsent, setShowCookieConsent] = useState(!hasCookieConsent());
-  const [unverifiedEmail, setUnverifiedEmail] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const checkVerification = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user && !user.email_confirmed_at) {
-        setUnverifiedEmail(user.email ?? undefined);
-      }
-    };
-    checkVerification();
-  }, []);
+  const showCookieConsent = !hasCookieConsent();
 
   return (
     <>
-      {unverifiedEmail && <EmailVerificationBanner userEmail={unverifiedEmail} />}
       {showCookieConsent && <CookieConsent />}
       <Suspense fallback={<PageLoader />}>
         <Routes>
