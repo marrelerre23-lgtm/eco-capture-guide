@@ -104,8 +104,7 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
         url: shareUrl,
       });
       
-      toast({
-        title: "Delat! 🎉",
+      toast.success("Delat! 🎉", {
         description: "Fångsten har delats.",
       });
     } catch (error) {
