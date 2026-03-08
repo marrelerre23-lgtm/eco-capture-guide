@@ -10,7 +10,7 @@ export interface OfflineCapture {
 
 const STORAGE_KEY = 'ecocapture_offline_captures';
 
-const readFromStorage = (): OfflineCapture[] => {
+export const readFromStorage = (): OfflineCapture[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];

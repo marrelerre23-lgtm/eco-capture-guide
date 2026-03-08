@@ -61,18 +61,6 @@ export default defineConfig(({ mode }) => ({
               },
             },
           },
-          // StaleWhileRevalidate for other JS/CSS
-          {
-            urlPattern: /\.(?:js|css)$/i,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "static-resources-v1",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-              },
-            },
-          },
           // Cache-First for images
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,

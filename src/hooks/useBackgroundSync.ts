@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useOnlineStatus } from "./useOnlineStatus";
-import { useOfflineStorage } from "./useOfflineStorage";
+import { useOfflineStorage, readFromStorage } from "./useOfflineStorage";
+import type { OfflineCapture } from "./useOfflineStorage";
 import { toast } from "sonner";
 
 const MAX_RETRIES = 3;
@@ -13,22 +14,6 @@ interface RetryState {
   };
 }
 
-const readCapturesFromStorage = (): OfflineCapture[] => {
-  try {
-    const stored = localStorage.getItem('ecocapture_offline_captures');
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
-
-interface OfflineCapture {
-  id: string;
-  imageUrl: string;
-  timestamp: number;
-  location?: { latitude: number; longitude: number };
-}
-
 export const useBackgroundSync = () => {
   const isOnline = useOnlineStatus();
   const { removeOfflineCapture } = useOfflineStorage();
@@ -39,7 +24,7 @@ export const useBackgroundSync = () => {
     const syncPendingCaptures = async () => {
       if (!isOnline || isSyncingRef.current) return;
 
-      const pendingCaptures = readCapturesFromStorage();
+      const pendingCaptures = readFromStorage();
       if (pendingCaptures.length === 0) return;
 
       isSyncingRef.current = true;

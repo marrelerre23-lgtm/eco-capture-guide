@@ -1,5 +1,9 @@
 /**
  * Analytics Utility for EcoCapture
+ * 
+ * NOTE: This is a placeholder implementation that stores events in localStorage.
+ * Replace sendEvent() with an actual analytics provider (e.g. PostHog, Mixpanel)
+ * when ready for production analytics.
  */
 
 interface AnalyticsEvent {

@@ -6,13 +6,11 @@
 export const getGpsGuidanceMessage = (accuracy: number | null | undefined): {
   message: string;
   level: 'excellent' | 'good' | 'fair' | 'poor';
-  icon: string;
 } => {
   if (!accuracy) {
     return {
       message: "Ingen GPS-data tillgänglig. Positionsdata saknas.",
       level: 'poor',
-      icon: '📌'
     };
   }
 
@@ -20,7 +18,6 @@ export const getGpsGuidanceMessage = (accuracy: number | null | undefined): {
     return {
       message: "Utmärkt GPS-signal! Positionen är mycket exakt.",
       level: 'excellent',
-      icon: '🎯'
     };
   }
 
@@ -28,7 +25,6 @@ export const getGpsGuidanceMessage = (accuracy: number | null | undefined): {
     return {
       message: "Bra GPS-signal. Positionen är tillräckligt exakt för de flesta ändamål.",
       level: 'good',
-      icon: '🎯'
     };
   }
 
@@ -36,7 +32,6 @@ export const getGpsGuidanceMessage = (accuracy: number | null | undefined): {
     return {
       message: "Godtagbar GPS-signal. Positionen kan vara några meter från din faktiska plats.",
       level: 'fair',
-      icon: '📍'
     };
   }
 
@@ -44,14 +39,12 @@ export const getGpsGuidanceMessage = (accuracy: number | null | undefined): {
     return {
       message: "Svag GPS-signal. Positionen kan vara betydligt osäker. Gå utomhus för bättre signal.",
       level: 'fair',
-      icon: '📍'
     };
   }
 
   return {
     message: "Mycket svag GPS-signal. Positionen är mycket osäker. Gå utomhus eller till en öppnare plats.",
     level: 'poor',
-    icon: '📌'
   };
 };
 
