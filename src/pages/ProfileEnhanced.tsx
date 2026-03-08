@@ -100,10 +100,8 @@ const ProfileEnhanced = () => {
         setProfile(data);
       }
     } catch (error: any) {
-      toast({
-        title: "Kunde inte ladda profil",
+      toast.error("Kunde inte ladda profil", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
