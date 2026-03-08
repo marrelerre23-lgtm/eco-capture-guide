@@ -250,11 +250,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
   return (
     <>
-      <PhotoTipsDialog
-        open={tipsDialogOpen} 
-        onOpenChange={setTipsDialogOpen}
-        category={selectedCategory ? getCategoryForTips(selectedCategory) : undefined}
-      />
 
       {/* Category Selection Dialog */}
       <dialog 
