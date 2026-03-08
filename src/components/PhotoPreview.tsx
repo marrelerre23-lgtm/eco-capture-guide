@@ -136,13 +136,9 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       }
 
       setIsAnalyzing(true);
-      console.log('Laddar upp bild till Supabase...');
       
       // First upload the image to Supabase Storage
       const uploadedImageUrl = await uploadCaptureFromDataUrl(imageUrl);
-      console.log('Bild uppladdad:', uploadedImageUrl);
-      
-      console.log('Startar AI-analys av bild...');
       
       // Call the Supabase Edge Function
       // Pass selected main category (växter, insekter, etc.) or null for auto-detect
