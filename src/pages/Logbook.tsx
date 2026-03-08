@@ -610,7 +610,7 @@ const Logbook = () => {
         speciesByCategory // Pass it down for subcategory counting
       };
     }).filter(cat => showEmptyCategories || cat.count > 0);
-  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories]);
+  }, [allSpecies, categorySortBy, subcategoryFilter, showEmptyCategories, categoryPages, isMobile, gpsAccuracyFilter]);
 
   const toggleCategory = (categoryKey: string) => {
     setExpandedCategory(expandedCategory === categoryKey ? "" : categoryKey);
