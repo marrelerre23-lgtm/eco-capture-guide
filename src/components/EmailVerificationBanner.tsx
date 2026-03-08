@@ -1,34 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from './ui/button';
 import { Mail, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export const EmailVerificationBanner = () => {
-  const [isVisible, setIsVisible] = useState(false);
+interface EmailVerificationBannerProps {
+  userEmail?: string | undefined;
+}
+
+export const EmailVerificationBanner = ({ userEmail }: EmailVerificationBannerProps) => {
+  const [isVisible, setIsVisible] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  
-
-  useEffect(() => {
-    checkEmailVerification();
-  }, []);
-
-  const checkEmailVerification = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && !user.email_confirmed_at) {
-      setIsVisible(true);
-    }
-  };
 
   const handleResendEmail = async () => {
+    if (!userEmail) return;
     try {
       setIsSending(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) throw new Error('Ingen email hittades');
-
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: user.email,
+        email: userEmail,
       });
       if (error) throw error;
 

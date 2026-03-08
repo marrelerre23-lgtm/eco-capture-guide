@@ -1,17 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Cookie, X } from 'lucide-react';
 
-export const CookieConsent = () => {
-  const [isVisible, setIsVisible] = useState(false);
+/** Check if cookie consent has already been given (accepted or declined) */
+export const hasCookieConsent = (): boolean => {
+  return !!localStorage.getItem('cookie-consent');
+};
 
-  useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent');
-    if (!consent) {
-      setIsVisible(true);
-    }
-  }, []);
+export const CookieConsent = () => {
+  const [isVisible, setIsVisible] = useState(true);
 
   const handleAccept = () => {
     localStorage.setItem('cookie-consent', 'accepted');

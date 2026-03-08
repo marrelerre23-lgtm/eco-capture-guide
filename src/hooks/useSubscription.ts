@@ -146,7 +146,7 @@ export const useSubscription = () => {
         supabase.removeChannel(realtimeChannel);
       }
     };
-  }, []);
+  }, [fetchSubscriptionInfo]);
 
   const checkCanCapture = async (): Promise<boolean> => {
     const currentInfo = await fetchSubscriptionInfo();

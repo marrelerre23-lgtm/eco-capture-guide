@@ -55,14 +55,7 @@ const Layout = ({ children }: LayoutProps) => {
       if (!mounted) return;
       
       setUser(session?.user ?? null);
-      
-      // Only set loading false after initial session check completes
-      // This ensures queries wait for proper session initialization
-      setTimeout(() => {
-        if (mounted) {
-          setLoading(false);
-        }
-      }, 100);
+      setLoading(false);
     });
 
     return () => {
