@@ -34,7 +34,7 @@ const Camera = () => {
 
   const startCamera = async () => {
     if (isStartingCamera) {
-      console.log('Camera is already starting, ignoring duplicate call');
+      if (import.meta.env.DEV) console.log('Camera is already starting, ignoring duplicate call');
       return;
     }
 
