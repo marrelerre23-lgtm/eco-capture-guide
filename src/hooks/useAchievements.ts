@@ -23,7 +23,6 @@ export interface UserAchievement {
 }
 
 export const useAchievements = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch all available achievements
