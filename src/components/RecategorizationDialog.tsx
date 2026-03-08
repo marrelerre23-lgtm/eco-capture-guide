@@ -92,10 +92,8 @@ export const RecategorizationDialog = ({
       onOpenChange(false);
     } catch (err) {
       console.error('Error recategorizing capture:', err);
-      toast({
-        title: "Kunde inte uppdatera kategori",
+      toast.error("Kunde inte uppdatera kategori", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     } finally {
       setIsUpdating(false);

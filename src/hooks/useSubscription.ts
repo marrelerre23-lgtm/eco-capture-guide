@@ -152,9 +152,7 @@ export const useSubscription = () => {
     const currentInfo = await fetchSubscriptionInfo();
     
     if (currentInfo.isCaptureLimitReached) {
-      toast({
-        variant: 'destructive',
-        title: 'Lagringsgräns nådd',
+      toast.error('Lagringsgräns nådd', {
         description: `Du har nått gränsen på ${currentInfo.maxCaptures} fångster.`,
       });
       return false;

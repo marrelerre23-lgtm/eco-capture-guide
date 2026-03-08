@@ -93,17 +93,14 @@ export const useBackgroundSync = () => {
 
       // Show sync result
       if (syncedCount > 0) {
-        toast({
-          title: "Synkronisering klar! ✅",
+        toast.success("Synkronisering klar! ✅", {
           description: `${syncedCount} ${syncedCount === 1 ? 'fångst' : 'fångster'} uppladdad${syncedCount === 1 ? '' : 'e'}${failedCount > 0 ? `, ${failedCount} misslyckades` : ''}`,
         });
       }
 
       if (failedCount > 0 && syncedCount === 0) {
-        toast({
-          title: "Synkronisering misslyckades",
+        toast.error("Synkronisering misslyckades", {
           description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas. Försöker igen automatiskt.`,
-          variant: "destructive",
         });
       }
     };

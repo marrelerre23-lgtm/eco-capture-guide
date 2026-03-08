@@ -110,10 +110,8 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         console.error('Share failed:', error);
-        toast({
-          title: "Kunde inte dela",
+        toast.error("Kunde inte dela", {
           description: "Försök kopiera länken istället.",
-          variant: "destructive",
         });
       }
     }

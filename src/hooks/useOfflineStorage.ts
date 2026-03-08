@@ -39,9 +39,8 @@ export const useOfflineStorage = () => {
     setOfflineCaptures(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
-    toast({
-      title: 'Sparat offline',
-      description: 'Bilden sparas lokalt och synkas när du är online igen.'
+    toast('Sparat offline', {
+      description: 'Bilden sparas lokalt och synkas när du är online igen.',
     });
 
     return newCapture.id;

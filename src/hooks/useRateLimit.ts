@@ -42,9 +42,7 @@ export const useRateLimit = (key: string, config: RateLimitConfig) => {
     // Rate limit exceeded
     const remainingTime = Math.ceil((state.resetTime - now) / 1000);
     
-    toast({
-      variant: 'destructive',
-      title: 'För många försök',
+    toast.error('För många försök', {
       description: config.message || `Vänta ${remainingTime} sekunder innan du försöker igen.`,
     });
 

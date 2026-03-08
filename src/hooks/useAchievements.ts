@@ -86,8 +86,7 @@ export const useAchievements = () => {
       
       const achievement = (data as any).achievement;
       if (achievement) {
-        toast({
-          title: "🎉 Achievement Unlocked!",
+        toast.success("🎉 Achievement Unlocked!", {
           description: `${achievement.icon} ${achievement.name}`,
           duration: 5000,
         });

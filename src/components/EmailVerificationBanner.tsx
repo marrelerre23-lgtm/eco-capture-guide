@@ -37,9 +37,7 @@ export const EmailVerificationBanner = () => {
       });
     } catch (error) {
       console.error('Error resending verification email:', error);
-      toast({
-        variant: 'destructive',
-        title: "Kunde inte skicka email",
+      toast.error("Kunde inte skicka email", {
         description: error instanceof Error ? error.message : "Ett okänt fel uppstod",
       });
     } finally {
