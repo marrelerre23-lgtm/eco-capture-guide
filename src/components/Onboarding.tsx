@@ -44,7 +44,7 @@ const steps = [
   }
 ];
 
-export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
+export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const CurrentIcon = steps[currentStep].icon;
 
