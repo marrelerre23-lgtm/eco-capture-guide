@@ -281,8 +281,7 @@ const ProfileEnhanced = () => {
       // Sign out
       await supabase.auth.signOut();
       
-      toast({
-        title: "Konto raderat",
+      toast("Konto raderat", {
         description: "Ditt konto och all data har tagits bort permanent.",
       });
       
