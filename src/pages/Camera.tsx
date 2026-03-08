@@ -218,8 +218,7 @@ const Camera = () => {
           // FIX #5: No need to fetch GPS here, already fetched at mount
           // Location state is already populated from useEffect
           
-          toast({
-            title: 'Bild tagen!',
+          toast('Bild tagen!', {
             description: isOnline 
               ? 'Bilden är redo för analys.' 
               : 'Bilden sparad offline.'
