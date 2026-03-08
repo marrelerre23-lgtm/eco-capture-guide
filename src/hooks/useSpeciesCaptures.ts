@@ -37,12 +37,6 @@ export const useSpeciesCaptures = () => {
   return useQuery({
     queryKey: ["species-captures"],
     queryFn: async (): Promise<ParsedSpeciesCapture[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        return [];
-      }
-
       const { data, error } = await supabase
         .from("species_captures")
         .select("*")

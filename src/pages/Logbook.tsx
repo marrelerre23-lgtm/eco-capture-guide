@@ -1439,9 +1439,6 @@ const Logbook = () => {
       <FilterDrawer
         open={filterDrawerOpen}
         onOpenChange={setFilterDrawerOpen}
-        showEdibilityFilter={false}
-        edibilityFilter=""
-        onEdibilityChange={() => {}}
         gpsAccuracyFilter={gpsAccuracyFilter}
         onGpsAccuracyChange={setGpsAccuracyFilter}
         subcategoryFilter={subcategoryFilter}

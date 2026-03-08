@@ -43,21 +43,21 @@ export const useSubscription = () => {
     try {
       setError(null);
       
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (userError || !user) {
+      if (!session?.user) {
         userIdRef.current = null;
         setSubscription(DEFAULT_SUBSCRIPTION);
         setLoading(false);
         return DEFAULT_SUBSCRIPTION;
       }
 
-      userIdRef.current = user.id;
+      userIdRef.current = session.user.id;
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .maybeSingle();
 
       if (profileError || !profile) {

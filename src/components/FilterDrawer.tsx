@@ -32,9 +32,6 @@ const CollapsibleSection = ({ title, open, onOpenChange, children }: Collapsible
 interface FilterDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  edibilityFilter: string;
-  onEdibilityChange: (value: string) => void;
-  showEdibilityFilter: boolean;
   gpsAccuracyFilter: string;
   onGpsAccuracyChange: (value: string) => void;
   subcategoryFilter: Record<string, string>;
@@ -46,9 +43,6 @@ interface FilterDrawerProps {
 export function FilterDrawer({
   open,
   onOpenChange,
-  edibilityFilter,
-  onEdibilityChange,
-  showEdibilityFilter,
   gpsAccuracyFilter,
   onGpsAccuracyChange,
   subcategoryFilter,
@@ -56,11 +50,10 @@ export function FilterDrawer({
   availableSubcategories,
   onClearAll,
 }: FilterDrawerProps) {
-  const [edibilityOpen, setEdibilityOpen] = useState(true);
   const [gpsOpen, setGpsOpen] = useState(true);
   const [subcatOpen, setSubcatOpen] = useState(true);
 
-  const hasActiveFilters = edibilityFilter || gpsAccuracyFilter || Object.values(subcategoryFilter).some(v => v);
+  const hasActiveFilters = gpsAccuracyFilter || Object.values(subcategoryFilter).some(v => v);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -78,16 +71,6 @@ export function FilterDrawer({
               <X className="h-4 w-4 mr-2" />
               Rensa alla filter
             </Button>
-          )}
-
-          {showEdibilityFilter && (
-            <CollapsibleSection title="Ätlighet" open={edibilityOpen} onOpenChange={setEdibilityOpen}>
-              <Button variant={!edibilityFilter ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("")} className="w-full justify-start">Alla</Button>
-              <Button variant={edibilityFilter === "ätlig" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("ätlig")} className={`w-full justify-start ${edibilityFilter === "ätlig" ? "bg-green-600 hover:bg-green-700" : ""}`}>✓ Ätlig</Button>
-              <Button variant={edibilityFilter === "giftig" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("giftig")} className={`w-full justify-start ${edibilityFilter === "giftig" ? "bg-red-600 hover:bg-red-700" : ""}`}>⚠ Giftig</Button>
-              <Button variant={edibilityFilter === "inte-ätlig" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("inte-ätlig")} className={`w-full justify-start ${edibilityFilter === "inte-ätlig" ? "bg-gray-600 hover:bg-gray-700" : ""}`}>⊘ Inte ätlig</Button>
-              <Button variant={edibilityFilter === "okänd" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("okänd")} className="w-full justify-start">? Okänd</Button>
-            </CollapsibleSection>
           )}
 
           <CollapsibleSection title="GPS-noggrannhet" open={gpsOpen} onOpenChange={setGpsOpen}>
