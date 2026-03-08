@@ -232,10 +232,8 @@ const Logbook = () => {
       setSelectedSpecies(null);
     } catch (err) {
       console.error('Error deleting capture:', err);
-      toast({
-        title: "Kunde inte ta bort fångst",
+      toast.error("Kunde inte ta bort fångst", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
