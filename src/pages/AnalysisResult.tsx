@@ -96,8 +96,7 @@ const AnalysisResult = () => {
     try {
       // In a real app, this would send feedback to improve the AI
       // For now, we'll just show a toast
-      toast({
-        title: "Tack för din feedback!",
+      toast("Tack för din feedback!", {
         description: "Vi kommer använda denna information för att förbättra AI-modellen.",
       });
     } catch (error) {
