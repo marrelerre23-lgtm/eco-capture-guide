@@ -124,10 +124,8 @@ const ProfileEnhanced = () => {
         description: "Dina ändringar har sparats.",
       });
     } catch (error: any) {
-      toast({
-        title: "Kunde inte uppdatera profil",
+      toast.error("Kunde inte uppdatera profil", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setSaving(false);
