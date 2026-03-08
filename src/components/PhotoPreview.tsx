@@ -270,8 +270,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
   return (
     <>
-      <TopNavigation user={user} onLogout={handleLogout} />
-      <PhotoTipsDialog 
+      <PhotoTipsDialog
         open={tipsDialogOpen} 
         onOpenChange={setTipsDialogOpen}
         category={selectedCategory ? getCategoryForTips(selectedCategory) : undefined}

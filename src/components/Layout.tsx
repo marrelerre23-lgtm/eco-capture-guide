@@ -41,6 +41,9 @@ const Layout = ({ children }: LayoutProps) => {
         // Invalidate/clear queries on auth state changes
         if (event === 'SIGNED_IN') {
           queryClient.invalidateQueries();
+          if (session?.user) {
+            analytics.setUserId(session.user.id);
+          }
         } else if (event === 'SIGNED_OUT') {
           queryClient.clear();
         }
