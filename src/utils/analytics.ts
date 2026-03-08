@@ -24,7 +24,7 @@ class Analytics {
 
   setUserId(userId: string) {
     this.userId = userId;
-    console.log('📊 Analytics user set:', userId);
+    if (import.meta.env.DEV) console.log('📊 Analytics user set:', userId);
   }
 
   track(event: string, properties?: Record<string, any>) {

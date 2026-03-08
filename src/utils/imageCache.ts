@@ -124,5 +124,5 @@ const clearOldestEntries = (count: number): void => {
   }
   
   saveCache(cache);
-  console.log(`Cleared ${Math.min(count, entries.length)} oldest cache entries`);
+  if (import.meta.env.DEV) console.log(`Cleared ${Math.min(count, entries.length)} oldest cache entries`);
 };

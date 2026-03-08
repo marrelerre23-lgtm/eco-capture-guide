@@ -56,7 +56,7 @@ export const setCachedAnalysis = async (imageDataUrl: string, result: any, categ
     };
     
     localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-    console.log('Analysis result cached with 5-minute TTL');
+    if (import.meta.env.DEV) console.log('Analysis result cached with 5-minute TTL');
   } catch (error) {
     console.error('Error caching analysis:', error);
   }
