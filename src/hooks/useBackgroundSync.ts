@@ -31,8 +31,7 @@ export const useBackgroundSync = () => {
       setIsSyncing(true);
       
       // Show sync progress
-      toast({
-        title: "Synkroniserar offline-data...",
+      toast("Synkroniserar offline-data...", {
         description: `Laddar upp ${pendingCaptures.length} ${pendingCaptures.length === 1 ? 'fångst' : 'fångster'}`,
       });
 
