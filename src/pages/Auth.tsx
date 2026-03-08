@@ -131,9 +131,7 @@ const Auth = () => {
       
       if (!validationResult.success) {
         const firstError = validationResult.error.errors[0];
-        toast({
-          variant: "destructive",
-          title: "Valideringsfel",
+        toast.error("Valideringsfel", {
           description: firstError.message,
         });
         setLoading(false);
