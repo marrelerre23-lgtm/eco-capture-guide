@@ -21,7 +21,9 @@ export const getSignedCaptureUrl = async (imageUrl: string): Promise<string> => 
     .createSignedUrl(filePath, 3600);
 
   if (error) {
-    console.error('Error creating signed URL:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error creating signed URL:', error);
+    }
     // Fallback to original URL if signed URL fails
     return imageUrl;
   }

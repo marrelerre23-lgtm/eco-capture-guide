@@ -179,7 +179,7 @@ export const getMainCategory = (category: string): MainCategoryKey => {
   }
   
   // Log unknown categories for future debugging
-  if (normalized && normalized !== '') {
+  if (import.meta.env.DEV && normalized && normalized !== '') {
     console.warn(`Unknown category detected: "${category}" (normalized: "${normalized}"). Defaulting to 'spår-övrigt'.`);
   }
   
