@@ -261,8 +261,7 @@ const AnalysisResult = () => {
         plantCount,
       });
 
-      toast({
-        title: "Fångst sparad!",
+      toast.success("Fångst sparad!", {
         description: `${selectedSpecies.name} har lagts till i din loggbok`
       });
 
