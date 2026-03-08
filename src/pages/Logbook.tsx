@@ -195,7 +195,7 @@ const Logbook = () => {
   const queryClient = useQueryClient();
   const { data: captures, isLoading, error, refetch } = useSpeciesCaptures();
   const { vibrateSuccess, vibrateError, vibrateClick } = useVibration();
-  const { subscription } = useSubscription();
+  
 
   const loadMoreInCategory = (categoryKey: string, totalItems: number) => {
     const currentPage = categoryPages[categoryKey] || 1;
