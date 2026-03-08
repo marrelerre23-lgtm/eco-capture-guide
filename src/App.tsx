@@ -92,9 +92,8 @@ const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
 
-  useEffect(() => {
-    analytics.init();
-  }, []);
+
+
 
 
   useEffect(() => {
