@@ -466,8 +466,7 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: "Re-analys klar!",
+      toast.success("Re-analys klar!", {
         description: data.message || `${data.updated} fångster uppdaterade`,
       });
     } catch (err) {
