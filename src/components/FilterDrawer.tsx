@@ -43,9 +43,6 @@ interface FilterDrawerProps {
 export function FilterDrawer({
   open,
   onOpenChange,
-  edibilityFilter,
-  onEdibilityChange,
-  showEdibilityFilter,
   gpsAccuracyFilter,
   onGpsAccuracyChange,
   subcategoryFilter,
@@ -53,11 +50,10 @@ export function FilterDrawer({
   availableSubcategories,
   onClearAll,
 }: FilterDrawerProps) {
-  const [edibilityOpen, setEdibilityOpen] = useState(true);
   const [gpsOpen, setGpsOpen] = useState(true);
   const [subcatOpen, setSubcatOpen] = useState(true);
 
-  const hasActiveFilters = edibilityFilter || gpsAccuracyFilter || Object.values(subcategoryFilter).some(v => v);
+  const hasActiveFilters = gpsAccuracyFilter || Object.values(subcategoryFilter).some(v => v);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
