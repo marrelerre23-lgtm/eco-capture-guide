@@ -82,7 +82,7 @@ const DETAIL_LEVELS = [
 
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [selectedCategory, setSelectedCategory] = useState<MainCategoryKey | null>(null);
   const [detailLevel, setDetailLevel] = useState<string>("standard");
   const [isAnalyzing, setIsAnalyzing] = useState(false);

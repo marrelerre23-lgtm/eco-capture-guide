@@ -599,8 +599,7 @@ const Camera = () => {
               size="icon"
               className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm rounded-full w-14 h-14 border border-white/20"
               onClick={() => {
-                toast({
-                  title: "Funktion kommer snart",
+                toast("Funktion kommer snart", {
                   description: "Möjlighet att byta kamera kommer i nästa version",
                 });
               }}
