@@ -37,7 +37,7 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const userIdRef = { current: null as string | null };
 
   const fetchSubscriptionInfo = useCallback(async (): Promise<SubscriptionInfo> => {
     try {
