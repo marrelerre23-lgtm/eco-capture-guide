@@ -114,10 +114,8 @@ const AnalysisResult = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: "Inloggning krävs",
+        toast.error("Inloggning krävs", {
           description: "Du måste vara inloggad för att spara fångster",
-          variant: "destructive"
         });
         setSaving(false);
         return;
