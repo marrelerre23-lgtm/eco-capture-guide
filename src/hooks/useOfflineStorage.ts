@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
-interface OfflineCapture {
+export interface OfflineCapture {
   id: string;
   imageUrl: string;
   timestamp: number;
