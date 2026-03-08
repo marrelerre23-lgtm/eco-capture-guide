@@ -61,7 +61,7 @@ export function FilterDrawer({
         <SheetHeader>
           <SheetTitle>Filter</SheetTitle>
           <SheetDescription>
-            Filtrera dina fångster efter ätlighet, GPS-noggrannhet och kategori
+            Filtrera dina fångster efter GPS-noggrannhet och kategori
           </SheetDescription>
         </SheetHeader>
 
