@@ -429,12 +429,7 @@ const Logbook = () => {
       });
     } catch (err) {
       vibrateError();
-      console.error('❌ [Reanalyze] Error during re-analysis:', err);
-      console.error('❌ [Reanalyze] Error details:', {
-        message: err instanceof Error ? err.message : 'Unknown',
-        stack: err instanceof Error ? err.stack : undefined,
-        full: err
-      });
+      console.error('[Reanalyze] Error:', err);
       toast.error("Kunde inte re-analysera fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
       });

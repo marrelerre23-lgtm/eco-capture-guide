@@ -15,16 +15,7 @@ interface AnalyticsEvent {
 }
 
 class Analytics {
-  private queue: AnalyticsEvent[] = [];
   private userId: string | null = null;
-  private isInitialized = false;
-
-  init(userId?: string) {
-    this.userId = userId || null;
-    this.isInitialized = true;
-    if (import.meta.env.DEV) console.log('📊 Analytics initialized', { userId: this.userId });
-    this.flushQueue();
-  }
 
   setUserId(userId: string) {
     this.userId = userId;
@@ -39,11 +30,6 @@ class Analytics {
       timestamp: Date.now(),
       userId: this.userId || undefined,
     };
-
-    if (!this.isInitialized) {
-      this.queue.push(eventData);
-      return;
-    }
 
     this.sendEvent(eventData);
   }
@@ -74,15 +60,6 @@ class Analytics {
   private getCategoryFromEvent(event: string): string {
     if (event.startsWith('onboarding_')) return 'user_journey';
     return 'general';
-  }
-
-  private flushQueue() {
-    while (this.queue.length > 0) {
-      const event = this.queue.shift();
-      if (event) {
-        this.sendEvent(event);
-      }
-    }
   }
 }
 
