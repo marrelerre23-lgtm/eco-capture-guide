@@ -93,9 +93,6 @@ const App = () => {
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
 
 
-
-
-
   useEffect(() => {
     if (!hasCompletedOnboarding()) {
       analytics.track(ANALYTICS_EVENTS.ONBOARDING_STARTED);

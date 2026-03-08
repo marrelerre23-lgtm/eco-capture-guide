@@ -38,7 +38,7 @@ export const getCachedAnalysis = async (imageDataUrl: string, categoryHint?: str
     if (import.meta.env.DEV) console.log('Using cached analysis result (expires in', Math.round((ANALYSIS_CACHE_TTL - (now - parsedCache.timestamp)) / 1000), 'seconds)');
     return parsedCache.result;
   } catch (error) {
-    console.error('Error getting cached analysis:', error);
+    if (import.meta.env.DEV) console.error('Error getting cached analysis:', error);
     return null;
   }
 };
@@ -58,6 +58,6 @@ export const setCachedAnalysis = async (imageDataUrl: string, result: any, categ
     localStorage.setItem(cacheKey, JSON.stringify(cacheData));
     if (import.meta.env.DEV) console.log('Analysis result cached with 5-minute TTL');
   } catch (error) {
-    console.error('Error caching analysis:', error);
+    if (import.meta.env.DEV) console.error('Error caching analysis:', error);
   }
 };
