@@ -19,6 +19,13 @@ export const readFromStorage = (): OfflineCapture[] => {
   }
 };
 
+/** Standalone remove function — no React state needed. Used by useBackgroundSync. */
+export const removeOfflineCaptureById = (id: string): void => {
+  const updated = readFromStorage().filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  window.dispatchEvent(new Event('offline-storage-updated'));
+};
+
 export const useOfflineStorage = () => {
   const [offlineCaptures, setOfflineCaptures] = useState<OfflineCapture[]>(readFromStorage);
 

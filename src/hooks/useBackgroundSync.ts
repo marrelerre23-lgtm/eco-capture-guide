@@ -15,7 +15,6 @@ interface RetryState {
 
 export const useBackgroundSync = () => {
   const isOnline = useOnlineStatus();
-  const { removeOfflineCapture } = useOfflineStorage();
   const retryStateRef = useRef<RetryState>({});
   const isSyncingRef = useRef(false);
 

@@ -10,7 +10,9 @@ interface SecureImageProps {
 }
 
 /**
- * Image component that automatically handles signed URLs for private storage
+ * Image component that automatically handles signed URLs for private storage.
+ * Note: Shares signed-URL logic with LazyImage. LazyImage adds lazy loading
+ * via react-intersection-observer — keep both until a unified component is warranted.
  */
 export const SecureImage = ({ src, alt, className, fallback }: SecureImageProps) => {
   const { signedUrl, loading } = useSignedUrl(src);

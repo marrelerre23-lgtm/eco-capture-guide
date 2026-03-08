@@ -41,7 +41,7 @@ export const useSubscription = () => {
   const [error, setError] = useState<string | null>(null);
   
 
-  const fetchSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
+  const fetchSubscriptionInfo = useCallback(async (): Promise<SubscriptionInfo> => {
     try {
       setError(null);
       
