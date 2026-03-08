@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useOfflineStorage } from "./useOfflineStorage";
-import { toast } from "./use-toast";
+import { toast } from "sonner";
 
 // #19: Exponential backoff retry configuration
 const MAX_RETRIES = 3;
