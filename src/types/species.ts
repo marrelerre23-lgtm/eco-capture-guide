@@ -1,4 +1,10 @@
-// Central type definition for Species across the entire application
+// Central type definitions for Species across the entire application
+export interface SpeciesFact {
+  icon: string;
+  title: string;
+  description: string;
+}
+
 export interface Species {
   id: string;
   name: string;
