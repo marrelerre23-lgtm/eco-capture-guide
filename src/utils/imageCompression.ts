@@ -73,7 +73,7 @@ export const compressImage = async (
  * Check if browser supports WebP format
  */
 let webpSupport: boolean | null = null;
-export const supportsWebP = (): boolean => {
+const supportsWebP = (): boolean => {
   if (webpSupport !== null) return webpSupport;
   
   const canvas = document.createElement('canvas');

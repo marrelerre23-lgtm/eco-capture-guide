@@ -52,16 +52,11 @@ export const useOfflineStorage = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   };
 
-  const clearAllOfflineCaptures = () => {
-    setOfflineCaptures([]);
-    localStorage.removeItem(STORAGE_KEY);
-  };
+
 
   return {
     offlineCaptures,
     saveOfflineCapture,
     removeOfflineCapture,
-    clearAllOfflineCaptures,
-    hasOfflineCaptures: offlineCaptures.length > 0
   };
 };
