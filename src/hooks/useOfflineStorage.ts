@@ -61,7 +61,5 @@ export const useOfflineStorage = () => {
     offlineCaptures,
     saveOfflineCapture,
     removeOfflineCapture,
-    clearAllOfflineCaptures,
-    hasOfflineCaptures: offlineCaptures.length > 0
   };
 };
