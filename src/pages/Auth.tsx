@@ -156,8 +156,7 @@ const Auth = () => {
           description: translateSupabaseError(error.message),
         });
       } else {
-        toast({
-          title: "Registrering lyckades!",
+        toast.success("Registrering lyckades!", {
           description: "Kontrollera din e-post för att bekräfta ditt konto.",
         });
       }
