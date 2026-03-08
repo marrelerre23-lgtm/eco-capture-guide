@@ -170,7 +170,7 @@ const Camera = () => {
           }
         },
         (error) => {
-          console.log('Kunde inte hämta plats:', error);
+          if (import.meta.env.DEV) console.log('Kunde inte hämta plats:', error);
           toast("GPS-position ej tillgänglig", {
             description: "Platsinformation kommer inte att sparas med denna fångst.",
             duration: 4000,

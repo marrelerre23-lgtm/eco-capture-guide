@@ -93,7 +93,7 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
             return;
           }
         } catch (error) {
-          console.log('Could not share with image, falling back to URL only');
+          if (import.meta.env.DEV) console.log('Could not share with image, falling back to URL only');
         }
       }
 

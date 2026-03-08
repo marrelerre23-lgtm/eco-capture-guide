@@ -163,9 +163,9 @@ const AnalysisResult = () => {
           }
         } catch (error) {
           if (error instanceof Error && error.name === 'AbortError') {
-            console.log('Geocoding timeout, using coordinates');
+            if (import.meta.env.DEV) console.log('Geocoding timeout, using coordinates');
           } else {
-            console.log('Geocoding error:', error);
+            if (import.meta.env.DEV) console.log('Geocoding error:', error);
           }
           // Fallback to coordinates if geocoding fails or times out
           locationName = `${gpsLocation.latitude.toFixed(4)}, ${gpsLocation.longitude.toFixed(4)}`;
