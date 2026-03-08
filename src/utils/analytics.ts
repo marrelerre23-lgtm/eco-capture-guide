@@ -36,7 +36,7 @@ class Analytics {
 
   private sendEvent(event: AnalyticsEvent) {
     if (import.meta.env.DEV) {
-      console.log('📊 Analytics Event:', event);
+      console.log('[Analytics] Event:', event);
     }
     this.storeEvent(event);
   }
