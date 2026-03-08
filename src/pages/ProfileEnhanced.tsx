@@ -120,8 +120,7 @@ const ProfileEnhanced = () => {
 
       setProfile({ ...profile, ...updates });
       
-      toast({
-        title: "Profil uppdaterad",
+      toast("Profil uppdaterad", {
         description: "Dina ändringar har sparats.",
       });
     } catch (error: any) {
