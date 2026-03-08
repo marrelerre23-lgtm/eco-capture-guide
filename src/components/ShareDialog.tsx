@@ -21,7 +21,6 @@ interface ShareDialogProps {
 }
 
 export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
-  const { toast } = useToast();
 
   const shareUrl = window.location.origin + '/capture/' + capture.id;
   const shareText = `Kolla in denna ${capture.species_name}${
