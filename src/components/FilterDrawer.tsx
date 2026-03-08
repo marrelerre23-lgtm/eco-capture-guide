@@ -32,9 +32,6 @@ const CollapsibleSection = ({ title, open, onOpenChange, children }: Collapsible
 interface FilterDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  edibilityFilter: string;
-  onEdibilityChange: (value: string) => void;
-  showEdibilityFilter: boolean;
   gpsAccuracyFilter: string;
   onGpsAccuracyChange: (value: string) => void;
   subcategoryFilter: Record<string, string>;
