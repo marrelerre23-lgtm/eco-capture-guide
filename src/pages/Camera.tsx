@@ -10,8 +10,6 @@ import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 import { Slider } from "@/components/ui/slider";
-import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { Capacitor } from '@capacitor/core';
 
 const Camera = () => {
   const navigate = useNavigate();

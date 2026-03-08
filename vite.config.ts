@@ -142,10 +142,6 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
           supabase: ["@supabase/supabase-js"],
-          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
-          charts: ["recharts"],
-          // FIX #5: Include leaflet.markercluster for proper CSS bundling
-          maps: ["leaflet", "leaflet.markercluster"],
         },
       },
     },
