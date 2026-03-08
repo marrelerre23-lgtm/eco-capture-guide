@@ -358,8 +358,7 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: "Fångster omkategoriserade",
+      toast.success("Fångster omkategoriserade", {
         description: `${selectedIds.size} fångster har flyttats till ny kategori.`,
       });
 
