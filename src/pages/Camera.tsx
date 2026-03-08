@@ -249,64 +249,64 @@ const Camera = () => {
   };
 
   const uploadFromDevice = async () => {
-    // Use Capacitor Camera plugin for native apps
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const image = await CapacitorCamera.getPhoto({
-          quality: 90,
-          allowEditing: false,
-          resultType: CameraResultType.DataUrl,
-          source: CameraSource.Photos, // Open gallery/photos
-        });
+    // Dynamically import Capacitor to avoid bundling it in web builds
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform()) {
+        const { Camera: CapacitorCamera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        try {
+          const image = await CapacitorCamera.getPhoto({
+            quality: 90,
+            allowEditing: false,
+            resultType: CameraResultType.DataUrl,
+            source: CameraSource.Photos,
+          });
 
-        if (image.dataUrl) {
-          setCompressing(true);
-          try {
-            // Compress uploaded image
-            const compressedImage = await compressImage(image.dataUrl, 1920, 1920, 0.8);
-            
-            // Save offline if not connected
-            if (!isOnline) {
-              saveOfflineCapture({ 
-                imageUrl: compressedImage,
-                location 
+          if (image.dataUrl) {
+            setCompressing(true);
+            try {
+              const compressedImage = await compressImage(image.dataUrl, 1920, 1920, 0.8);
+              
+              if (!isOnline) {
+                saveOfflineCapture({ 
+                  imageUrl: compressedImage,
+                  location 
+                });
+              }
+              
+              setCapturedImage(compressedImage);
+              
+              toast('Bild uppladdad!', {
+                description: isOnline 
+                  ? 'Bilden är redo för analys.' 
+                  : 'Bilden sparad offline.'
               });
+            } catch (error) {
+              console.error('Error processing image:', error);
+              toast.error('Fel', {
+                description: 'Kunde inte bearbeta bilden.'
+              });
+            } finally {
+              setCompressing(false);
             }
             
-            setCapturedImage(compressedImage);
-            
-            // FIX #5: No need to fetch GPS here, already fetched at mount
-            // Location state is already populated from useEffect
-            
-            toast('Bild uppladdad!', {
-              description: isOnline 
-                ? 'Bilden är redo för analys.' 
-                : 'Bilden sparad offline.'
-            });
-          } catch (error) {
-            console.error('Error processing image:', error);
-            toast.error('Fel', {
-              description: 'Kunde inte bearbeta bilden.'
-            });
-          } finally {
-            setCompressing(false);
+            if (stream) {
+              stream.getTracks().forEach(track => track.stop());
+            }
           }
-          
-          // Stop camera when uploading
-          if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-          }
+        } catch (error) {
+          console.error('Error picking image:', error);
+          toast.error('Fel', {
+            description: 'Kunde inte välja bild.'
+          });
         }
-      } catch (error) {
-        console.error('Error picking image:', error);
-        toast.error('Fel', {
-          description: 'Kunde inte välja bild.'
-        });
+        return;
       }
-    } else {
-      // Fallback to web file input
-      fileInputRef.current?.click();
+    } catch {
+      // Capacitor not available, fall through to web file input
     }
+    
+    fileInputRef.current?.click();
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
