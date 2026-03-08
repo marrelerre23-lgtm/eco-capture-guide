@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "./OfflineIndicator";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 
 interface LayoutProps {
@@ -16,7 +16,6 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Background sync for offline captures
@@ -33,7 +32,6 @@ const Layout = ({ children }: LayoutProps) => {
       (event, session) => {
         if (!mounted) return;
         
-        setSession(session);
         setUser(session?.user ?? null);
 
         // Redirect authenticated users away from auth page
@@ -47,7 +45,6 @@ const Layout = ({ children }: LayoutProps) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
-      setSession(session);
       setUser(session?.user ?? null);
       
       // Only set loading false after initial session check completes

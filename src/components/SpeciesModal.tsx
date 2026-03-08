@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2, Trash2, MapPin, Calendar, Navigation, Maximize2, Check, Save } from "lucide-react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import type L_Type from "leaflet";
 import { SecureImage } from "@/components/SecureImage";
 
 interface Species {
@@ -106,7 +105,7 @@ export const SpeciesModal = ({
   const [isAnimating, setIsAnimating] = useState(false);
   
   const expandedMapRef = useRef<HTMLDivElement>(null);
-  const expandedMapInstanceRef = useRef<L.Map | null>(null);
+  const expandedMapInstanceRef = useRef<L_Type.Map | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset animation state when modal opens
@@ -130,8 +129,11 @@ export const SpeciesModal = ({
       expandedMapInstanceRef.current = null;
     }
 
-    const initTimeout = setTimeout(() => {
+    const initTimeout = setTimeout(async () => {
       if (!expandedMapRef.current) return;
+      
+      const L = (await import("leaflet")).default;
+      await import("leaflet/dist/leaflet.css");
       
       const { latitude, longitude } = species.coordinates!;
 

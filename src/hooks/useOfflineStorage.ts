@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
 interface OfflineCapture {
@@ -14,10 +14,6 @@ export const useOfflineStorage = () => {
   const [offlineCaptures, setOfflineCaptures] = useState<OfflineCapture[]>([]);
 
   useEffect(() => {
-    loadOfflineCaptures();
-  }, []);
-
-  const loadOfflineCaptures = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -26,33 +22,35 @@ export const useOfflineStorage = () => {
     } catch (error) {
       console.error('Error loading offline captures:', error);
     }
-  };
+  }, []);
 
-  const saveOfflineCapture = (capture: Omit<OfflineCapture, 'id' | 'timestamp'>) => {
+  const saveOfflineCapture = useCallback((capture: Omit<OfflineCapture, 'id' | 'timestamp'>) => {
     const newCapture: OfflineCapture = {
       ...capture,
       id: crypto.randomUUID(),
       timestamp: Date.now()
     };
 
-    const updated = [...offlineCaptures, newCapture];
-    setOfflineCaptures(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    setOfflineCaptures(prev => {
+      const updated = [...prev, newCapture];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
 
     toast('Sparat offline', {
       description: 'Bilden sparas lokalt och synkas när du är online igen.',
     });
 
     return newCapture.id;
-  };
+  }, []);
 
-  const removeOfflineCapture = (id: string) => {
-    const updated = offlineCaptures.filter(c => c.id !== id);
-    setOfflineCaptures(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  };
-
-
+  const removeOfflineCapture = useCallback((id: string) => {
+    setOfflineCaptures(prev => {
+      const updated = prev.filter(c => c.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   return {
     offlineCaptures,

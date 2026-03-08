@@ -37,7 +37,7 @@ export const PWAInstallPrompt = () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     
-    if (outcome === "accepted") {
+    if (outcome === "accepted" && import.meta.env.DEV) {
       console.log("PWA installed");
     }
     
