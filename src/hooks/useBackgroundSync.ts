@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useOnlineStatus } from "./useOnlineStatus";
-import { useOfflineStorage, readFromStorage } from "./useOfflineStorage";
-import type { OfflineCapture } from "./useOfflineStorage";
+import { readFromStorage, removeOfflineCaptureById } from "./useOfflineStorage";
 import { toast } from "sonner";
 
 const MAX_RETRIES = 3;
