@@ -241,7 +241,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   if (isAnalyzing) {
     return (
       <AnalyzingScreen 
-        category={selectedCategory ? MAIN_CATEGORY_DISPLAY[selectedCategory].name : "fångst"} 
+        category={selectedCategory || ''} 
         detailLevel={detailLevel}
         onCancel={() => setIsAnalyzing(false)}
       />
