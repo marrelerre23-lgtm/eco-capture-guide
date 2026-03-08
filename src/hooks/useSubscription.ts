@@ -46,10 +46,13 @@ export const useSubscription = () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
+        userIdRef.current = null;
         setSubscription(DEFAULT_SUBSCRIPTION);
         setLoading(false);
         return DEFAULT_SUBSCRIPTION;
       }
+
+      userIdRef.current = user.id;
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
