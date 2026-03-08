@@ -135,10 +135,10 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingSc
         <div className="space-y-2">
           <div className="flex items-center justify-center gap-3">
             <div className="text-4xl">
-              {MAIN_CATEGORY_DISPLAY[category as MainCategoryKey]?.icon || '🔍'}
+              {(category && MAIN_CATEGORY_DISPLAY[category as MainCategoryKey]?.icon) || '🔍'}
             </div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Analyserar {MAIN_CATEGORY_DISPLAY[category as MainCategoryKey]?.name.toLowerCase() || category}
+              Analyserar {(category && MAIN_CATEGORY_DISPLAY[category as MainCategoryKey]?.name.toLowerCase()) || 'fångst'}
             </h2>
           </div>
           <p className="text-muted-foreground">

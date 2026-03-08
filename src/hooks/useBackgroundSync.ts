@@ -50,10 +50,9 @@ export const useBackgroundSync = () => {
           }
 
           // TODO: Implement actual upload to Supabase storage + species_captures table
-          // Currently placeholder — removes offline capture without uploading
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          removeOfflineCaptureById(capture.id);
+          // Placeholder — skip sync until real upload logic exists to prevent silent data loss
+          if (import.meta.env.DEV) console.warn(`[BackgroundSync] Skipping capture ${capture.id}: upload not implemented yet`);
+          continue;
           syncedCount++;
 
           delete retryStateRef.current[capture.id];

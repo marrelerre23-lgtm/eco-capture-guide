@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope, HelpCircle, Sparkles, Settings, X, ChevronRight } from "lucide-react";
+import { ArrowLeft, RotateCcw, Zap, Star, Microscope, Sparkles, Settings, X, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { AnalyzingScreen } from "./AnalyzingScreen";
-import { PhotoTipsDialog } from "./PhotoTipsDialog";
+
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 
 import { getCachedAnalysis, setCachedAnalysis } from "@/utils/analysisCache";
@@ -36,23 +36,6 @@ const SIMPLIFIED_CATEGORIES: Array<{ value: MainCategoryKey; label: string; hint
   { value: "spår-övrigt", label: "👣 Spår och Övrigt", hint: "Spår, fotavtryck och annat" },
 ] as const;
 
-// #17: Map main categories to PhotoTipsDialog categories
-const getCategoryForTips = (mainCategory: MainCategoryKey): string => {
-  const mapping: Record<MainCategoryKey, string> = {
-    "svampar": "mushroom",
-    "örter-blommor": "plant",
-    "träd-vedartade": "tree",
-    "mossor-lavar": "moss",
-    "stenar-mineraler": "stone",
-    "fåglar": "bird",
-    "däggdjur": "mammal",
-    "grod-kräldjur": "amphibian",
-    "insekter-spindeldjur": "insect",
-    "vatten-ryggradslöst": "aquatic",
-    "spår-övrigt": "tracks"
-  };
-  return mapping[mainCategory] || "general";
-};
 
 const DETAIL_LEVELS = [
   { 
@@ -84,11 +67,11 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [selectedCategory, setSelectedCategory] = useState<MainCategoryKey | null>(null);
   const [detailLevel, setDetailLevel] = useState<string>("standard");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
+  
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const { subscription, refetch } = useSubscription();
+  const { subscription } = useSubscription();
   
   // Rate limiting for AI analysis
   const { checkLimit: checkRateLimit } = useRateLimit('ai-analysis', {
@@ -121,7 +104,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         return;
       }
 
-      setIsAnalyzing(true);
       
       // First upload the image to Supabase Storage
       const uploadedImageUrl = await uploadCaptureFromDataUrl(imageUrl);
@@ -259,7 +241,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   if (isAnalyzing) {
     return (
       <AnalyzingScreen 
-        category={selectedCategory ? MAIN_CATEGORY_DISPLAY[selectedCategory].name : "fångst"} 
+        category={selectedCategory || ''} 
         detailLevel={detailLevel}
         onCancel={() => setIsAnalyzing(false)}
       />
@@ -268,11 +250,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
   return (
     <>
-      <PhotoTipsDialog
-        open={tipsDialogOpen} 
-        onOpenChange={setTipsDialogOpen}
-        category={selectedCategory ? getCategoryForTips(selectedCategory) : undefined}
-      />
 
       {/* Category Selection Dialog */}
       <dialog 
