@@ -314,10 +314,8 @@ const Logbook = () => {
       });
     } catch (err) {
       console.error('Error updating capture:', err);
-      toast({
-        title: "Kunde inte uppdatera",
+      toast.error("Kunde inte uppdatera", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
       throw err;
     }
