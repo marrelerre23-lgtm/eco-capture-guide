@@ -24,7 +24,7 @@ const Layout = ({ children }: LayoutProps) => {
   useBackgroundSync();
   
   // Pages where navigation should be hidden
-  const hideNavigation = location.pathname === "/camera" || location.pathname === "/photo-preview" || location.pathname === "/auth" || location.pathname === "/analysis-result";
+  const hideNavigation = location.pathname === "/camera" || location.pathname === "/auth" || location.pathname === "/analysis-result";
 
   useEffect(() => {
     let mounted = true;
