@@ -480,7 +480,6 @@ const Logbook = () => {
       toast.error("Kunde inte re-analysera fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
       });
-      });
     } finally {
       setIsReanalyzing(false);
     }
