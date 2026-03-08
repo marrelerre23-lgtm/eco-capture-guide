@@ -173,10 +173,8 @@ const ProfileEnhanced = () => {
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Lösenorden matchar inte",
+      toast.error("Lösenorden matchar inte", {
         description: "Kontrollera att båda lösenorden är identiska.",
-        variant: "destructive",
       });
       return;
     }
