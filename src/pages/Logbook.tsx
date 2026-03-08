@@ -28,7 +28,7 @@ import {
   MAIN_CATEGORY_DISPLAY, 
   MainCategoryKey,
   CATEGORY_TO_MAIN,
-  type Species
+  type SpeciesDetailed as Species
 } from "@/types/species";
 import {
   DropdownMenu,

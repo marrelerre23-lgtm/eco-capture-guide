@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2, Trash2, MapPin, Calendar, Navigation, Maximize2, Check, Save } from "lucide-react";
 import type L_Type from "leaflet";
 import { SecureImage } from "@/components/SecureImage";
-import type { Species } from "@/types/species";
+import type { SpeciesDetailed as Species } from "@/types/species";
 
 interface SpeciesModalProps {
   species: Species;
