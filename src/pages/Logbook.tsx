@@ -407,7 +407,7 @@ const Logbook = () => {
   };
 
   const handleReanalyzeCaptures = async () => {
-    if (import.meta.env.DEV) console.log('🔄 [Reanalyze] Starting re-analysis process...');
+    if (import.meta.env.DEV) console.log('[Reanalyze] Starting re-analysis process...');
     
     setIsReanalyzing(true);
     vibrateClick();
@@ -420,7 +420,7 @@ const Logbook = () => {
         throw error;
       }
 
-      if (import.meta.env.DEV) console.log('✅ [Reanalyze] Success:', data);
+      if (import.meta.env.DEV) console.log('[Reanalyze] Success:', data);
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();

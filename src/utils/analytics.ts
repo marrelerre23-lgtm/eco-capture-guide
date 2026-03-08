@@ -19,7 +19,7 @@ class Analytics {
 
   setUserId(userId: string) {
     this.userId = userId;
-    if (import.meta.env.DEV) console.log('📊 Analytics user set:', userId);
+    if (import.meta.env.DEV) console.log('[Analytics] User set:', userId);
   }
 
   track(event: string, properties?: Record<string, any>) {
@@ -36,7 +36,7 @@ class Analytics {
 
   private sendEvent(event: AnalyticsEvent) {
     if (import.meta.env.DEV) {
-      console.log('📊 Analytics Event:', event);
+      console.log('[Analytics] Event:', event);
     }
     this.storeEvent(event);
   }
@@ -53,7 +53,7 @@ class Analytics {
       
       localStorage.setItem('analytics_events', JSON.stringify(events));
     } catch (error) {
-      console.error('Failed to store analytics event:', error);
+      if (import.meta.env.DEV) console.error('[Analytics] Failed to store event:', error);
     }
   }
 
