@@ -36,23 +36,6 @@ const SIMPLIFIED_CATEGORIES: Array<{ value: MainCategoryKey; label: string; hint
   { value: "spår-övrigt", label: "👣 Spår och Övrigt", hint: "Spår, fotavtryck och annat" },
 ] as const;
 
-// #17: Map main categories to PhotoTipsDialog categories
-const getCategoryForTips = (mainCategory: MainCategoryKey): string => {
-  const mapping: Record<MainCategoryKey, string> = {
-    "svampar": "mushroom",
-    "örter-blommor": "plant",
-    "träd-vedartade": "tree",
-    "mossor-lavar": "moss",
-    "stenar-mineraler": "stone",
-    "fåglar": "bird",
-    "däggdjur": "mammal",
-    "grod-kräldjur": "amphibian",
-    "insekter-spindeldjur": "insect",
-    "vatten-ryggradslöst": "aquatic",
-    "spår-övrigt": "tracks"
-  };
-  return mapping[mainCategory] || "general";
-};
 
 const DETAIL_LEVELS = [
   { 
