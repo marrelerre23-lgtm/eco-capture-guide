@@ -43,16 +43,12 @@ export const useAchievements = () => {
   const { data: userAchievements } = useQuery({
     queryKey: ["user-achievements"],
     queryFn: async (): Promise<UserAchievement[]> => {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user) return [];
-
       const { data, error } = await supabase
         .from("user_achievements")
         .select(`
           *,
           achievement:achievements (*)
         `)
-        .eq("user_id", user.data.user.id)
         .order("unlocked_at", { ascending: false });
 
       if (error) throw error;
