@@ -111,7 +111,7 @@ export const useSubscription = () => {
       setLoading(false);
       return DEFAULT_SUBSCRIPTION;
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSubscriptionInfo();
