@@ -53,9 +53,6 @@ export const useBackgroundSync = () => {
           // Placeholder — skip sync until real upload logic exists to prevent silent data loss
           if (import.meta.env.DEV) console.warn(`[BackgroundSync] Skipping capture ${capture.id}: upload not implemented yet`);
           continue;
-          syncedCount++;
-
-          delete retryStateRef.current[capture.id];
         } catch (error) {
           console.error(`Error syncing capture ${capture.id}:`, error);
           failedCount++;
