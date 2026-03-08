@@ -98,9 +98,7 @@ const Camera = () => {
       }
       
       setCameraError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Kamerafel",
+      toast.error("Kamerafel", {
         description: errorMessage,
       });
     } finally {
