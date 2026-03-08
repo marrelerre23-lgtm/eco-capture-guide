@@ -11,7 +11,7 @@ function Install() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     const handler = (e: Event) => {
