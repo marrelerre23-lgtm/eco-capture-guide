@@ -133,8 +133,7 @@ const Camera = () => {
 
   const toggleTorch = async () => {
     if (!stream || !torchSupported) {
-      toast({
-        title: "Ljus ej tillgängligt",
+      toast("Ljus ej tillgängligt", {
         description: "Din enhet stöder inte kamerans ljus i webbläsaren.",
       });
       return;
