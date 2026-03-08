@@ -34,10 +34,8 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
         description: "Delningslänken har kopierats till urklipp.",
       });
     } catch (error) {
-      toast({
-        title: "Kunde inte kopiera länk",
+      toast.error("Kunde inte kopiera länk", {
         description: "Försök igen eller dela manuellt.",
-        variant: "destructive",
       });
     }
   };
