@@ -104,7 +104,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         return;
       }
 
-      setIsAnalyzing(true);
       
       // First upload the image to Supabase Storage
       const uploadedImageUrl = await uploadCaptureFromDataUrl(imageUrl);
