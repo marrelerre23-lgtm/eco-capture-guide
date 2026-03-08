@@ -196,8 +196,7 @@ const ProfileEnhanced = () => {
       setNewPassword("");
       setConfirmPassword("");
 
-      toast({
-        title: "Lösenord ändrat",
+      toast("Lösenord ändrat", {
         description: "Ditt lösenord har uppdaterats.",
       });
     } catch (error: any) {
