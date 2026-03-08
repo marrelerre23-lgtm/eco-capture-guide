@@ -416,7 +416,7 @@ const Logbook = () => {
       const { data, error } = await supabase.functions.invoke('reanalyze-captures');
 
       if (error) {
-        console.error('❌ [Reanalyze] Edge function returned error:', error);
+        console.error('[Reanalyze] Edge function error:', error);
         throw error;
       }
 

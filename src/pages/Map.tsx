@@ -315,7 +315,7 @@ const Map = () => {
   }
 
   if (error) {
-    console.error('[Map] Error state:', error);
+    if (import.meta.env.DEV) console.error('[Map] Error state:', error);
     return (
       <div className="min-h-screen bg-background pb-20 pt-16 flex items-center justify-center">
         <div className="text-center space-y-4 p-4">
