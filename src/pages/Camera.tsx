@@ -16,7 +16,7 @@ import { Capacitor } from '@capacitor/core';
 
 const Camera = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
