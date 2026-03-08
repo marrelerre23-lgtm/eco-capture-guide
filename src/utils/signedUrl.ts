@@ -29,22 +29,3 @@ export const getSignedCaptureUrl = async (imageUrl: string): Promise<string> => 
   return data.signedUrl;
 };
 
-/**
- * Get a signed URL for an avatar image.
- * Avatars bucket is public, so we just return the public URL.
- */
-export const getAvatarUrl = (avatarUrl: string | null): string | undefined => {
-  if (!avatarUrl) return undefined;
-  
-  // If it's already a full URL, return as-is
-  if (avatarUrl.startsWith('http')) {
-    return avatarUrl;
-  }
-
-  // Generate public URL for avatar path
-  const { data } = supabase.storage
-    .from('avatars')
-    .getPublicUrl(avatarUrl);
-
-  return data.publicUrl;
-};
