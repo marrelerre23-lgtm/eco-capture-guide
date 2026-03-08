@@ -272,10 +272,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       
       const errorMessage = error instanceof Error ? error.message : "Kunde inte analysera bilden";
       
-      toast({
-        title: "Analys misslyckades", 
+      toast.error("Analys misslyckades", {
         description: errorMessage,
-        variant: "destructive",
         duration: 5000,
       });
     }
