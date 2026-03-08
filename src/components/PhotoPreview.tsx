@@ -128,8 +128,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       // FIX #12: Include category hint in cache lookup
       const cachedAnalysis = await getCachedAnalysis(imageUrl, selectedCategory);
       if (cachedAnalysis) {
-        console.log('Using cached analysis (within 5 min window)');
-        navigate('/analysis-result', { 
+        if (import.meta.env.DEV) console.log('Using cached analysis (within 5 min window)');
+        navigate('/analysis-result', {
           state: cachedAnalysis
         });
         return;
