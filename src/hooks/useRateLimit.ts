@@ -16,7 +16,6 @@ const rateLimitStore = new Map<string, RateLimitState>();
 
 export const useRateLimit = (key: string, config: RateLimitConfig) => {
   const [isLimited, setIsLimited] = useState(false);
-  const { toast } = useToast();
 
   const checkLimit = useCallback((): boolean => {
     const now = Date.now();
