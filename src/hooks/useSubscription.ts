@@ -114,13 +114,13 @@ export const useSubscription = () => {
   }, []);
 
   useEffect(() => {
-    fetchSubscriptionInfo();
-    
     let realtimeChannel: RealtimeChannel | null = null;
     
-    const setupRealtimeListener = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const init = async () => {
+      await fetchSubscriptionInfo();
+      
+      const userId = userIdRef.current;
+      if (!userId) return;
 
       realtimeChannel = supabase
         .channel('profile-changes')
@@ -130,7 +130,7 @@ export const useSubscription = () => {
             event: '*',
             schema: 'public',
             table: 'profiles',
-            filter: `user_id=eq.${user.id}`
+            filter: `user_id=eq.${userId}`
           },
           () => {
             fetchSubscriptionInfo();
@@ -139,7 +139,7 @@ export const useSubscription = () => {
         .subscribe();
     };
 
-    setupRealtimeListener();
+    init();
     
     return () => {
       if (realtimeChannel) {
