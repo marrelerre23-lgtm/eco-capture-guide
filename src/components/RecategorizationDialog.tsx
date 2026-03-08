@@ -85,8 +85,7 @@ export const RecategorizationDialog = ({
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
-      toast({
-        title: "Kategori uppdaterad",
+      toast.success("Kategori uppdaterad", {
         description: `"${speciesName}" har omkategoriserats till ${selectedCategory}.`,
       });
 
