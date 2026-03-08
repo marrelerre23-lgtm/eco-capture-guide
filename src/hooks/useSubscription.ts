@@ -39,7 +39,7 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  
 
   const fetchSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
     try {
