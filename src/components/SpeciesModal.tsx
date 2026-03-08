@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Loader2, Trash2, MapPin, Calendar, Navigation, Maximize2, Check, Save } from "lucide-react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import type L_Type from "leaflet";
 import { SecureImage } from "@/components/SecureImage";
 
 interface Species {
