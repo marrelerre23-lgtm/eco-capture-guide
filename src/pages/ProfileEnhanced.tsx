@@ -159,8 +159,7 @@ const ProfileEnhanced = () => {
 
       await updateProfile({ avatar_url: publicUrl });
 
-      toast({
-        title: "Profilbild uppdaterad",
+      toast("Profilbild uppdaterad", {
         description: "Din nya profilbild har laddats upp.",
       });
     } catch (error: any) {
