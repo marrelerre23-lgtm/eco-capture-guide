@@ -1,8 +1,9 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { TopNavigation } from "./TopNavigation";
 import { BottomNavigation } from "./BottomNavigation";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "./OfflineIndicator";
+import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
