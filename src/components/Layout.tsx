@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 import { useQueryClient } from "@tanstack/react-query";
+import { analytics } from "@/utils/analytics";
 
 interface LayoutProps {
   children: ReactNode;
