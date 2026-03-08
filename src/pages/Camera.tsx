@@ -177,8 +177,7 @@ const Camera = () => {
         },
         (error) => {
           console.log('Kunde inte hämta plats:', error);
-          toast({
-            title: "GPS-position ej tillgänglig",
+          toast("GPS-position ej tillgänglig", {
             description: "Platsinformation kommer inte att sparas med denna fångst.",
             duration: 4000,
           });
