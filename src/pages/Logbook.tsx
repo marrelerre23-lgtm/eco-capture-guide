@@ -477,10 +477,9 @@ const Logbook = () => {
         stack: err instanceof Error ? err.stack : undefined,
         full: err
       });
-      toast({
-        title: "Kunde inte re-analysera fångster",
+      toast.error("Kunde inte re-analysera fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
+      });
       });
     } finally {
       setIsReanalyzing(false);
