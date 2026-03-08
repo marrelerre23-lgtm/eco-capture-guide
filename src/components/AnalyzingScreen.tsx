@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Brain, Sparkles, Search, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
