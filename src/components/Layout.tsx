@@ -32,7 +32,6 @@ const Layout = ({ children }: LayoutProps) => {
       (event, session) => {
         if (!mounted) return;
         
-        setSession(session);
         setUser(session?.user ?? null);
 
         // Redirect authenticated users away from auth page
