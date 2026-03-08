@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Camera, Lightbulb, AlertCircle, Eye, Leaf, TreeDeciduous, Mountain } from "lucide-react";
@@ -79,7 +80,7 @@ export const PhotoTipsDialog = ({ open, onOpenChange, category }: PhotoTipsDialo
   };
 
   const getCategoryIcon = (cat: string) => {
-    const icons: Record<string, React.ReactNode> = {
+    const icons: Record<string, ReactNode> = {
       mushroom: <Leaf className="h-5 w-5" />,
       plant: <Leaf className="h-5 w-5" />,
       tree: <TreeDeciduous className="h-5 w-5" />,
