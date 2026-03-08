@@ -27,7 +27,6 @@ const DEFAULT_SUBSCRIPTION: SubscriptionInfo = {
   baseMaxAnalysesPerDay: null,
   maxAnalysesPerDay: null,
   maxCaptures: 500,
-  isAnalysisLimitReached: false,
   isCaptureLimitReached: false,
   subscription_end: null,
   rewardedAnalysesToday: 0,
