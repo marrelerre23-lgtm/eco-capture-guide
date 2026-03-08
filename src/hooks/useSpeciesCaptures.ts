@@ -41,7 +41,6 @@ export const useSpeciesCaptures = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.log('[useSpeciesCaptures] No user logged in');
         return [];
       }
 

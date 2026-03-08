@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
-import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 import { Slider } from "@/components/ui/slider";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -34,9 +33,6 @@ const Camera = () => {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
   const [isStartingCamera, setIsStartingCamera] = useState(false);
-
-  // Enable background sync for offline captures
-  useBackgroundSync();
 
   const startCamera = async () => {
     if (isStartingCamera) {

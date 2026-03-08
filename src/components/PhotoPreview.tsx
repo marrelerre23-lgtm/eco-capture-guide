@@ -128,21 +128,17 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       // FIX #12: Include category hint in cache lookup
       const cachedAnalysis = await getCachedAnalysis(imageUrl, selectedCategory);
       if (cachedAnalysis) {
-        console.log('Using cached analysis (within 5 min window)');
-        navigate('/analysis-result', { 
+        if (import.meta.env.DEV) console.log('Using cached analysis (within 5 min window)');
+        navigate('/analysis-result', {
           state: cachedAnalysis
         });
         return;
       }
 
       setIsAnalyzing(true);
-      console.log('Laddar upp bild till Supabase...');
       
       // First upload the image to Supabase Storage
       const uploadedImageUrl = await uploadCaptureFromDataUrl(imageUrl);
-      console.log('Bild uppladdad:', uploadedImageUrl);
-      
-      console.log('Startar AI-analys av bild...');
       
       // Call the Supabase Edge Function
       // Pass selected main category (växter, insekter, etc.) or null for auto-detect
@@ -192,7 +188,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       }
 
       const analysisResult = data;
-      console.log('Analys resultat:', analysisResult);
 
       // Check if we have alternatives (new format) or single species (old format)
       if (analysisResult.alternatives && Array.isArray(analysisResult.alternatives)) {
@@ -225,7 +220,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         // Cache the result with 5-minute TTL
         // FIX #12: Include category hint in cache key
         await setCachedAnalysis(imageUrl, resultState, selectedCategory);
-        console.log('Analysis result cached with 5-min TTL');
 
         // Navigate to analysis result page with all alternatives
         navigate('/analysis-result', { state: resultState });
@@ -260,7 +254,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         // Cache the result with 5-minute TTL
         // FIX #12: Include category hint in cache key
         await setCachedAnalysis(imageUrl, resultState, selectedCategory);
-        console.log('Analysis result cached with 5-min TTL');
         
         navigate('/analysis-result', { state: resultState });
       } else {

@@ -63,7 +63,8 @@ const Layout = ({ children }: LayoutProps) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Redirect to auth if not authenticated and not on public pages
   useEffect(() => {

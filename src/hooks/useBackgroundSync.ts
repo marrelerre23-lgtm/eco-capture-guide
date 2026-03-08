@@ -45,17 +45,14 @@ export const useBackgroundSync = () => {
           const retryInfo = retryState[capture.id];
           if (retryInfo) {
             if (retryInfo.attempts >= MAX_RETRIES) {
-              console.log(`Skipping capture ${capture.id}: max retries exceeded`);
+              if (import.meta.env.DEV) console.log(`Skipping capture ${capture.id}: max retries exceeded`);
               failedCount++;
               continue;
             }
             if (now < retryInfo.nextRetryAt) {
-              console.log(`Skipping capture ${capture.id}: waiting for retry delay`);
               continue;
             }
           }
-
-          console.log(`Syncing capture: ${capture.id} (attempt ${(retryInfo?.attempts || 0) + 1})`);
           
           // Sync capture to database
           await new Promise(resolve => setTimeout(resolve, 1000));
