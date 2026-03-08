@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface OfflineCapture {
   id: string;
