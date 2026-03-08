@@ -34,9 +34,6 @@ const Camera = () => {
   const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
   const [isStartingCamera, setIsStartingCamera] = useState(false);
 
-  // Enable background sync for offline captures
-  useBackgroundSync();
-
   const startCamera = async () => {
     if (isStartingCamera) {
       console.log('Camera is already starting, ignoring duplicate call');

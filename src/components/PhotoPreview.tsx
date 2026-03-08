@@ -254,7 +254,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         // Cache the result with 5-minute TTL
         // FIX #12: Include category hint in cache key
         await setCachedAnalysis(imageUrl, resultState, selectedCategory);
-        console.log('Analysis result cached with 5-min TTL');
         
         navigate('/analysis-result', { state: resultState });
       } else {

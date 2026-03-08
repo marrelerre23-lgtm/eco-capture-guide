@@ -433,34 +433,20 @@ const Logbook = () => {
   };
 
   const handleReanalyzeCaptures = async () => {
-    console.log('🔄 [Reanalyze] Starting re-analysis process...');
-    console.log('🔄 [Reanalyze] Current user session:', await supabase.auth.getSession());
+    if (import.meta.env.DEV) console.log('🔄 [Reanalyze] Starting re-analysis process...');
     
     setIsReanalyzing(true);
     vibrateClick();
 
     try {
-      console.log('🔄 [Reanalyze] Invoking reanalyze-captures edge function...');
-      const startTime = Date.now();
-      
       const { data, error } = await supabase.functions.invoke('reanalyze-captures');
-      
-      const duration = Date.now() - startTime;
-      console.log(`🔄 [Reanalyze] Response received in ${duration}ms:`, { data, error });
 
       if (error) {
         console.error('❌ [Reanalyze] Edge function returned error:', error);
         throw error;
       }
 
-      console.log('✅ [Reanalyze] Success! Results:', {
-        updated: data?.updated,
-        failed: data?.failed,
-        total: data?.total,
-        message: data?.message
-      });
-      
-      console.log('🔄 [Reanalyze] Invalidating query cache...');
+      if (import.meta.env.DEV) console.log('✅ [Reanalyze] Success:', data);
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();

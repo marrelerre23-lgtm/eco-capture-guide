@@ -311,7 +311,6 @@ const Map = () => {
   };
 
   if (isLoading) {
-    console.log('[Map] Loading state');
     return <MapSkeleton />;
   }
 
