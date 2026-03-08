@@ -428,10 +428,8 @@ const Logbook = () => {
     } catch (err) {
       vibrateError();
       console.error('Error bulk deleting:', err);
-      toast({
-        title: "Kunde inte ta bort fångster",
+      toast.error("Kunde inte ta bort fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     }
   };
