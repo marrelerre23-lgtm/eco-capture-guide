@@ -12,7 +12,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface RecategorizationDialogProps {
@@ -47,10 +47,8 @@ export const RecategorizationDialog = ({
 
   const handleRecategorize = async () => {
     if (!selectedCategory) {
-      toast({
-        title: "Välj en kategori",
+      toast.error("Välj en kategori", {
         description: "Du måste välja en ny kategori för fångsten.",
-        variant: "destructive",
       });
       return;
     }
@@ -87,18 +85,15 @@ export const RecategorizationDialog = ({
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
-      toast({
-        title: "Kategori uppdaterad",
+      toast.success("Kategori uppdaterad", {
         description: `"${speciesName}" har omkategoriserats till ${selectedCategory}.`,
       });
 
       onOpenChange(false);
     } catch (err) {
       console.error('Error recategorizing capture:', err);
-      toast({
-        title: "Kunde inte uppdatera kategori",
+      toast.error("Kunde inte uppdatera kategori", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     } finally {
       setIsUpdating(false);

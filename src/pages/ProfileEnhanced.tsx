@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, LogOut, User, Mail, Lock, Shield, Camera, TrendingUp, Info, HelpCircle, FileText, Trash2, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
@@ -33,7 +33,7 @@ interface Profile {
 
 const ProfileEnhanced = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -100,10 +100,8 @@ const ProfileEnhanced = () => {
         setProfile(data);
       }
     } catch (error: any) {
-      toast({
-        title: "Kunde inte ladda profil",
+      toast.error("Kunde inte ladda profil", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -122,15 +120,12 @@ const ProfileEnhanced = () => {
 
       setProfile({ ...profile, ...updates });
       
-      toast({
-        title: "Profil uppdaterad",
+      toast("Profil uppdaterad", {
         description: "Dina ändringar har sparats.",
       });
     } catch (error: any) {
-      toast({
-        title: "Kunde inte uppdatera profil",
+      toast.error("Kunde inte uppdatera profil", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -164,15 +159,12 @@ const ProfileEnhanced = () => {
 
       await updateProfile({ avatar_url: publicUrl });
 
-      toast({
-        title: "Profilbild uppdaterad",
+      toast("Profilbild uppdaterad", {
         description: "Din nya profilbild har laddats upp.",
       });
     } catch (error: any) {
-      toast({
-        title: "Kunde inte ladda upp bild",
+      toast.error("Kunde inte ladda upp bild", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setAvatarUploading(false);
@@ -181,19 +173,15 @@ const ProfileEnhanced = () => {
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Lösenorden matchar inte",
+      toast.error("Lösenorden matchar inte", {
         description: "Kontrollera att båda lösenorden är identiska.",
-        variant: "destructive",
       });
       return;
     }
 
     if (newPassword.length < 6) {
-      toast({
-        title: "Lösenordet är för kort",
+      toast.error("Lösenordet är för kort", {
         description: "Lösenordet måste vara minst 6 tecken långt.",
-        variant: "destructive",
       });
       return;
     }
@@ -208,15 +196,12 @@ const ProfileEnhanced = () => {
       setNewPassword("");
       setConfirmPassword("");
 
-      toast({
-        title: "Lösenord ändrat",
+      toast("Lösenord ändrat", {
         description: "Ditt lösenord har uppdaterats.",
       });
     } catch (error: any) {
-      toast({
-        title: "Kunde inte ändra lösenord",
+      toast.error("Kunde inte ändra lösenord", {
         description: error.message,
-        variant: "destructive",
       });
     }
   };
@@ -224,10 +209,8 @@ const ProfileEnhanced = () => {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast({
-        title: "Kunde inte logga ut",
+      toast.error("Kunde inte logga ut", {
         description: error.message,
-        variant: "destructive",
       });
     } else {
       navigate('/auth');
@@ -298,18 +281,15 @@ const ProfileEnhanced = () => {
       // Sign out
       await supabase.auth.signOut();
       
-      toast({
-        title: "Konto raderat",
+      toast("Konto raderat", {
         description: "Ditt konto och all data har tagits bort permanent.",
       });
       
       navigate('/auth');
     } catch (error: any) {
       console.error('Error deleting account:', error);
-      toast({
-        title: "Kunde inte radera konto",
+      toast.error("Kunde inte radera konto", {
         description: error.message || "Ett fel uppstod vid radering av kontot.",
-        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);

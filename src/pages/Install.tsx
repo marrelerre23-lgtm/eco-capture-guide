@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Check, Smartphone, Zap, Wifi, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 function Install() {
@@ -11,7 +11,7 @@ function Install() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -33,8 +33,7 @@ function Install() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
-      toast({
-        title: "Installera via webbläsaren",
+      toast("Installera via webbläsaren", {
         description: "Använd webbläsarens meny för att installera appen.",
       });
       return;
@@ -46,8 +45,7 @@ function Install() {
     
     if (outcome === "accepted") {
       setIsInstalled(true);
-      toast({
-        title: "Installerad! 🎉",
+      toast.success("Installerad! 🎉", {
         description: "EcoCapture är nu installerad på din enhet.",
       });
     }

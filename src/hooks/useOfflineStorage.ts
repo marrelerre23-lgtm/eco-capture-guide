@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface OfflineCapture {
   id: string;
@@ -11,7 +11,6 @@ interface OfflineCapture {
 const STORAGE_KEY = 'ecocapture_offline_captures';
 
 export const useOfflineStorage = () => {
-  const { toast } = useToast();
   const [offlineCaptures, setOfflineCaptures] = useState<OfflineCapture[]>([]);
 
   useEffect(() => {
@@ -40,9 +39,8 @@ export const useOfflineStorage = () => {
     setOfflineCaptures(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
-    toast({
-      title: 'Sparat offline',
-      description: 'Bilden sparas lokalt och synkas när du är online igen.'
+    toast('Sparat offline', {
+      description: 'Bilden sparas lokalt och synkas när du är online igen.',
     });
 
     return newCapture.id;

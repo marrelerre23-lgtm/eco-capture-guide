@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
@@ -65,7 +65,7 @@ const translateSupabaseError = (error: string): string => {
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -85,9 +85,7 @@ const Auth = () => {
       
       if (!validationResult.success) {
         const firstError = validationResult.error.errors[0];
-        toast({
-          variant: "destructive",
-          title: "Valideringsfel",
+        toast.error("Valideringsfel", {
           description: firstError.message,
         });
         setLoading(false);
@@ -100,22 +98,17 @@ const Auth = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Inloggning misslyckades",
+        toast.error("Inloggning misslyckades", {
           description: translateSupabaseError(error.message),
         });
       } else {
-        toast({
-          title: "Välkommen tillbaka!",
+        toast.success("Välkommen tillbaka!", {
           description: "Du är nu inloggad.",
         });
         navigate("/");
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Ett oväntat fel uppstod",
+      toast.error("Ett oväntat fel uppstod", {
         description: "Försök igen senare.",
       });
     } finally {
@@ -138,9 +131,7 @@ const Auth = () => {
       
       if (!validationResult.success) {
         const firstError = validationResult.error.errors[0];
-        toast({
-          variant: "destructive",
-          title: "Valideringsfel",
+        toast.error("Valideringsfel", {
           description: firstError.message,
         });
         setLoading(false);
@@ -161,21 +152,16 @@ const Auth = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Registrering misslyckades",
+        toast.error("Registrering misslyckades", {
           description: translateSupabaseError(error.message),
         });
       } else {
-        toast({
-          title: "Registrering lyckades!",
+        toast.success("Registrering lyckades!", {
           description: "Kontrollera din e-post för att bekräfta ditt konto.",
         });
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Ett oväntat fel uppstod",
+      toast.error("Ett oväntat fel uppstod", {
         description: "Försök igen senare.",
       });
     } finally {

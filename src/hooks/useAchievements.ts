@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface Achievement {
   id: string;
@@ -23,7 +23,6 @@ export interface UserAchievement {
 }
 
 export const useAchievements = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch all available achievements
@@ -87,8 +86,7 @@ export const useAchievements = () => {
       
       const achievement = (data as any).achievement;
       if (achievement) {
-        toast({
-          title: "🎉 Achievement Unlocked!",
+        toast.success("🎉 Achievement Unlocked!", {
           description: `${achievement.icon} ${achievement.name}`,
           duration: 5000,
         });

@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Mail, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const EmailVerificationBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const { toast } = useToast();
+  
 
   useEffect(() => {
     checkEmailVerification();
@@ -32,15 +32,12 @@ export const EmailVerificationBanner = () => {
       });
       if (error) throw error;
 
-      toast({
-        title: "Email skickad!",
+      toast("Email skickad!", {
         description: "Kolla din inkorg och verifiera din email-adress.",
       });
     } catch (error) {
       console.error('Error resending verification email:', error);
-      toast({
-        variant: 'destructive',
-        title: "Kunde inte skicka email",
+      toast.error("Kunde inte skicka email", {
         description: error instanceof Error ? error.message : "Ett okänt fel uppstod",
       });
     } finally {

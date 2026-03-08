@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { PhotoTipsDialog } from "@/components/PhotoTipsDialog";
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
@@ -16,7 +16,7 @@ import { Capacitor } from '@capacitor/core';
 
 const Camera = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -98,9 +98,7 @@ const Camera = () => {
       }
       
       setCameraError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Kamerafel",
+      toast.error("Kamerafel", {
         description: errorMessage,
       });
     } finally {
@@ -135,8 +133,7 @@ const Camera = () => {
 
   const toggleTorch = async () => {
     if (!stream || !torchSupported) {
-      toast({
-        title: "Ljus ej tillgängligt",
+      toast("Ljus ej tillgängligt", {
         description: "Din enhet stöder inte kamerans ljus i webbläsaren.",
       });
       return;
@@ -154,10 +151,7 @@ const Camera = () => {
       setTorchOn(newTorchState);
     } catch (error) {
       console.error("Error toggling torch:", error);
-      toast({
-        variant: "destructive",
-        title: "Kunde inte styra ljuset",
-      });
+      toast.error("Kunde inte styra ljuset");
     }
   };
 
@@ -175,9 +169,7 @@ const Camera = () => {
           // FIX #5: Show GPS accuracy warning if poor quality
           if (accuracy > 50) {
             const accuracyLevel = accuracy > 100 ? 'mycket dålig' : 'låg';
-            toast({
-              variant: "destructive",
-              title: `GPS-noggrannhet ${accuracyLevel} (±${Math.round(accuracy)}m)`,
+            toast.error(`GPS-noggrannhet ${accuracyLevel} (±${Math.round(accuracy)}m)`, {
               description: "För bästa resultat, gå ut till en öppen plats med fri sikt mot himlen.",
               duration: 6000,
             });
@@ -185,8 +177,7 @@ const Camera = () => {
         },
         (error) => {
           console.log('Kunde inte hämta plats:', error);
-          toast({
-            title: "GPS-position ej tillgänglig",
+          toast("GPS-position ej tillgänglig", {
             description: "Platsinformation kommer inte att sparas med denna fångst.",
             duration: 4000,
           });
@@ -227,17 +218,14 @@ const Camera = () => {
           // FIX #5: No need to fetch GPS here, already fetched at mount
           // Location state is already populated from useEffect
           
-          toast({
-            title: 'Bild tagen!',
+          toast('Bild tagen!', {
             description: isOnline 
               ? 'Bilden är redo för analys.' 
               : 'Bilden sparad offline.'
           });
         } catch (error) {
           console.error('Error compressing image:', error);
-          toast({
-            variant: 'destructive',
-            title: 'Fel',
+          toast.error('Fel', {
             description: 'Kunde inte bearbeta bilden.'
           });
         } finally {
@@ -296,17 +284,14 @@ const Camera = () => {
             // FIX #5: No need to fetch GPS here, already fetched at mount
             // Location state is already populated from useEffect
             
-            toast({
-              title: 'Bild uppladdad!',
+            toast('Bild uppladdad!', {
               description: isOnline 
                 ? 'Bilden är redo för analys.' 
                 : 'Bilden sparad offline.'
             });
           } catch (error) {
             console.error('Error processing image:', error);
-            toast({
-              variant: 'destructive',
-              title: 'Fel',
+            toast.error('Fel', {
               description: 'Kunde inte bearbeta bilden.'
             });
           } finally {
@@ -320,9 +305,7 @@ const Camera = () => {
         }
       } catch (error) {
         console.error('Error picking image:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Fel',
+        toast.error('Fel', {
           description: 'Kunde inte välja bild.'
         });
       }
@@ -357,17 +340,14 @@ const Camera = () => {
           // FIX #5: No need to fetch GPS here, already fetched at mount
           // Location state is already populated from useEffect
           
-          toast({
-            title: 'Bild uppladdad!',
+          toast('Bild uppladdad!', {
             description: isOnline 
               ? 'Bilden är redo för analys.' 
               : 'Bilden sparad offline.'
           });
         } catch (error) {
           console.error('Error processing image:', error);
-          toast({
-            variant: 'destructive',
-            title: 'Fel',
+          toast.error('Fel', {
             description: 'Kunde inte bearbeta bilden.'
           });
         } finally {
@@ -619,8 +599,7 @@ const Camera = () => {
               size="icon"
               className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm rounded-full w-14 h-14 border border-white/20"
               onClick={() => {
-                toast({
-                  title: "Funktion kommer snart",
+                toast("Funktion kommer snart", {
                   description: "Möjlighet att byta kamera kommer i nästa version",
                 });
               }}

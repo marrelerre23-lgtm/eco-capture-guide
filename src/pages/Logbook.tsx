@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { ImageViewer } from "@/components/ImageViewer";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
@@ -225,18 +225,15 @@ const Logbook = () => {
       // Invalidate the query cache so all components get updated data
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
-      toast({
-        title: "Fångst borttagen",
+      toast("Fångst borttagen", {
         description: `${selectedSpecies.name} har tagits bort från din loggbok.`,
       });
 
       setSelectedSpecies(null);
     } catch (err) {
       console.error('Error deleting capture:', err);
-      toast({
-        title: "Kunde inte ta bort fångst",
+      toast.error("Kunde inte ta bort fångst", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
@@ -258,17 +255,14 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: !currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter",
+      toast(!currentFavorite ? "Tillagd i favoriter" : "Borttagen från favoriter", {
         description: !currentFavorite ? "Fångsten har markerats som favorit." : "Fångsten har tagits bort från favoriter.",
       });
     } catch (err) {
       vibrateError();
       console.error('Error toggling favorite:', err);
-      toast({
-        title: "Kunde inte uppdatera favorit",
+      toast.error("Kunde inte uppdatera favorit", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     }
   };
@@ -315,16 +309,13 @@ const Logbook = () => {
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
-      toast({
-        title: newCategory ? "Fångst uppdaterad" : "Anteckningar uppdaterade",
+      toast(newCategory ? "Fångst uppdaterad" : "Anteckningar uppdaterade", {
         description: newCategory ? "Kategori och anteckningar har sparats." : "Dina ändringar har sparats.",
       });
     } catch (err) {
       console.error('Error updating capture:', err);
-      toast({
-        title: "Kunde inte uppdatera",
+      toast.error("Kunde inte uppdatera", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
       throw err;
     }
@@ -367,8 +358,7 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: "Fångster omkategoriserade",
+      toast.success("Fångster omkategoriserade", {
         description: `${selectedIds.size} fångster har flyttats till ny kategori.`,
       });
 
@@ -379,10 +369,8 @@ const Logbook = () => {
     } catch (err) {
       vibrateError();
       console.error('Error bulk recategorizing:', err);
-      toast({
-        title: "Kunde inte omkategorisera fångster",
+      toast.error("Kunde inte omkategorisera fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     }
   };
@@ -405,8 +393,7 @@ const Logbook = () => {
     const allIds = new Set(allSpecies.map(s => s.id));
     setSelectedIds(allIds);
     vibrateClick();
-    toast({
-      title: "Alla fångster valda",
+    toast("Alla fångster valda", {
       description: `${allIds.size} fångster markerade`,
     });
   };
@@ -431,8 +418,7 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: "Fångster borttagna",
+      toast.success("Fångster borttagna", {
         description: `${selectedIds.size} fångster har tagits bort.`,
       });
 
@@ -442,10 +428,8 @@ const Logbook = () => {
     } catch (err) {
       vibrateError();
       console.error('Error bulk deleting:', err);
-      toast({
-        title: "Kunde inte ta bort fångster",
+      toast.error("Kunde inte ta bort fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     }
   };
@@ -482,8 +466,7 @@ const Logbook = () => {
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
-      toast({
-        title: "Re-analys klar!",
+      toast.success("Re-analys klar!", {
         description: data.message || `${data.updated} fångster uppdaterade`,
       });
     } catch (err) {
@@ -494,10 +477,8 @@ const Logbook = () => {
         stack: err instanceof Error ? err.stack : undefined,
         full: err
       });
-      toast({
-        title: "Kunde inte re-analysera fångster",
+      toast.error("Kunde inte re-analysera fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     } finally {
       setIsReanalyzing(false);
@@ -667,14 +648,12 @@ const Logbook = () => {
 
     if (format === 'csv') {
       exportToCSV(exportData);
-      toast({
-        title: "Export klar",
+      toast("Export klar", {
         description: `${exportData.length} fångster exporterade till CSV.`,
       });
     } else {
       exportToJSON(exportData);
-      toast({
-        title: "Export klar",
+      toast("Export klar", {
         description: `${exportData.length} fångster exporterade till JSON.`,
       });
     }
@@ -1281,10 +1260,8 @@ const Logbook = () => {
               setSelectedSpecies(prev => prev ? { ...prev, notes } : null);
             } catch (err) {
               console.error('Error updating notes:', err);
-              toast({
-                title: "Kunde inte spara anteckningar",
+              toast.error("Kunde inte spara anteckningar", {
                 description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-                variant: "destructive",
               });
               throw err;
             }

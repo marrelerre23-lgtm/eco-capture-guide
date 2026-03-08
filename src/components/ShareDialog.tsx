@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Facebook, Twitter, Link2, Mail, MessageCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -21,7 +21,6 @@ interface ShareDialogProps {
 }
 
 export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
-  const { toast } = useToast();
 
   const shareUrl = window.location.origin + '/capture/' + capture.id;
   const shareText = `Kolla in denna ${capture.species_name}${
@@ -31,15 +30,12 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "Länk kopierad!",
+      toast("Länk kopierad!", {
         description: "Delningslänken har kopierats till urklipp.",
       });
     } catch (error) {
-      toast({
-        title: "Kunde inte kopiera länk",
+      toast.error("Kunde inte kopiera länk", {
         description: "Försök igen eller dela manuellt.",
-        variant: "destructive",
       });
     }
   };
@@ -91,8 +87,7 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
 
           if (navigator.canShare(shareData)) {
             await navigator.share(shareData);
-            toast({
-              title: "Delat! 🎉",
+            toast.success("Delat! 🎉", {
               description: "Fångsten har delats med bild.",
             });
             return;
@@ -109,17 +104,14 @@ export const ShareDialog = ({ isOpen, onClose, capture }: ShareDialogProps) => {
         url: shareUrl,
       });
       
-      toast({
-        title: "Delat! 🎉",
+      toast.success("Delat! 🎉", {
         description: "Fångsten har delats.",
       });
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         console.error('Share failed:', error);
-        toast({
-          title: "Kunde inte dela",
+        toast.error("Kunde inte dela", {
           description: "Försök kopiera länken istället.",
-          variant: "destructive",
         });
       }
     }

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useToast } from './use-toast';
+import { toast } from 'sonner';
 
 interface RateLimitConfig {
   maxAttempts: number;
@@ -16,7 +16,6 @@ const rateLimitStore = new Map<string, RateLimitState>();
 
 export const useRateLimit = (key: string, config: RateLimitConfig) => {
   const [isLimited, setIsLimited] = useState(false);
-  const { toast } = useToast();
 
   const checkLimit = useCallback((): boolean => {
     const now = Date.now();
@@ -43,9 +42,7 @@ export const useRateLimit = (key: string, config: RateLimitConfig) => {
     // Rate limit exceeded
     const remainingTime = Math.ceil((state.resetTime - now) / 1000);
     
-    toast({
-      variant: 'destructive',
-      title: 'För många försök',
+    toast.error('För många försök', {
       description: config.message || `Vänta ${remainingTime} sekunder innan du försöker igen.`,
     });
 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle, RotateCcw, Zap, Star, Microscope, HelpCircle, Sparkles, Settings, X, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { AnalyzingScreen } from "./AnalyzingScreen";
@@ -82,7 +82,7 @@ const DETAIL_LEVELS = [
 
 export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }: PhotoPreviewProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [selectedCategory, setSelectedCategory] = useState<MainCategoryKey | null>(null);
   const [detailLevel, setDetailLevel] = useState<string>("standard");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -161,10 +161,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         
         // Check if upgrade is required (429 or upgradeRequired flag)
         if (error.message?.includes('429') || data?.upgradeRequired) {
-          toast({
-            title: "Gräns nådd",
+          toast.error("Gräns nådd", {
             description: data?.error || "Du har nått din analysgräns. Uppgradera till Premium för obegränsade analyser!",
-            variant: "destructive",
             duration: 5000,
           });
           setIsAnalyzing(false);
@@ -183,10 +181,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         console.error('AI analysis error:', data.error);
         // Check if upgrade is required
         if (data.upgradeRequired) {
-          toast({
-            title: "Gräns nådd",
+          toast.error("Gräns nådd", {
             description: data.error,
-            variant: "destructive",
             duration: 5000,
           });
           setIsAnalyzing(false);
@@ -276,10 +272,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       
       const errorMessage = error instanceof Error ? error.message : "Kunde inte analysera bilden";
       
-      toast({
-        title: "Analys misslyckades", 
+      toast.error("Analys misslyckades", {
         description: errorMessage,
-        variant: "destructive",
         duration: 5000,
       });
     }

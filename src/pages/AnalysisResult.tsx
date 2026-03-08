@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Trash2, AlertTriangle, ZoomIn, MapPin, Leaf, Mountain, Sun } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,7 +30,7 @@ import {
 const AnalysisResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState(0);
@@ -96,15 +96,12 @@ const AnalysisResult = () => {
     try {
       // In a real app, this would send feedback to improve the AI
       // For now, we'll just show a toast
-      toast({
-        title: "Tack för din feedback!",
+      toast("Tack för din feedback!", {
         description: "Vi kommer använda denna information för att förbättra AI-modellen.",
       });
     } catch (error) {
-      toast({
-        title: "Kunde inte skicka feedback",
+      toast.error("Kunde inte skicka feedback", {
         description: "Försök igen senare",
-        variant: "destructive",
       });
     } finally {
       setReportingError(false);
@@ -117,10 +114,8 @@ const AnalysisResult = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        toast({
-          title: "Inloggning krävs",
+        toast.error("Inloggning krävs", {
           description: "Du måste vara inloggad för att spara fångster",
-          variant: "destructive"
         });
         setSaving(false);
         return;
@@ -266,8 +261,7 @@ const AnalysisResult = () => {
         plantCount,
       });
 
-      toast({
-        title: "Fångst sparad!",
+      toast.success("Fångst sparad!", {
         description: `${selectedSpecies.name} har lagts till i din loggbok`
       });
 
@@ -275,10 +269,8 @@ const AnalysisResult = () => {
       navigate('/logbook', { replace: true });
     } catch (error) {
       console.error('Fel vid sparande av fångst:', error);
-      toast({
-        title: "Kunde inte spara fångsten",
+      toast.error("Kunde inte spara fångsten", {
         description: error instanceof Error ? error.message : "Okänt fel",
-        variant: "destructive"
       });
     } finally {
       setSaving(false);

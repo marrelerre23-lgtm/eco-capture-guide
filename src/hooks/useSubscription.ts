@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface SubscriptionInfo {
@@ -39,7 +39,7 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  
 
   const fetchSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
     try {
@@ -152,9 +152,7 @@ export const useSubscription = () => {
     const currentInfo = await fetchSubscriptionInfo();
     
     if (currentInfo.isCaptureLimitReached) {
-      toast({
-        variant: 'destructive',
-        title: 'Lagringsgräns nådd',
+      toast.error('Lagringsgräns nådd', {
         description: `Du har nått gränsen på ${currentInfo.maxCaptures} fångster.`,
       });
       return false;

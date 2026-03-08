@@ -5,12 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -25,22 +25,17 @@ const ForgotPassword = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Kunde inte skicka e-post",
+        toast.error("Kunde inte skicka e-post", {
           description: error.message,
         });
       } else {
         setSent(true);
-        toast({
-          title: "E-post skickad!",
+        toast.success("E-post skickad!", {
           description: "Kontrollera din e-post för att återställa lösenordet.",
         });
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Ett oväntat fel uppstod",
+      toast.error("Ett oväntat fel uppstod", {
         description: "Försök igen senare.",
       });
     } finally {

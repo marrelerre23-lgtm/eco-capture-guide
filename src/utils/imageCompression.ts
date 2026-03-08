@@ -56,7 +56,7 @@ export const compressImage = async (
       
       const compressedDataUrl = canvas.toDataURL(mimeType, quality);
       
-      console.log(`[ImageCompression] Original: ${(dataUrl.length / 1024).toFixed(0)}KB → Compressed: ${(compressedDataUrl.length / 1024).toFixed(0)}KB (${mimeType})`);
+      if (import.meta.env.DEV) console.log(`[ImageCompression] Original: ${(dataUrl.length / 1024).toFixed(0)}KB → Compressed: ${(compressedDataUrl.length / 1024).toFixed(0)}KB (${mimeType})`);
       
       resolve(compressedDataUrl);
     };

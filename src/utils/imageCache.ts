@@ -111,7 +111,7 @@ const evictLRUEntries = (cache: ImageCache): void => {
     delete cache.entries[entries[i][0]];
   }
   
-  console.log(`Evicted ${removeCount} LRU cache entries`);
+  if (import.meta.env.DEV) console.log(`Evicted ${removeCount} LRU cache entries`);
 };
 
 const clearOldestEntries = (count: number): void => {
@@ -124,5 +124,5 @@ const clearOldestEntries = (count: number): void => {
   }
   
   saveCache(cache);
-  console.log(`Cleared ${Math.min(count, entries.length)} oldest cache entries`);
+  if (import.meta.env.DEV) console.log(`Cleared ${Math.min(count, entries.length)} oldest cache entries`);
 };
