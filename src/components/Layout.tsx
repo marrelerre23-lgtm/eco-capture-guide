@@ -45,7 +45,6 @@ const Layout = ({ children }: LayoutProps) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
-      setSession(session);
       setUser(session?.user ?? null);
       
       // Only set loading false after initial session check completes

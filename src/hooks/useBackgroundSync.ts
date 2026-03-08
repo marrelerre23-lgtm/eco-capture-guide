@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useOfflineStorage } from "./useOfflineStorage";
 import { toast } from "sonner";
 
-// #19: Exponential backoff retry configuration
 const MAX_RETRIES = 3;
-const INITIAL_RETRY_DELAY = 2000; // 2 seconds
+const INITIAL_RETRY_DELAY = 2000;
 
 interface RetryState {
   [captureId: string]: {
@@ -17,20 +16,18 @@ interface RetryState {
 export const useBackgroundSync = () => {
   const isOnline = useOnlineStatus();
   const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
-  const [retryState, setRetryState] = useState<RetryState>({});
-  const [isSyncing, setIsSyncing] = useState(false);
+  const retryStateRef = useRef<RetryState>({});
+  const isSyncingRef = useRef(false);
 
   useEffect(() => {
     const syncPendingCaptures = async () => {
-      if (!isOnline || isSyncing) return;
+      if (!isOnline || isSyncingRef.current) return;
 
       const pendingCaptures = offlineCaptures;
-      
       if (pendingCaptures.length === 0) return;
 
-      setIsSyncing(true);
-      
-      // Show sync progress
+      isSyncingRef.current = true;
+
       toast("Synkroniserar offline-data...", {
         description: `Laddar upp ${pendingCaptures.length} ${pendingCaptures.length === 1 ? 'fångst' : 'fångster'}`,
       });
@@ -38,11 +35,10 @@ export const useBackgroundSync = () => {
       let syncedCount = 0;
       let failedCount = 0;
       const now = Date.now();
-      
+
       for (const capture of pendingCaptures) {
         try {
-          // Check if this capture has exceeded retry limit or needs to wait
-          const retryInfo = retryState[capture.id];
+          const retryInfo = retryStateRef.current[capture.id];
           if (retryInfo) {
             if (retryInfo.attempts >= MAX_RETRIES) {
               if (import.meta.env.DEV) console.log(`Skipping capture ${capture.id}: max retries exceeded`);
@@ -53,42 +49,28 @@ export const useBackgroundSync = () => {
               continue;
             }
           }
-          
-          // Sync capture to database
+
           await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Remove from offline storage on success
+
           removeOfflineCapture(capture.id);
           syncedCount++;
-          
-          // Clear retry state on success
-          setRetryState(prev => {
-            const newState = { ...prev };
-            delete newState[capture.id];
-            return newState;
-          });
+
+          delete retryStateRef.current[capture.id];
         } catch (error) {
           console.error(`Error syncing capture ${capture.id}:`, error);
           failedCount++;
-          
-          // Update retry state with exponential backoff
-          setRetryState(prev => {
-            const currentAttempts = prev[capture.id]?.attempts || 0;
-            const delay = INITIAL_RETRY_DELAY * Math.pow(2, currentAttempts);
-            return {
-              ...prev,
-              [capture.id]: {
-                attempts: currentAttempts + 1,
-                nextRetryAt: Date.now() + delay
-              }
-            };
-          });
+
+          const currentAttempts = retryStateRef.current[capture.id]?.attempts || 0;
+          const delay = INITIAL_RETRY_DELAY * Math.pow(2, currentAttempts);
+          retryStateRef.current[capture.id] = {
+            attempts: currentAttempts + 1,
+            nextRetryAt: Date.now() + delay,
+          };
         }
       }
 
-      setIsSyncing(false);
+      isSyncingRef.current = false;
 
-      // Show sync result
       if (syncedCount > 0) {
         toast.success("Synkronisering klar! ✅", {
           description: `${syncedCount} ${syncedCount === 1 ? 'fångst' : 'fångster'} uppladdad${syncedCount === 1 ? '' : 'e'}${failedCount > 0 ? `, ${failedCount} misslyckades` : ''}`,
@@ -103,14 +85,13 @@ export const useBackgroundSync = () => {
     };
 
     syncPendingCaptures();
-    
-    // Retry failed syncs every 30 seconds
+
     const retryInterval = setInterval(() => {
-      if (isOnline && !isSyncing) {
+      if (isOnline && !isSyncingRef.current) {
         syncPendingCaptures();
       }
     }, 30000);
-    
+
     return () => clearInterval(retryInterval);
-  }, [isOnline, offlineCaptures, removeOfflineCapture, retryState, isSyncing]);
+  }, [isOnline, offlineCaptures, removeOfflineCapture]);
 };

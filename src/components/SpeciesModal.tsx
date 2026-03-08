@@ -129,8 +129,11 @@ export const SpeciesModal = ({
       expandedMapInstanceRef.current = null;
     }
 
-    const initTimeout = setTimeout(() => {
+    const initTimeout = setTimeout(async () => {
       if (!expandedMapRef.current) return;
+      
+      const L = (await import("leaflet")).default;
+      await import("leaflet/dist/leaflet.css");
       
       const { latitude, longitude } = species.coordinates!;
 
