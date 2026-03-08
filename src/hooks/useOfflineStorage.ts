@@ -11,7 +11,6 @@ interface OfflineCapture {
 const STORAGE_KEY = 'ecocapture_offline_captures';
 
 export const useOfflineStorage = () => {
-  const { toast } = useToast();
   const [offlineCaptures, setOfflineCaptures] = useState<OfflineCapture[]>([]);
 
   useEffect(() => {
