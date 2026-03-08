@@ -168,7 +168,7 @@ const Map = () => {
           setLoadingLocation(false);
         },
         (error) => {
-          console.log('Could not get user location:', error);
+          if (import.meta.env.DEV) console.log('Could not get user location:', error);
           setLoadingLocation(false);
         },
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
