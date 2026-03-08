@@ -33,8 +33,7 @@ function Install() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) {
-      toast({
-        title: "Installera via webbläsaren",
+      toast("Installera via webbläsaren", {
         description: "Använd webbläsarens meny för att installera appen.",
       });
       return;
