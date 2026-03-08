@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "./OfflineIndicator";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 
 interface LayoutProps {
