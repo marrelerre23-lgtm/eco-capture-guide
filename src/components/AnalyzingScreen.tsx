@@ -35,23 +35,10 @@ const FUN_FACTS = [
 ];
 
 export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingScreenProps) => {
-  const navigate = useNavigate();
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [user, setUser] = useState<User | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   useEffect(() => {
     // Rotate tips every 2 seconds
