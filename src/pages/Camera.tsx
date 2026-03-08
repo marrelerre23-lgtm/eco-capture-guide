@@ -305,9 +305,7 @@ const Camera = () => {
         }
       } catch (error) {
         console.error('Error picking image:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Fel',
+        toast.error('Fel', {
           description: 'Kunde inte välja bild.'
         });
       }
