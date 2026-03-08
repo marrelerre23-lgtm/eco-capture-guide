@@ -12,7 +12,6 @@ export interface SubscriptionInfo {
   baseMaxAnalysesPerDay: number | null;
   maxAnalysesPerDay: number | null;
   maxCaptures: number | null;
-  isAnalysisLimitReached: boolean;
   isCaptureLimitReached: boolean;
   subscription_end: string | null;
   rewardedAnalysesToday: number;
@@ -28,7 +27,6 @@ const DEFAULT_SUBSCRIPTION: SubscriptionInfo = {
   baseMaxAnalysesPerDay: null,
   maxAnalysesPerDay: null,
   maxCaptures: 500,
-  isAnalysisLimitReached: false,
   isCaptureLimitReached: false,
   subscription_end: null,
   rewardedAnalysesToday: 0,
@@ -39,7 +37,7 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const userIdRef = { current: null as string | null };
 
   const fetchSubscriptionInfo = useCallback(async (): Promise<SubscriptionInfo> => {
     try {
@@ -48,10 +46,13 @@ export const useSubscription = () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
+        userIdRef.current = null;
         setSubscription(DEFAULT_SUBSCRIPTION);
         setLoading(false);
         return DEFAULT_SUBSCRIPTION;
       }
+
+      userIdRef.current = user.id;
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -94,7 +95,6 @@ export const useSubscription = () => {
         baseMaxAnalysesPerDay: baseMaxAnalyses,
         maxAnalysesPerDay: totalMaxAnalyses,
         maxCaptures: totalMaxCaptures,
-        isAnalysisLimitReached: false,
         isCaptureLimitReached: capturesRemaining === 0,
         subscription_end: profile.subscription_expires_at || null,
         rewardedAnalysesToday: rewardedAnalyses,
@@ -114,13 +114,13 @@ export const useSubscription = () => {
   }, []);
 
   useEffect(() => {
-    fetchSubscriptionInfo();
-    
     let realtimeChannel: RealtimeChannel | null = null;
     
-    const setupRealtimeListener = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const init = async () => {
+      await fetchSubscriptionInfo();
+      
+      const userId = userIdRef.current;
+      if (!userId) return;
 
       realtimeChannel = supabase
         .channel('profile-changes')
@@ -130,7 +130,7 @@ export const useSubscription = () => {
             event: '*',
             schema: 'public',
             table: 'profiles',
-            filter: `user_id=eq.${user.id}`
+            filter: `user_id=eq.${userId}`
           },
           () => {
             fetchSubscriptionInfo();
@@ -139,7 +139,7 @@ export const useSubscription = () => {
         .subscribe();
     };
 
-    setupRealtimeListener();
+    init();
     
     return () => {
       if (realtimeChannel) {
