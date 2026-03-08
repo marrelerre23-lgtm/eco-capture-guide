@@ -92,7 +92,6 @@ export const useSubscription = () => {
         baseMaxAnalysesPerDay: baseMaxAnalyses,
         maxAnalysesPerDay: totalMaxAnalyses,
         maxCaptures: totalMaxCaptures,
-        isAnalysisLimitReached: false,
         isCaptureLimitReached: capturesRemaining === 0,
         subscription_end: profile.subscription_expires_at || null,
         rewardedAnalysesToday: rewardedAnalyses,
