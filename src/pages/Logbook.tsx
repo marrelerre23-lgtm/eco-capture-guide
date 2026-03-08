@@ -1261,10 +1261,8 @@ const Logbook = () => {
               setSelectedSpecies(prev => prev ? { ...prev, notes } : null);
             } catch (err) {
               console.error('Error updating notes:', err);
-              toast({
-                title: "Kunde inte spara anteckningar",
+              toast.error("Kunde inte spara anteckningar", {
                 description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-                variant: "destructive",
               });
               throw err;
             }

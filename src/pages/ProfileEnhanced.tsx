@@ -288,10 +288,8 @@ const ProfileEnhanced = () => {
       navigate('/auth');
     } catch (error: any) {
       console.error('Error deleting account:', error);
-      toast({
-        title: "Kunde inte radera konto",
+      toast.error("Kunde inte radera konto", {
         description: error.message || "Ett fel uppstod vid radering av kontot.",
-        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
