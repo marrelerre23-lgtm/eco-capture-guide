@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Leaf, Camera, MapPin, Loader2, AlertCircle } from "lucide-react";
+import { Trophy, Leaf, Camera, MapPin, AlertCircle } from "lucide-react";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
