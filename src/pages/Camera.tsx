@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { PhotoPreview } from "@/components/PhotoPreview";
 import { PhotoTipsDialog } from "@/components/PhotoTipsDialog";
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { compressImage } from "@/utils/imageCompression";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
