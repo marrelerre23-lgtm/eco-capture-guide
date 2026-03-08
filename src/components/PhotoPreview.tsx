@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, RotateCcw, Zap, Star, Microscope, Sparkles, Settings, X, ChevronRight } from "lucide-react";
