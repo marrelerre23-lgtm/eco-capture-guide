@@ -52,12 +52,12 @@ export const useSubscription = () => {
         return DEFAULT_SUBSCRIPTION;
       }
 
-      userIdRef.current = user.id;
+      userIdRef.current = session.user.id;
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .maybeSingle();
 
       if (profileError || !profile) {

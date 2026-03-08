@@ -73,16 +73,6 @@ export function FilterDrawer({
             </Button>
           )}
 
-          {showEdibilityFilter && (
-            <CollapsibleSection title="Ätlighet" open={edibilityOpen} onOpenChange={setEdibilityOpen}>
-              <Button variant={!edibilityFilter ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("")} className="w-full justify-start">Alla</Button>
-              <Button variant={edibilityFilter === "ätlig" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("ätlig")} className={`w-full justify-start ${edibilityFilter === "ätlig" ? "bg-green-600 hover:bg-green-700" : ""}`}>✓ Ätlig</Button>
-              <Button variant={edibilityFilter === "giftig" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("giftig")} className={`w-full justify-start ${edibilityFilter === "giftig" ? "bg-red-600 hover:bg-red-700" : ""}`}>⚠ Giftig</Button>
-              <Button variant={edibilityFilter === "inte-ätlig" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("inte-ätlig")} className={`w-full justify-start ${edibilityFilter === "inte-ätlig" ? "bg-gray-600 hover:bg-gray-700" : ""}`}>⊘ Inte ätlig</Button>
-              <Button variant={edibilityFilter === "okänd" ? "default" : "outline"} size="sm" onClick={() => onEdibilityChange("okänd")} className="w-full justify-start">? Okänd</Button>
-            </CollapsibleSection>
-          )}
-
           <CollapsibleSection title="GPS-noggrannhet" open={gpsOpen} onOpenChange={setGpsOpen}>
             <Button variant={!gpsAccuracyFilter ? "default" : "outline"} size="sm" onClick={() => onGpsAccuracyChange("")} className="w-full justify-start">Alla</Button>
             <Button variant={gpsAccuracyFilter === "high" ? "default" : "outline"} size="sm" onClick={() => onGpsAccuracyChange("high")} className={`w-full justify-start ${gpsAccuracyFilter === "high" ? "bg-green-600 hover:bg-green-700" : ""}`}>📍 Hög (≤50m)</Button>
