@@ -6,7 +6,6 @@ import Layout from "./components/Layout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { CookieConsent, hasCookieConsent } from "./components/CookieConsent";
-import { EmailVerificationBanner } from "./components/EmailVerificationBanner";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { supabase } from "./integrations/supabase/client";

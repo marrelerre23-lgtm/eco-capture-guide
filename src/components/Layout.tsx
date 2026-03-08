@@ -87,10 +87,17 @@ const Layout = ({ children }: LayoutProps) => {
     );
   }
 
+  // Derive unverified email from existing user state — no extra API call
+  const unverifiedEmail = useMemo(() => {
+    if (user && !user.email_confirmed_at) return user.email ?? undefined;
+    return undefined;
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-background">
       <Toaster />
       <OfflineIndicator />
+      {unverifiedEmail && <EmailVerificationBanner userEmail={unverifiedEmail} />}
       {!hideNavigation && <TopNavigation user={user} onLogout={handleLogout} />}
       <main className={hideNavigation ? "" : "pt-16 pb-20"}>
         {children}
