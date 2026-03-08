@@ -100,10 +100,8 @@ const AnalysisResult = () => {
         description: "Vi kommer använda denna information för att förbättra AI-modellen.",
       });
     } catch (error) {
-      toast({
-        title: "Kunde inte skicka feedback",
+      toast.error("Kunde inte skicka feedback", {
         description: "Försök igen senare",
-        variant: "destructive",
       });
     } finally {
       setReportingError(false);
