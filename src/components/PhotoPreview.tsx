@@ -161,10 +161,8 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
         
         // Check if upgrade is required (429 or upgradeRequired flag)
         if (error.message?.includes('429') || data?.upgradeRequired) {
-          toast({
-            title: "Gräns nådd",
+          toast.error("Gräns nådd", {
             description: data?.error || "Du har nått din analysgräns. Uppgradera till Premium för obegränsade analyser!",
-            variant: "destructive",
             duration: 5000,
           });
           setIsAnalyzing(false);
