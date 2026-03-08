@@ -92,9 +92,6 @@ const AppRoutes = () => {
 const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
-  const isOnline = useOnlineStatus();
-  const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
-  const { toast } = useToast();
 
   useEffect(() => {
     analytics.init();
