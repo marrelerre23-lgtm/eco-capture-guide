@@ -20,8 +20,6 @@ export const readFromStorage = (): OfflineCapture[] => {
 };
 
 
-
-
 export const useOfflineStorage = () => {
   const [offlineCaptures, setOfflineCaptures] = useState<OfflineCapture[]>(readFromStorage);
 

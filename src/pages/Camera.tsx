@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Upload, RotateCcw, Flashlight, FlashlightOff, ZoomIn, ZoomOut, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -309,7 +309,7 @@ const Camera = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setCompressing(true);
@@ -364,7 +364,7 @@ const Camera = () => {
 
 
   // Start camera and fetch GPS when component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     startCamera();
     // FIX #5: Fetch GPS early so it's ready when user takes photo
     getLocation();
