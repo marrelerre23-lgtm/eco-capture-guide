@@ -30,8 +30,7 @@ const ForgotPassword = () => {
         });
       } else {
         setSent(true);
-        toast({
-          title: "E-post skickad!",
+        toast.success("E-post skickad!", {
           description: "Kontrollera din e-post för att återställa lösenordet.",
         });
       }
