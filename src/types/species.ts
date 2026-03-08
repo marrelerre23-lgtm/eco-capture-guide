@@ -1,4 +1,10 @@
-// Central type definition for Species across the entire application
+// Central type definitions for Species across the entire application
+export interface SpeciesFact {
+  icon: string;
+  title: string;
+  description: string;
+}
+
 export interface Species {
   id: string;
   name: string;
@@ -9,9 +15,25 @@ export interface Species {
   category: string;
   confidence?: number;
   reasoning?: string;
-  facts: string[] | Array<{icon: string, title: string, description: string}>;
+  facts: string[] | SpeciesFact[];
   edibility?: 'ätlig' | 'giftig' | 'ätlig med förbehåll' | 'inte ätlig' | 'okänd';
   ageStage?: string;
+  // UI/display fields used by Logbook and SpeciesModal
+  location?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  notes?: string;
+  capturedAt?: Date;
+  isFavorite?: boolean;
+  gpsAccuracy?: number;
+}
+
+// Narrowed Species type where facts are always structured objects (used by Logbook, SpeciesModal)
+export interface SpeciesDetailed extends Omit<Species, 'facts' | 'dateFound'> {
+  facts: SpeciesFact[];
+  dateFound: string;
 }
 
 // Valid detailed categories for species classification

@@ -6,7 +6,6 @@ import Layout from "./components/Layout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { RouteErrorBoundary } from "./components/RouteErrorBoundary";
 import { CookieConsent, hasCookieConsent } from "./components/CookieConsent";
-import { EmailVerificationBanner } from "./components/EmailVerificationBanner";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { supabase } from "./integrations/supabase/client";
@@ -47,22 +46,10 @@ const PageLoader = () => (
 );
 
 const AppRoutes = () => {
-  const [showCookieConsent, setShowCookieConsent] = useState(!hasCookieConsent());
-  const [unverifiedEmail, setUnverifiedEmail] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const checkVerification = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user && !user.email_confirmed_at) {
-        setUnverifiedEmail(user.email ?? undefined);
-      }
-    };
-    checkVerification();
-  }, []);
+  const showCookieConsent = !hasCookieConsent();
 
   return (
     <>
-      {unverifiedEmail && <EmailVerificationBanner userEmail={unverifiedEmail} />}
       {showCookieConsent && <CookieConsent />}
       <Suspense fallback={<PageLoader />}>
         <Routes>

@@ -1,8 +1,9 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { TopNavigation } from "./TopNavigation";
 import { BottomNavigation } from "./BottomNavigation";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineIndicator } from "./OfflineIndicator";
+import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -73,6 +74,12 @@ const Layout = ({ children }: LayoutProps) => {
     }
   }, [user, loading, location.pathname, navigate]);
 
+  // Derive unverified email from existing user state — no extra API call
+  const unverifiedEmail = useMemo(() => {
+    if (user && !user.email_confirmed_at) return user.email ?? undefined;
+    return undefined;
+  }, [user]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
@@ -90,6 +97,7 @@ const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen bg-background">
       <Toaster />
       <OfflineIndicator />
+      {unverifiedEmail && <EmailVerificationBanner userEmail={unverifiedEmail} />}
       {!hideNavigation && <TopNavigation user={user} onLogout={handleLogout} />}
       <main className={hideNavigation ? "" : "pt-16 pb-20"}>
         {children}
