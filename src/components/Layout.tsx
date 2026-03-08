@@ -74,6 +74,12 @@ const Layout = ({ children }: LayoutProps) => {
     }
   }, [user, loading, location.pathname, navigate]);
 
+  // Derive unverified email from existing user state — no extra API call
+  const unverifiedEmail = useMemo(() => {
+    if (user && !user.email_confirmed_at) return user.email ?? undefined;
+    return undefined;
+  }, [user]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
@@ -86,12 +92,6 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
     );
   }
-
-  // Derive unverified email from existing user state — no extra API call
-  const unverifiedEmail = useMemo(() => {
-    if (user && !user.email_confirmed_at) return user.email ?? undefined;
-    return undefined;
-  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
