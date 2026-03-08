@@ -47,10 +47,8 @@ export const RecategorizationDialog = ({
 
   const handleRecategorize = async () => {
     if (!selectedCategory) {
-      toast({
-        title: "Välj en kategori",
+      toast.error("Välj en kategori", {
         description: "Du måste välja en ny kategori för fångsten.",
-        variant: "destructive",
       });
       return;
     }
