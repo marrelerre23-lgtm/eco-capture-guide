@@ -225,8 +225,7 @@ const Logbook = () => {
       // Invalidate the query cache so all components get updated data
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
-      toast({
-        title: "Fångst borttagen",
+      toast("Fångst borttagen", {
         description: `${selectedSpecies.name} har tagits bort från din loggbok.`,
       });
 
