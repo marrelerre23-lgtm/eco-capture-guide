@@ -9,7 +9,7 @@ export interface Species {
   category: string;
   confidence?: number;
   reasoning?: string;
-  facts: Array<{icon: string, title: string, description: string}>;
+  facts: string[] | Array<{icon: string, title: string, description: string}>;
   edibility?: 'ätlig' | 'giftig' | 'ätlig med förbehåll' | 'inte ätlig' | 'okänd';
   ageStage?: string;
   // UI/display fields used by Logbook and SpeciesModal
