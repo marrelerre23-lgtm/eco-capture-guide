@@ -108,9 +108,7 @@ const Auth = () => {
         navigate("/");
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Ett oväntat fel uppstod",
+      toast.error("Ett oväntat fel uppstod", {
         description: "Försök igen senare.",
       });
     } finally {
