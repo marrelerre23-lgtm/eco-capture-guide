@@ -209,10 +209,8 @@ const ProfileEnhanced = () => {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast({
-        title: "Kunde inte logga ut",
+      toast.error("Kunde inte logga ut", {
         description: error.message,
-        variant: "destructive",
       });
     } else {
       navigate('/auth');
