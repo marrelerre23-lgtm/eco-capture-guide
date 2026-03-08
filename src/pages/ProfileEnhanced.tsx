@@ -200,10 +200,8 @@ const ProfileEnhanced = () => {
         description: "Ditt lösenord har uppdaterats.",
       });
     } catch (error: any) {
-      toast({
-        title: "Kunde inte ändra lösenord",
+      toast.error("Kunde inte ändra lösenord", {
         description: error.message,
-        variant: "destructive",
       });
     }
   };
