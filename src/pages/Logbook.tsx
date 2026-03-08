@@ -309,8 +309,7 @@ const Logbook = () => {
 
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
-      toast({
-        title: newCategory ? "Fångst uppdaterad" : "Anteckningar uppdaterade",
+      toast(newCategory ? "Fångst uppdaterad" : "Anteckningar uppdaterade", {
         description: newCategory ? "Kategori och anteckningar har sparats." : "Dina ändringar har sparats.",
       });
     } catch (err) {
