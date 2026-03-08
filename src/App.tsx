@@ -10,9 +10,6 @@ import { CookieConsent } from "./components/CookieConsent";
 import { EmailVerificationBanner } from "./components/EmailVerificationBanner";
 import { Onboarding, hasCompletedOnboarding } from "./components/Onboarding";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
-import { useOnlineStatus } from "./hooks/useOnlineStatus";
-import { useOfflineStorage } from "./hooks/useOfflineStorage";
-import { useToast } from "./hooks/use-toast";
 import { supabase } from "./integrations/supabase/client";
 import { analytics, ANALYTICS_EVENTS } from "./utils/analytics";
 
@@ -95,9 +92,6 @@ const AppRoutes = () => {
 const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showPWAPrompt, setShowPWAPrompt] = useState(false);
-  const isOnline = useOnlineStatus();
-  const { offlineCaptures, removeOfflineCapture } = useOfflineStorage();
-  const { toast } = useToast();
 
   useEffect(() => {
     analytics.init();
@@ -141,49 +135,6 @@ const App = () => {
       return () => clearTimeout(timer);
     }
   }, [showOnboarding]);
-
-  useEffect(() => {
-    if (!isOnline || offlineCaptures.length === 0) return;
-
-    const syncTimeout = setTimeout(async () => {
-      const totalCaptures = offlineCaptures.length;
-      
-      toast({
-        title: "Synkroniserar offline-fångster",
-        description: `${totalCaptures} ${totalCaptures === 1 ? 'fångst' : 'fångster'} synkas nu...`
-      });
-
-      let syncedCount = 0;
-      let failedCount = 0;
-
-      for (const capture of offlineCaptures) {
-        try {
-          removeOfflineCapture(capture.id);
-          syncedCount++;
-        } catch (error) {
-          console.error("Failed to sync capture:", capture.id, error);
-          failedCount++;
-        }
-      }
-
-      if (syncedCount > 0) {
-        toast({
-          title: "Synkning klar!",
-          description: `${syncedCount} av ${totalCaptures} ${syncedCount === 1 ? 'fångst' : 'fångster'} synkades framgångsrikt.`
-        });
-      }
-
-      if (failedCount > 0) {
-        toast({
-          title: "Synkning misslyckades",
-          description: `${failedCount} ${failedCount === 1 ? 'fångst' : 'fångster'} kunde inte synkas.`,
-          variant: "destructive"
-        });
-      }
-    }, 2000);
-
-    return () => clearTimeout(syncTimeout);
-  }, [isOnline, offlineCaptures, removeOfflineCapture, toast]);
 
   return (
     <ErrorBoundary>
