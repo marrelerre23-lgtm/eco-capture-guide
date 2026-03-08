@@ -369,10 +369,8 @@ const Logbook = () => {
     } catch (err) {
       vibrateError();
       console.error('Error bulk recategorizing:', err);
-      toast({
-        title: "Kunde inte omkategorisera fångster",
+      toast.error("Kunde inte omkategorisera fångster", {
         description: err instanceof Error ? err.message : "Ett okänt fel uppstod",
-        variant: "destructive",
       });
     }
   };
