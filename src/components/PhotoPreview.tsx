@@ -188,7 +188,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
       }
 
       const analysisResult = data;
-      console.log('Analys resultat:', analysisResult);
 
       // Check if we have alternatives (new format) or single species (old format)
       if (analysisResult.alternatives && Array.isArray(analysisResult.alternatives)) {
