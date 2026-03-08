@@ -649,14 +649,12 @@ const Logbook = () => {
 
     if (format === 'csv') {
       exportToCSV(exportData);
-      toast({
-        title: "Export klar",
+      toast("Export klar", {
         description: `${exportData.length} fångster exporterade till CSV.`,
       });
     } else {
       exportToJSON(exportData);
-      toast({
-        title: "Export klar",
+      toast("Export klar", {
         description: `${exportData.length} fångster exporterade till JSON.`,
       });
     }
