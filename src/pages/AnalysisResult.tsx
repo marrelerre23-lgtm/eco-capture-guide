@@ -541,7 +541,7 @@ const AnalysisResult = () => {
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl">
-                    {gpsLocation.accuracy > 50 ? '⚠️' : getGpsGuidanceMessage(gpsLocation.accuracy).icon}
+                    {gpsLocation.accuracy > 50 ? '⚠️' : getGpsAccuracyIcon(gpsLocation.accuracy)}
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
