@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useToast } from './use-toast';
+import { toast } from 'sonner';
 
 interface RateLimitConfig {
   maxAttempts: number;
