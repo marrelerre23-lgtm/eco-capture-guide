@@ -67,7 +67,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [selectedCategory, setSelectedCategory] = useState<MainCategoryKey | null>(null);
   const [detailLevel, setDetailLevel] = useState<string>("standard");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [tipsDialogOpen, setTipsDialogOpen] = useState(false);
+  
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
