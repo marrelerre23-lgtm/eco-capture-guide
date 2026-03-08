@@ -88,7 +88,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const { subscription, refetch } = useSubscription();
   
   // Rate limiting for AI analysis
@@ -97,17 +96,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
     windowMs: 2000, // 2 seconds
     message: 'Vänta lite innan nästa analys för att undvika överbelastning.'
   });
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const handleAnalyze = async () => {
     try {
