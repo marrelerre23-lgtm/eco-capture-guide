@@ -53,7 +53,7 @@ export const useBackgroundSync = () => {
           // Currently placeholder — removes offline capture without uploading
           await new Promise(resolve => setTimeout(resolve, 1000));
 
-          removeOfflineCapture(capture.id);
+          removeOfflineCaptureById(capture.id);
           syncedCount++;
 
           delete retryStateRef.current[capture.id];
