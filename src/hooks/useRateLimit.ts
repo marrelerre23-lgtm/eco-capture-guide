@@ -48,7 +48,7 @@ export const useRateLimit = (key: string, config: RateLimitConfig) => {
 
     setIsLimited(true);
     return true;
-  }, [key, config, toast]);
+  }, [key, config]);
 
   const reset = useCallback(() => {
     rateLimitStore.delete(key);
