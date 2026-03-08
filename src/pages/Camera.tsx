@@ -151,10 +151,7 @@ const Camera = () => {
       setTorchOn(newTorchState);
     } catch (error) {
       console.error("Error toggling torch:", error);
-      toast({
-        variant: "destructive",
-        title: "Kunde inte styra ljuset",
-      });
+      toast.error("Kunde inte styra ljuset");
     }
   };
 
