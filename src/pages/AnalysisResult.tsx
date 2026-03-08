@@ -30,7 +30,7 @@ import {
 const AnalysisResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState(0);
