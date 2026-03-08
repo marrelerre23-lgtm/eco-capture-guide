@@ -157,65 +157,36 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
       const analysisResult = data;
 
+      // Helper to map species data to Species object
+      const mapSpeciesFromAnalysis = (speciesData: any, reasoning?: string): Species => ({
+        id: crypto.randomUUID(),
+        name: speciesData.commonName || "Okänd art",
+        scientificName: speciesData.scientificName || "Okänd",
+        image: uploadedImageUrl,
+        dateFound: new Date(),
+        description: speciesData.description || "Ingen beskrivning tillgänglig",
+        category: speciesData.category || "annat",
+        confidence: speciesData.confidence || 0.5,
+        reasoning: reasoning || "",
+        ageStage: speciesData.ageStage || null,
+        facts: [
+          speciesData.habitat ? `Habitat: ${speciesData.habitat}` : "",
+          speciesData.identificationFeatures ? `Kännetecken: ${speciesData.identificationFeatures}` : "",
+          speciesData.rarity ? `Sällsynthet: ${speciesData.rarity}` : "",
+          speciesData.sizeInfo ? `Storlek: ${speciesData.sizeInfo}` : "",
+          speciesData.edibility ? `Ätlighet: ${speciesData.edibility}` : "",
+          speciesData.ageStage ? `Ålder/Stadium: ${speciesData.ageStage}` : "",
+          speciesData.confidence ? `AI-säkerhet: ${Math.round(speciesData.confidence * 100)}%` : ""
+        ].filter(Boolean)
+      });
+
       // Check if we have alternatives (new format) or single species (old format)
       if (analysisResult.alternatives && Array.isArray(analysisResult.alternatives)) {
         const resultState = { 
-          alternatives: analysisResult.alternatives.map((alt: any) => ({
-            id: crypto.randomUUID(),
-            name: alt.species.commonName || "Okänd art",
-            scientificName: alt.species.scientificName || "Okänd",
-            image: uploadedImageUrl,
-            dateFound: new Date(),
-            description: alt.species.description || "Ingen beskrivning tillgänglig",
-            category: alt.species.category || "annat",
-            confidence: alt.species.confidence || 0.5,
-            reasoning: alt.reasoning || "",
-            ageStage: alt.species.ageStage || null,
-            facts: [
-              alt.species.habitat ? `Habitat: ${alt.species.habitat}` : "",
-              alt.species.identificationFeatures ? `Kännetecken: ${alt.species.identificationFeatures}` : "",
-              alt.species.rarity ? `Sällsynthet: ${alt.species.rarity}` : "",
-              alt.species.sizeInfo ? `Storlek: ${alt.species.sizeInfo}` : "",
-              alt.species.edibility ? `Ätlighet: ${alt.species.edibility}` : "",
-              alt.species.ageStage ? `Ålder/Stadium: ${alt.species.ageStage}` : "",
-              alt.species.confidence ? `AI-säkerhet: ${Math.round(alt.species.confidence * 100)}%` : ""
-            ].filter(Boolean)
-          })),
+          alternatives: analysisResult.alternatives.map((alt: any) => mapSpeciesFromAnalysis(alt.species, alt.reasoning)),
           location: location
         };
 
-        // Cache the result with 5-minute TTL
-        // FIX #12: Include category hint in cache key
-        await setCachedAnalysis(imageUrl, resultState, selectedCategory);
-
-        // Navigate to analysis result page with all alternatives
-        navigate('/analysis-result', { state: resultState });
-      } else if (analysisResult.species) {
-        // Legacy format - single species
-        const species: Species = {
-          id: crypto.randomUUID(),
-          name: analysisResult.species.commonName || "Okänd art",
-          scientificName: analysisResult.species.scientificName || "Okänd",
-          image: uploadedImageUrl,
-          dateFound: new Date(),
-          description: analysisResult.species.description || "Ingen beskrivning tillgänglig",
-          category: analysisResult.species.category || "annat",
-          ageStage: analysisResult.species.ageStage || null,
-          facts: [
-            analysisResult.species.habitat ? `Habitat: ${analysisResult.species.habitat}` : "",
-            analysisResult.species.identificationFeatures ? `Kännetecken: ${analysisResult.species.identificationFeatures}` : "",
-            analysisResult.species.rarity ? `Sällsynthet: ${analysisResult.species.rarity}` : "",
-            analysisResult.species.sizeInfo ? `Storlek: ${analysisResult.species.sizeInfo}` : "",
-            analysisResult.species.edibility ? `Ätlighet: ${analysisResult.species.edibility}` : "",
-            analysisResult.species.ageStage ? `Ålder/Stadium: ${analysisResult.species.ageStage}` : "",
-            analysisResult.species.confidence ? `AI-säkerhet: ${Math.round(analysisResult.species.confidence * 100)}%` : ""
-          ].filter(Boolean)
-        };
-
-        const resultState = { 
-          alternatives: [species],
-          location: location
-        };
 
         // Cache the result with 5-minute TTL
         // FIX #12: Include category hint in cache key

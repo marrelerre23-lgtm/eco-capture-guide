@@ -43,7 +43,7 @@ export const useSignedUrl = (imageUrl: string | null | undefined) => {
         setSignedUrl(url);
         setError(null);
       } catch (err) {
-        console.error('Error getting signed URL:', err);
+        if (import.meta.env.DEV) console.error('Error getting signed URL:', err);
         setError(err instanceof Error ? err : new Error('Failed to get signed URL'));
         // Fallback to original URL
         setSignedUrl(imageUrl);
