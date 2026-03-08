@@ -220,7 +220,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           description: analysisResult.species.description || "Ingen beskrivning tillgänglig",
           category: analysisResult.species.category || "annat",
           ageStage: analysisResult.species.ageStage || null,
-          ageStage: analysisResult.species.ageStage || null,
           facts: [
             analysisResult.species.habitat ? `Habitat: ${analysisResult.species.habitat}` : "",
             analysisResult.species.identificationFeatures ? `Kännetecken: ${analysisResult.species.identificationFeatures}` : "",
