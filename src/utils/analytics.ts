@@ -53,7 +53,7 @@ class Analytics {
       
       localStorage.setItem('analytics_events', JSON.stringify(events));
     } catch (error) {
-      console.error('Failed to store analytics event:', error);
+      if (import.meta.env.DEV) console.error('[Analytics] Failed to store event:', error);
     }
   }
 

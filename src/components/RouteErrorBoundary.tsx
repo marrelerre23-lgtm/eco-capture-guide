@@ -32,7 +32,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(`[${this.props.routeName || 'Route'}] Error caught:`, error, errorInfo);
     
     this.setState({

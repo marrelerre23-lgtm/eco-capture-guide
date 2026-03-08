@@ -420,7 +420,7 @@ const Logbook = () => {
         throw error;
       }
 
-      if (import.meta.env.DEV) console.log('✅ [Reanalyze] Success:', data);
+      if (import.meta.env.DEV) console.log('[Reanalyze] Success:', data);
       await queryClient.invalidateQueries({ queryKey: ["species-captures"] });
 
       vibrateSuccess();
