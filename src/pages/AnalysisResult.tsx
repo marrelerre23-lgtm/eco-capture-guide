@@ -269,10 +269,8 @@ const AnalysisResult = () => {
       navigate('/logbook', { replace: true });
     } catch (error) {
       console.error('Fel vid sparande av fångst:', error);
-      toast({
-        title: "Kunde inte spara fångsten",
+      toast.error("Kunde inte spara fångsten", {
         description: error instanceof Error ? error.message : "Okänt fel",
-        variant: "destructive"
       });
     } finally {
       setSaving(false);

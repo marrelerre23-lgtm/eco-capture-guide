@@ -347,9 +347,7 @@ const Camera = () => {
           });
         } catch (error) {
           console.error('Error processing image:', error);
-          toast({
-            variant: 'destructive',
-            title: 'Fel',
+          toast.error('Fel', {
             description: 'Kunde inte bearbeta bilden.'
           });
         } finally {

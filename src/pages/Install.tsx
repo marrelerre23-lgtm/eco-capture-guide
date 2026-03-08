@@ -45,8 +45,7 @@ function Install() {
     
     if (outcome === "accepted") {
       setIsInstalled(true);
-      toast({
-        title: "Installerad! 🎉",
+      toast.success("Installerad! 🎉", {
         description: "EcoCapture är nu installerad på din enhet.",
       });
     }
