@@ -98,9 +98,7 @@ const Auth = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Inloggning misslyckades",
+        toast.error("Inloggning misslyckades", {
           description: translateSupabaseError(error.message),
         });
       } else {
