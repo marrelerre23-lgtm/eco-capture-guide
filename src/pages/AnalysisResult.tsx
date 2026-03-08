@@ -12,7 +12,6 @@ import { formatGpsAccuracy, getGpsAccuracyIcon } from "@/utils/formatGpsAccuracy
 import { getGpsGuidanceMessage, getGpsAccuracyColorClass } from "@/utils/gpsGuidance";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useQueryClient } from "@tanstack/react-query";
-import { AnalysisResultSkeleton } from "@/components/LoadingSkeleton";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useSpeciesCaptures } from "@/hooks/useSpeciesCaptures";
 import {
