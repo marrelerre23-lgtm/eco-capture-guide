@@ -11,7 +11,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
-  errorInfo: React.ErrorInfo | null;
+  errorInfo: ErrorInfo | null;
 }
 
 export class RouteErrorBoundary extends Component<Props, State> {
