@@ -25,9 +25,7 @@ const ForgotPassword = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Kunde inte skicka e-post",
+        toast.error("Kunde inte skicka e-post", {
           description: error.message,
         });
       } else {
