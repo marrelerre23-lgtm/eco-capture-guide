@@ -105,7 +105,7 @@ export const SpeciesModal = ({
   const [isAnimating, setIsAnimating] = useState(false);
   
   const expandedMapRef = useRef<HTMLDivElement>(null);
-  const expandedMapInstanceRef = useRef<L.Map | null>(null);
+  const expandedMapInstanceRef = useRef<L_Type.Map | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset animation state when modal opens
