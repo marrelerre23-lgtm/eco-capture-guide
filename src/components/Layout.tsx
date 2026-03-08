@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -33,6 +35,13 @@ const Layout = ({ children }: LayoutProps) => {
         if (!mounted) return;
         
         setUser(session?.user ?? null);
+
+        // Invalidate/clear queries on auth state changes
+        if (event === 'SIGNED_IN') {
+          queryClient.invalidateQueries();
+        } else if (event === 'SIGNED_OUT') {
+          queryClient.clear();
+        }
 
         // Redirect authenticated users away from auth page
         if (session?.user && location.pathname === "/auth") {

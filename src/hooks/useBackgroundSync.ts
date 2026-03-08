@@ -50,6 +50,8 @@ export const useBackgroundSync = () => {
             }
           }
 
+          // TODO: Implement actual upload to Supabase storage + species_captures table
+          // Currently placeholder — removes offline capture without uploading
           await new Promise(resolve => setTimeout(resolve, 1000));
 
           removeOfflineCapture(capture.id);
