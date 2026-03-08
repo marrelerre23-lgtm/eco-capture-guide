@@ -163,10 +163,8 @@ const ProfileEnhanced = () => {
         description: "Din nya profilbild har laddats upp.",
       });
     } catch (error: any) {
-      toast({
-        title: "Kunde inte ladda upp bild",
+      toast.error("Kunde inte ladda upp bild", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setAvatarUploading(false);
