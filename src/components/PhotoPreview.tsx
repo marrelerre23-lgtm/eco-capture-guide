@@ -7,9 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCaptureFromDataUrl } from "@/utils/storage";
 import { AnalyzingScreen } from "./AnalyzingScreen";
-import { TopNavigation } from "./TopNavigation";
 import { PhotoTipsDialog } from "./PhotoTipsDialog";
-import { User } from "@supabase/supabase-js";
 import { Species, MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 
 import { getCachedAnalysis, setCachedAnalysis } from "@/utils/analysisCache";
@@ -90,7 +88,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const { subscription, refetch } = useSubscription();
   
   // Rate limiting for AI analysis
@@ -99,17 +96,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
     windowMs: 2000, // 2 seconds
     message: 'Vänta lite innan nästa analys för att undvika överbelastning.'
   });
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const handleAnalyze = async () => {
     try {
@@ -233,7 +219,6 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
           dateFound: new Date(),
           description: analysisResult.species.description || "Ingen beskrivning tillgänglig",
           category: analysisResult.species.category || "annat",
-          edibility: analysisResult.species.edibility || null,
           ageStage: analysisResult.species.ageStage || null,
           facts: [
             analysisResult.species.habitat ? `Habitat: ${analysisResult.species.habitat}` : "",
@@ -284,8 +269,7 @@ export const PhotoPreview = ({ imageUrl, onRetake, uploading = false, location }
 
   return (
     <>
-      <TopNavigation user={user} onLogout={handleLogout} />
-      <PhotoTipsDialog 
+      <PhotoTipsDialog
         open={tipsDialogOpen} 
         onOpenChange={setTipsDialogOpen}
         category={selectedCategory ? getCategoryForTips(selectedCategory) : undefined}

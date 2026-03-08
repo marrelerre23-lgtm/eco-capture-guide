@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useBackgroundSync } from "@/hooks/useBackgroundSync";
 import { useQueryClient } from "@tanstack/react-query";
+import { analytics } from "@/utils/analytics";
 
 interface LayoutProps {
   children: ReactNode;
@@ -40,6 +41,9 @@ const Layout = ({ children }: LayoutProps) => {
         // Invalidate/clear queries on auth state changes
         if (event === 'SIGNED_IN') {
           queryClient.invalidateQueries();
+          if (session?.user) {
+            analytics.setUserId(session.user.id);
+          }
         } else if (event === 'SIGNED_OUT') {
           queryClient.clear();
         }

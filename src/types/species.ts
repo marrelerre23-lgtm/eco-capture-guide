@@ -16,7 +16,6 @@ export interface Species {
   confidence?: number;
   reasoning?: string;
   facts: string[] | SpeciesFact[];
-  edibility?: 'ätlig' | 'giftig' | 'ätlig med förbehåll' | 'inte ätlig' | 'okänd';
   ageStage?: string;
   // UI/display fields used by Logbook and SpeciesModal
   location?: string;

@@ -95,11 +95,6 @@ const App = () => {
 
   useEffect(() => {
     analytics.init();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        analytics.setUserId(user.id);
-      }
-    });
   }, []);
 
 

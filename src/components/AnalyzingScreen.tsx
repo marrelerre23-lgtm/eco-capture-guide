@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Brain, Sparkles, Search, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { TopNavigation } from "./TopNavigation";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { User } from "@supabase/supabase-js";
 import { MAIN_CATEGORY_DISPLAY, MainCategoryKey } from "@/types/species";
 import {
   AlertDialog,
@@ -39,23 +35,10 @@ const FUN_FACTS = [
 ];
 
 export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingScreenProps) => {
-  const navigate = useNavigate();
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [user, setUser] = useState<User | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   useEffect(() => {
     // Rotate tips every 2 seconds
@@ -101,8 +84,6 @@ export const AnalyzingScreen = ({ category, detailLevel, onCancel }: AnalyzingSc
 
   return (
     <>
-      <TopNavigation user={user} onLogout={handleLogout} />
-      
       <div className="fixed inset-0 z-50 bg-gradient-to-br from-primary/20 via-background to-accent/20 backdrop-blur-sm flex items-center justify-center p-6 pt-24">
         {/* Cancel Button */}
         <div className="absolute top-20 right-4 z-50">
